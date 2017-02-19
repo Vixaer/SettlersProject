@@ -11,7 +11,10 @@ public class ProgressCard : Card {
 }
 
 public class Stealable : Card {
-	
+	private bool isResource(){
+		return this.GetType() == typeof(Resource);
+	}
+		
 }
 
 
