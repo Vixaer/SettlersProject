@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum VillageKind {Settlement,City,TradeMetropole,PoliticsMetropole,ScienceMetropole};
-enum ResourceKind {Wool,Lumber,Ore,Brick,Grain};
-enum CommodityKind {Coin,Cloth,Paper};
-enum ProgressCardKind {ArchemistCard
+public enum VillageKind {Settlement,City,TradeMetropole,PoliticsMetropole,ScienceMetropole};
+public enum ResourceKind {Wool,Lumber,Ore,Brick,Grain};
+public enum CommodityKind {Coin,Cloth,Paper};
+public enum ProgressCardKind {ArchemistCard
 	,CraneCard
 	,EngineerCard
 	,InventorCard
@@ -31,17 +31,17 @@ enum ProgressCardKind {ArchemistCard
 	,ResourceMonopolyCard
 	,TradeMonopolyCard};
 
-enum PlayerStatus {Offline,Available,InGame,Ready};
+public enum PlayerStatus {Offline,Available,InGame,Ready};
 
-enum EventKind {Barbarian,Trade,Politics,Science};
+public enum EventKind {Barbarian,Trade,Politics,Science};
 
-enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnSecondPhase,Completed};
+public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnSecondPhase,Completed};
 
-enum HarbourKind{None
+public enum HarbourKind{None
 	,Generic
 	,Special};
 
-enum TerrainKind{Sea
+public enum TerrainKind{Sea
 	,Desert
 	,Pasture
 	,Forest
