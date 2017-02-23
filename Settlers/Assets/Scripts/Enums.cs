@@ -49,8 +49,3 @@ public enum TerrainKind{Sea
 	,Hills
 	,Fields
 	,GoldMine};
-
-
-
-
-public class Enums : Object {}
