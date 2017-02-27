@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Card {
-		
+	private CardType  cardType;
 }
 
-public class ProgressCard : Card {
+public class CardType{
+	
+}
+
+public class ProgressCard : CardType {
 	private ProgressCardKind k;
 
 	public ProgressCard(ProgressCardKind k){
@@ -14,7 +18,7 @@ public class ProgressCard : Card {
 	}
 }
 
-public class Stealable : Card {
+public class Stealable : CardType {
 	
 }
 
