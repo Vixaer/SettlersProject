@@ -77,12 +77,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\MenuButtonHandler.cs" />
     <Compile Include="Assets\Scripts\Card.cs" />
     <Compile Include="Assets\Scripts\DiceController.cs" />
     <Compile Include="Assets\Scripts\Enums.cs" />
     <Compile Include="Assets\Scripts\Game.cs" />
     <Compile Include="Assets\Scripts\Intersection.cs" />
     <Compile Include="Assets\Scripts\IntersectionUnit.cs" />
+    <Compile Include="Assets\Scripts\MaritimeTradePanel.cs" />
     <Compile Include="Assets\Scripts\MultiStepMove.cs" />
     <Compile Include="Assets\Scripts\OneOpponentMove.cs" />
     <Compile Include="Assets\Scripts\OwnableUnit.cs" />

@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 public class Game : MonoBehaviour {
-
+    public Player playerPrefab;
     public EventKind eventDiceRoll { get; private set; }
     public int redDiceRoll { get; private set; }
     public int yellowDiceRoll { get; private set; }
@@ -16,7 +16,7 @@ public class Game : MonoBehaviour {
     public List<TerrainHex> board { get; set; }
 	// Use this for initialization
 	void Start () {
-		
+        currentPlayer = Instantiate(playerPrefab);
 	}
 	
 	// Update is called once per frame
