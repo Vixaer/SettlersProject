@@ -80,13 +80,6 @@ public class MainMenuBehaviour : MonoBehaviour {
                 networkManage.networkPort = int.Parse(port.GetComponent<Text>().text);
             }
             networkManage.StartClient();
-            if (NetworkServer.active)
-            {
-                transform.GetChild(4).gameObject.SetActive(false);
-            }
-            transform.GetChild(5).gameObject.SetActive(false);
-            serverConnection = true;
-
         }
         if (pressed.transform.GetChild(0).GetComponent<Text>().text.Equals("Start"))
         {

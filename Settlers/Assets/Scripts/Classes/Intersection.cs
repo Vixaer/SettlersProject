@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Intersection : MonoBehaviour {
-
+public class Intersection : NetworkBehaviour {
+    public TerrainHex[] linked;
+    public Edges[] paths;
     public IntersectionUnit positionedUnit { get; private set; }
 	// Use this for initialization
 	void Start () {
@@ -15,8 +17,9 @@ public class Intersection : MonoBehaviour {
 		
 	}
 
-    public void PlaceUnit(IntersectionUnit unit)
+    public void PlaceUnit(NetworkIdentity netID,  IntersectionUnit unit)
     {
         this.positionedUnit = unit;
     }
+    
 }

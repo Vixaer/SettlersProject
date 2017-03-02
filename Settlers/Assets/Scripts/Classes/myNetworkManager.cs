@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class myNetworkManager : NetworkManager {
-    private Game state;
 	// Use this for initialization
 	void Start () {
     }
@@ -17,15 +16,5 @@ public class myNetworkManager : NetworkManager {
     {
         GameObject player = (GameObject)Instantiate(playerPrefab);
         NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
-        if (state == null)
-        {
-            state = new Game();
-        }
-        state.gamePlayers[0] = new Player(player);
-
-    }
-    public Game getGame()
-    {
-        return state;
     }
 }

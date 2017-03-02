@@ -1,27 +1,42 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class CameraBehaviour : MonoBehaviour {
-    GameObject following;
-    Transform positioning;
-    Vector3 moving;
+public class CameraBehaviour : NetworkBehaviour {
+
 	// Use this for initialization
 	void Start () {
-        following = GameObject.Find("Head");
-        positioning = GetComponent<Transform>();
-        moveCamera();
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        moveCamera();
-        
+        if (isLocalPlayer) return;
+        if (Input.GetAxis("Horizontal") > 0)
+        {
+            transform.GetChild(0).transform.Translate(new Vector3(10 * Input.GetAxis("Horizontal"), 0, 0));
+           
+        }
+        if (Input.GetAxis("Horizontal") < 0)
+        {
+            transform.GetChild(0).transform.Translate(new Vector3(10 * Input.GetAxis("Horizontal"), 0, 0));
+        }
+        if (Input.GetAxis("Vertical") > 0)
+        {
+            transform.GetChild(0).transform.Translate(new Vector3(0, 10 * Input.GetAxis("Vertical"), 0));
+        }
+        if (Input.GetAxis("Vertical") < 0)
+        {
+            transform.GetChild(0).transform.Translate(new Vector3(0, 10 * Input.GetAxis("Vertical"), 0));
+        }
+        if (Input.GetAxis("Mouse ScrollWheel") < 0)
+        {
+            gameObject.GetComponent<Camera>().orthographicSize += 50;
+        }
+        if (Input.GetAxis("Mouse ScrollWheel") > 0)
+        {
+            gameObject.GetComponent<Camera>().orthographicSize -= 50;
+        }
     }
-    public void moveCamera()
-    {
-        moving.x = following.GetComponent<Transform>().position.x;
-        moving.y = following.GetComponent<Transform>().position.y;
-        moving.z = positioning.position.z;
-        positioning.position = moving;
-    }
+
 }

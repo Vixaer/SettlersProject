@@ -13,6 +13,9 @@ public class playerControl : NetworkBehaviour {
     InputField chat;
 	// Use this for initialization
 	void Start () {
+        if (!isLocalPlayer) return;
+        transform.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(2).gameObject.SetActive(false);
         resourceAnimator = GetComponent<Animator>();
         resourcesShown = resourceAnimator.GetBool("ResourcesShown");
         //get networkManager that has been used (only works if a host/client has started)
@@ -28,22 +31,11 @@ public class playerControl : NetworkBehaviour {
             transform.GetChild(1).gameObject.SetActive(true);
         }
         else { transform.GetChild(1).gameObject.SetActive(false); }
-        
-        if (Input.GetAxis("Horizontal") > 0 && !chat.isFocused)
+
+        if (Input.GetMouseButtonDown(0))
         {
-            transform.GetChild(3).transform.Translate(new Vector3(0.25f*Input.GetAxis("Horizontal"), 0, 0));
-        }
-        if(Input.GetAxis("Horizontal") < 0 && !chat.isFocused)
-        {
-            transform.Translate(new Vector3(0.25f * Input.GetAxis("Horizontal"), 0, 0));
-        }
-        if (Input.GetAxis("Vertical") > 0 && !chat.isFocused)
-        {
-            transform.GetChild(3).transform.Translate(new Vector3(0, 0.25f * Input.GetAxis("Vertical"), 0));
-        }
-        if (Input.GetAxis("Vertical") < 0 && !chat.isFocused)
-        {
-            transform.GetChild(3).transform.Translate(new Vector3(0, 0.25f * Input.GetAxis("Vertical"), 0));
+            Debug.Log("Pressed left click, casting ray.");
+            detectClickedObject();
         }
         if (Input.GetButtonDown("Submit"))
         {
@@ -58,5 +50,25 @@ public class playerControl : NetworkBehaviour {
     {
         resourcesShown = !resourcesShown;
         resourceAnimator.SetBool("ResourcesShown", resourcesShown);
+    }
+
+    void detectClickedObject()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
+        if(hit)
+        {
+            Debug.Log(hit.collider.gameObject.name);
+            if (hit.collider.gameObject.CompareTag("Intersection"))
+            {
+            }
+
+        }
+        
+    }
+    [Command]
+    private void CmdBuildSettlement()
+    {
+
     }
 }

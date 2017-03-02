@@ -2,20 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Player {
+public class Player : NetworkBehaviour {
 
-    private GameObject reference;
     public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
     public int gold { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
 
-    public Player(GameObject go)
-    {
-        reference = go;
-    }
     // Use this for initialization
     void Start () {
         // Possibly move this code to a constructor
@@ -84,10 +80,6 @@ public class Player {
         this.gold += delta;
     }
 
-    public GameObject getReference()
-    {
-        return reference;
-    }
     #endregion
 
     #region GameActions

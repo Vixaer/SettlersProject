@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Game {
+public class Game : NetworkBehaviour
+{
 
     public EventKind eventDiceRoll { get; private set; }
     public int redDiceRoll { get; private set; }
@@ -13,12 +15,16 @@ public class Game {
     public List<MultiStepMove> currentMultiStepMoves { get; set; }
     public Player[] gamePlayers { get; set; }
     public Player currentPlayer { get; private set; }
-    public List<TerrainHex> board { get; set; }
+    public List<TerrainHex> board;
 
-    
-    public Game()
+
+    void Start()
     {
-        gamePlayers = new Player[4];
+        
+    }
+    void Update()
+    {
+
     }
     public void setDiceRolls(int red, int yellow, EventKind e)
     {
@@ -46,7 +52,7 @@ public class Game {
                     var village = unit as Village;
                     var unitOwner = unit.Owner;
                     receivingPlayers.Add(unitOwner);
-                    switch(h.myTerrain)
+                    switch (h.myTerrain)
                     {
                         case TerrainKind.Pasture:
                             unitOwner.AddResources(1, ResourceKind.Wool);
@@ -109,4 +115,5 @@ public class Game {
     {
         this.currentPhase = phase;
     }
+
 }
