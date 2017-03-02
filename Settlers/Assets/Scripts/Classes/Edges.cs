@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Edges : NetworkBehaviour {
+public class Edges : MonoBehaviour {
 
     public bool isBuilt = false;
     public Player belongdTo;

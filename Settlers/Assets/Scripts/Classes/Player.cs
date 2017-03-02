@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Player : NetworkBehaviour {
+[Serializable]
+public class Player : NetworkBehaviour{
 
+    public NetworkInstanceId belongsTo;
     public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
@@ -14,6 +16,7 @@ public class Player : NetworkBehaviour {
 
     // Use this for initialization
     void Start () {
+        belongsTo = netId;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {

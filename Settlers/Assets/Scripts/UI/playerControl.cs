@@ -6,16 +6,16 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 
 public class playerControl : NetworkBehaviour {
+
     Animator resourceAnimator;
-    GameObject mainView;
     NetworkManager networkManage;
     public bool resourcesShown;
     InputField chat;
 	// Use this for initialization
 	void Start () {
         if (!isLocalPlayer) return;
-        transform.GetChild(0).gameObject.SetActive(true);
-        transform.GetChild(2).gameObject.SetActive(false);
+        transform.GetChild(1).GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
         resourceAnimator = GetComponent<Animator>();
         resourcesShown = resourceAnimator.GetBool("ResourcesShown");
         //get networkManager that has been used (only works if a host/client has started)
@@ -39,11 +39,7 @@ public class playerControl : NetworkBehaviour {
         }
         if (Input.GetButtonDown("Submit"))
         {
-            GameObject chatMessage = transform.GetChild(2).GetChild(0).GetChild(2).gameObject;
-            if(chatMessage.GetComponent<Text>().text != null)
-            {
-                
-            }
+          
         }
 	}
     public void switchResourcesView()
@@ -59,16 +55,15 @@ public class playerControl : NetworkBehaviour {
         if(hit)
         {
             Debug.Log(hit.collider.gameObject.name);
-            if (hit.collider.gameObject.CompareTag("Intersection"))
+            if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
+                CmdChange(hit.collider.gameObject);
             }
-
-        }
-        
+        }   
     }
     [Command]
-    private void CmdBuildSettlement()
+    void CmdChange(GameObject go)
     {
-
+        go.GetComponent<TerrainHex>().CmdChangeColor();
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 
 public static class DiceController
 {
+    /*
     public static void rollDice(Game currentGame)
     {
         // Generate the rolls for each of the dice
@@ -43,7 +44,7 @@ public static class DiceController
         {
             currentGame.setGamePhase(GamePhase.TurnFirstPhase);
         }
-    }
+    }*/
 
     private static EventKind generateEventDiceRoll()
     {

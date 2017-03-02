@@ -74,10 +74,12 @@ public class MainMenuBehaviour : MonoBehaviour {
             GameObject window = transform.GetChild(4).gameObject;
             Text ipAddress = window.transform.GetChild(0).GetChild(4).GetChild(1).GetComponent<Text>();
             Text port = window.transform.GetChild(0).GetChild(3).GetChild(1).GetComponent<Text>();
+            ipAddress.text = "192.168.2.21";
+            port.text = "7777";
             if(port.text != null && ipAddress.text != null)
             {
                 networkManage.networkAddress = ipAddress.GetComponent<Text>().text;
-                networkManage.networkPort = int.Parse(port.GetComponent<Text>().text);
+                networkManage.networkPort = int.Parse(port.text);
             }
             networkManage.StartClient();
         }
@@ -93,9 +95,5 @@ public class MainMenuBehaviour : MonoBehaviour {
         transform.GetChild(3).gameObject.SetActive(false);
         transform.GetChild(4).gameObject.SetActive(false);
         networkManage.StopHost();
-    }
-    public void startHosting()
-    {
-        
     }
 }

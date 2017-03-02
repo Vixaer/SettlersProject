@@ -8,19 +8,23 @@ using UnityEngine.Networking;
 public class Game : NetworkBehaviour
 {
 
+    public GameObject prefabBoard;
+    public int numberOfPlayers = 0;
     public EventKind eventDiceRoll { get; private set; }
     public int redDiceRoll { get; private set; }
     public int yellowDiceRoll { get; private set; }
     public GamePhase currentPhase { get; private set; }
     public List<MultiStepMove> currentMultiStepMoves { get; set; }
-    public Player[] gamePlayers { get; set; }
-    public Player currentPlayer { get; private set; }
+
+    [SyncVar]
+    public NetworkInstanceId currentPlayer;
     public List<TerrainHex> board;
 
 
     void Start()
     {
-        
+        if (!isServer) { return; }
+        NetworkServer.Spawn(prefabBoard);
     }
     void Update()
     {
@@ -33,6 +37,8 @@ public class Game : NetworkBehaviour
         this.yellowDiceRoll = yellow;
     }
 
+
+    /*
     /// <summary>
     /// Method used to distribute resources based on the dice roll
     /// </summary>
@@ -114,6 +120,6 @@ public class Game : NetworkBehaviour
     public void setGamePhase(GamePhase phase)
     {
         this.currentPhase = phase;
-    }
+    }*/
 
 }
