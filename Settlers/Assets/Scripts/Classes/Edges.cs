@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Edges : MonoBehaviour {
+public class Edges : NetworkBehaviour {
 
     public bool isBuilt = false;
     public Intersection[] endPoints;
