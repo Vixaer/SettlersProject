@@ -77,19 +77,42 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Card.cs" />
-    <Compile Include="Assets\Scripts\DiceController.cs" />
-    <Compile Include="Assets\Scripts\Enums.cs" />
-    <Compile Include="Assets\Scripts\Game.cs" />
-    <Compile Include="Assets\Scripts\Intersection.cs" />
-    <Compile Include="Assets\Scripts\IntersectionUnit.cs" />
-    <Compile Include="Assets\Scripts\MultiStepMove.cs" />
-    <Compile Include="Assets\Scripts\OneOpponentMove.cs" />
-    <Compile Include="Assets\Scripts\OwnableUnit.cs" />
-    <Compile Include="Assets\Scripts\Player.cs" />
-    <Compile Include="Assets\Scripts\SetOfOpponentMove.cs" />
-    <Compile Include="Assets\Scripts\TerrainHex.cs" />
-    <Compile Include="Assets\Scripts\Village.cs" />
+    <Compile Include="Assets\Scripts\EventHandlers\DiceResultsPanel.cs" />
+    <Compile Include="Assets\Scripts\Classes\Card.cs" />
+    <Compile Include="Assets\Scripts\Classes\DiceController.cs" />
+    <Compile Include="Assets\Scripts\Classes\EdgeUnit.cs" />
+    <Compile Include="Assets\Scripts\Classes\Edges.cs" />
+    <Compile Include="Assets\Scripts\Classes\Game.cs" />
+    <Compile Include="Assets\Scripts\Classes\Intersection.cs" />
+    <Compile Include="Assets\Scripts\Classes\IntersectionUnit.cs" />
+    <Compile Include="Assets\Scripts\Classes\MultiStepMove.cs" />
+    <Compile Include="Assets\Scripts\Classes\OneOpponentMove.cs" />
+    <Compile Include="Assets\Scripts\Classes\OwnableUnit.cs" />
+    <Compile Include="Assets\Scripts\Classes\Player.cs" />
+    <Compile Include="Assets\Scripts\Classes\Road.cs" />
+    <Compile Include="Assets\Scripts\Classes\SetOfOpponentMove.cs" />
+    <Compile Include="Assets\Scripts\Classes\Ship.cs" />
+    <Compile Include="Assets\Scripts\Classes\TerrainHex.cs" />
+    <Compile Include="Assets\Scripts\Classes\Village.cs" />
+    <Compile Include="Assets\Scripts\Classes\myNetworkManager.cs" />
+    <Compile Include="Assets\Scripts\Classes\serverControl.cs" />
+    <Compile Include="Assets\Scripts\Enum\Enums.cs" />
+    <Compile Include="Assets\Scripts\Environment\CameraBehaviour.cs" />
+    <Compile Include="Assets\Scripts\EventHandlers\MapSelectorPanel.cs" />
+    <Compile Include="Assets\Scripts\EventHandlers\MaritimeTradePanel.cs" />
+    <Compile Include="Assets\Scripts\EventHandlers\MenuButtonHandler.cs" />
+    <Compile Include="Assets\Scripts\Operations\BuildRoadCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\BuildSettlementCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\BuildShipCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\MaritimeTradeCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\NetworkCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\RollDiceCommand.cs" />
+    <Compile Include="Assets\Scripts\Operations\UpgradeSettlementCommand.cs" />
+    <Compile Include="Assets\Scripts\UI\Ingame_UI_Behaviour.cs" />
+    <Compile Include="Assets\Scripts\UI\MainMenuBehaviour.cs" />
+    <Compile Include="Assets\Scripts\UI\playerControl.cs" />
+    <Compile Include="Assets\Scripts\UI\userInterfaceControl.cs" />
+    <Compile Include="Assets\UIObjectFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

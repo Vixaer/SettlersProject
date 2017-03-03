@@ -18,5 +18,6 @@ public abstract class OwnableUnit : MonoBehaviour {
     public OwnableUnit(Player owner)
     {
         this.Owner = owner;
+        owner.ownedUnits.Add(this);
     }
 }
