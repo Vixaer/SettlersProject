@@ -10,5 +10,6 @@ public abstract class IntersectionUnit : OwnableUnit
     public IntersectionUnit(Player owner, Intersection location) : base(owner)
     {
         this.locatedAt = location;
+        location.PlaceUnit(this);
     }
 }

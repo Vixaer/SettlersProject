@@ -6,8 +6,8 @@ using UnityEngine.Networking;
 public class Edges : NetworkBehaviour {
 
     public bool isBuilt = false;
-    public Player belongdTo;
     public Intersection[] endPoints;
+    public EdgeUnit positionedUnit { get; private set; }
 	// Use this for initialization
 	void Start () {
 		
@@ -17,4 +17,18 @@ public class Edges : NetworkBehaviour {
 	void Update () {
 		
 	}
+
+    void OnMouseDown()
+    {
+        var selectorPanel = GameObject.FindObjectOfType<MapSelectorPanel>();
+        if (selectorPanel != null)
+        {
+            selectorPanel.setSelectedObject(this.gameObject);
+        }
+    }
+
+    public void PlaceUnit(EdgeUnit unit)
+    {
+        this.positionedUnit = unit;
+    }
 }

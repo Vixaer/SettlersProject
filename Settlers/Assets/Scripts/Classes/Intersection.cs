@@ -17,9 +17,17 @@ public class Intersection : NetworkBehaviour {
 		
 	}
 
-    public void PlaceUnit(NetworkIdentity netID,  IntersectionUnit unit)
+    public void PlaceUnit(IntersectionUnit unit)
     {
         this.positionedUnit = unit;
     }
     
+    void OnMouseDown()
+    {
+        var selectorPanel = GameObject.FindObjectOfType<MapSelectorPanel>();
+        if (selectorPanel != null)
+        {
+            selectorPanel.setSelectedObject(this.gameObject);
+        }
+    }
 }

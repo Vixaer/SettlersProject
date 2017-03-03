@@ -7,24 +7,34 @@ using UnityEngine.Networking;
 
 public class Game : NetworkBehaviour
 {
-
+    public Player playerPrefab;
     public EventKind eventDiceRoll { get; private set; }
     public int redDiceRoll { get; private set; }
     public int yellowDiceRoll { get; private set; }
     public GamePhase currentPhase { get; private set; }
-    public List<MultiStepMove> currentMultiStepMoves { get; set; }
-    public Player[] gamePlayers { get; set; }
+    public List<MultiStepMove> currentMultiStepMoves { get; private set; }
+    public Dictionary<NetworkIdentity, Player> gamePlayers { get; private set; }
     public Player currentPlayer { get; private set; }
-    public List<TerrainHex> board;
+    public List<TerrainHex> board { get; private set; }
 
 
     void Start()
     {
+        // All this setup should be done when initializing the game from the lobby
+        currentPlayer = Instantiate(playerPrefab);
+        currentPhase = GamePhase.TurnStarted;
+        gamePlayers = new Dictionary<NetworkIdentity, Player>();
+        currentMultiStepMoves = new List<MultiStepMove>();
         
     }
     void Update()
     {
-
+        if (board == null)
+        {
+            var hexList = GameObject.FindGameObjectsWithTag("TerrainHex");
+            if (hexList.Length > 0)
+                board = hexList.Select(go => go.GetComponent<TerrainHex>()).ToList();
+        }
     }
     public void setDiceRolls(int red, int yellow, EventKind e)
     {
@@ -96,7 +106,7 @@ public class Game : NetworkBehaviour
         }
 
         // Now, for players who didn't receive anything, we check for aqueducts
-        foreach (Player p in gamePlayers)
+        foreach (Player p in gamePlayers.Values)
         {
             var hasAqueduct = p.GetCityImprovementLevel(CommodityKind.Cloth) >= 3;
             if (hasAqueduct && !receivingPlayers.Contains(p))

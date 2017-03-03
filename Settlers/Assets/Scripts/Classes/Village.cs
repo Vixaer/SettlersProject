@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 public class Village : IntersectionUnit
 {
     public VillageKind myKind { get; private set; }
@@ -29,6 +30,15 @@ public class Village : IntersectionUnit
     public void setVillageType(VillageKind k)
     {
         this.myKind = k;
-    }       
+    }
+
+    void OnMouseDown()
+    {
+        var selectorPanel = GameObject.FindObjectOfType<MapSelectorPanel>();
+        if (selectorPanel != null)
+        {
+            selectorPanel.setSelectedObject(this.gameObject);
+        }
+    }
 }
 

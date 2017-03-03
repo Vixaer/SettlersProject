@@ -17,11 +17,11 @@ public class Player : NetworkBehaviour {
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
-            { ResourceKind.Brick, 20 },
-            { ResourceKind.Grain, 20 },
-            { ResourceKind.Lumber, 20 },
-            { ResourceKind.Ore, 20 },
-            { ResourceKind.Wool, 20 }
+            { ResourceKind.Brick, 16 },
+            { ResourceKind.Grain, 16 },
+            { ResourceKind.Lumber, 16 },
+            { ResourceKind.Ore, 16 },
+            { ResourceKind.Wool, 16 }
         };
         commodities = new Dictionary<CommodityKind, int>()
         {
