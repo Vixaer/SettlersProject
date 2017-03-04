@@ -6,8 +6,12 @@ using UnityEngine.Networking;
 public class Edges : NetworkBehaviour {
 
     public bool isBuilt = false;
-    public Intersection[] endPoints;
+    public Intersection[] endPoints { get; private set; }
+    public TerrainHex[] neighbourHexes { get; private set; }
     public EdgeUnit positionedUnit { get; private set; }
+    public int edgeXPos { get; private set; }
+    public int edgeYPos { get; private set; }
+
 	// Use this for initialization
 	void Start () {
 		
@@ -17,6 +21,11 @@ public class Edges : NetworkBehaviour {
 	void Update () {
 		
 	}
+
+    public void initialize(int x, int y){
+        edgeXPos = x;
+        edgeYPos = y;
+    }
 
     void OnMouseDown()
     {
@@ -31,4 +40,13 @@ public class Edges : NetworkBehaviour {
     {
         this.positionedUnit = unit;
     }
+
+    public void setHexNeighbours (TerrainHex[] list){
+        neighbourHexes = list;
+    }
+
+    public void setIntersectionNeighbours (Intersection[] list){
+        endPoints = list;
+    }
+
 }

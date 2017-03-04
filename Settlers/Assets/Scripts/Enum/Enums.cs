@@ -39,7 +39,12 @@ public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,Tu
 
 public enum HarbourKind{None
 	,Generic
-	,Special};
+	,Special
+	,SpecialWool
+	,SpecialLumber
+	,SpecialOre
+	,SpecialBrick
+	,SpecialGrain};
 
 public enum TerrainKind{Sea
 	,Desert

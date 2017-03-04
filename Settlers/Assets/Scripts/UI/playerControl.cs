@@ -65,6 +65,26 @@ public class playerControl : NetworkBehaviour
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
+                Intersection temp = hit.collider.gameObject.GetComponent<Intersection>();
+                Debug.Log(temp.intersectionKind);
+                for (int i = 0; i < temp.paths.Length; i++){
+                    Debug.Log(new Vector2(temp.paths[i].edgeXPos, temp.paths[i].edgeYPos ));
+                }
+            }
+            else if (hit.collider.gameObject.CompareTag("TerrainHex"))
+            {
+                TerrainHex temp = hit.collider.gameObject.GetComponent<TerrainHex>();
+                Debug.Log(temp.myTerrain);
+                for (int i = 0; i < temp.corners.Length; i++){
+                    Debug.Log(new Vector2(temp.corners[i].intersectionXPos, temp.corners[i].intersectionYPos ));
+                }
+            }
+            else if (hit.collider.gameObject.CompareTag("Edge"))
+            {
+                Edges temp = hit.collider.gameObject.GetComponent<Edges>();
+                for (int i = 0; i < temp.endPoints.Length; i++){
+                    Debug.Log(new Vector2(temp.endPoints[i].intersectionXPos, temp.endPoints[i].intersectionYPos ));
+                }
             }
 
         }
