@@ -3,48 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public static class DiceController
+public class DiceController
 {
-    public static void rollDice(Game currentGame)
+    //the random has to be static as if you reset each time its always the same value as the seed remains the same
+    //static wont reset it
+    static Random roller = new Random();
+    static Random yellowDiceRandom = new Random();
+    static Random eventDiceRandom = new Random();
+
+    //these 2 are used for gameboard setup best place to keep cuz we need static randoms
+    static Random terrainSetter = new Random();
+    static Random tokenRoll = new Random();
+
+    int redDiceValue, yellowDiceValue, eventDiceValue, terrainKind, tokenValue;
+    public void rollDice()
     {
-        // Generate the rolls for each of the dice
-        var eventDiceRoll = generateEventDiceRoll();
-        var redDiceRoll = generateStandardDiceRoll();
-        var yellowDiceRoll = generateStandardDiceRoll();
-
-        currentGame.setDiceRolls(redDiceRoll, yellowDiceRoll, eventDiceRoll);
-
-        // Handle the event dice
-        if (eventDiceRoll == EventKind.Barbarian)
+        redDiceValue = roller.Next(1, 7);
+        yellowDiceValue = roller.Next(1, 7);
+        eventDiceValue = roller.Next(1, 6);
+    }
+    public void rollTile()
+    {
+        terrainKind = roller.Next(0, 8);
+        bool getNon7 = false;
+        //cant be 7 so
+        while (!getNon7)
         {
-            // TODO: handle the barbarian attacks
-        }
-        else
-        {
-            // TODO: distribute progress cards based on event type
-        }
-
-        // Handle the regular dice
-        if (redDiceRoll + yellowDiceRoll == 7)
-        {
-            // TODO: resource discarding and robber/pirate
-        }
-        else
-        {
-            currentGame.DistributeResources();
+            tokenValue = roller.Next(1, 13);
+            if (tokenValue != 7)
+            {
+                getNon7 = true;
+            }
         }
         
-        // Set the game phase
-        if (currentGame.hasOutstandingMoves())
-        {
-            currentGame.setGamePhase(GamePhase.TurnDiceRolled);
-        }
-        else
-        {
-            currentGame.setGamePhase(GamePhase.TurnFirstPhase);
-        }
     }
-
     private static EventKind generateEventDiceRoll()
     {
         var randomRoll = new Random().Next(1, 6);
@@ -60,10 +52,39 @@ public static class DiceController
                 return EventKind.Barbarian;
         }
     }
-
-    private static int generateStandardDiceRoll()
+    public int getNonSand()
     {
-        return new Random().Next(1, 6);
+        bool getNonSand = false;
+        while (!getNonSand)
+        {
+            terrainKind = roller.Next(0, 8);
+            if (terrainKind != (int)TerrainKind.Desert)
+            {
+                getNonSand = true;
+            }
+        }
+        return terrainKind;
     }
+    public int getRed()
+    {
+        return redDiceValue;
+    }
+    public int getYellow()
+    {
+        return yellowDiceValue;
+    }
+    public int getEvent()
+    {
+        return eventDiceValue;
+    }
+    public int getTerrain()
+    {
+        return terrainKind;
+    }
+    public int getToken()
+    {
+        return tokenValue;
+    }
+
 }
 

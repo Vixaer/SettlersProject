@@ -2,22 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
+
 
 public class Player {
-
-    private GameObject reference;
+    public int myColor;
+    public static int playerCount = 0;
     public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
     public int gold { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
 
-    public Player(GameObject go)
-    {
-        reference = go;
-    }
-    // Use this for initialization
-    void Start () {
+    public string name;
+
+
+    public Player() {
+        myColor = playerCount;
+        playerCount++;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -42,11 +44,6 @@ public class Player {
         gold = 0;
         ownedUnits = new List<OwnableUnit>();
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     #region Player attributes
     public void AddResources(int quantity, ResourceKind resourceKind)
@@ -58,7 +55,10 @@ public class Player {
     {
         resources[resourceKind] -= quantity;
     }
-
+    public void PayCommoditys(int quantity, CommodityKind commodityKind)
+    {
+        commodities[commodityKind] -= quantity;
+    }
     public void AddCommodities(int quantity, CommodityKind commodityKind)
     {
         commodities[commodityKind] += quantity;
@@ -79,14 +79,54 @@ public class Player {
         return cityImprovementLevels[kind];
     }
 
+    public int[] getResourceValues()
+    {
+        int[] resourceValues = new int[8];
+        resourceValues[0] = resources[ResourceKind.Brick];
+        resourceValues[1] = resources[ResourceKind.Ore];
+        resourceValues[2] = resources[ResourceKind.Wool];
+        resourceValues[3] = commodities[CommodityKind.Coin];
+        resourceValues[4] = resources[ResourceKind.Grain];
+        resourceValues[5] = commodities[CommodityKind.Cloth];
+        resourceValues[6] = resources[ResourceKind.Lumber];
+        resourceValues[7] = commodities[CommodityKind.Paper];
+
+        return resourceValues;
+    }
     public void updateGold(int delta)
     {
         this.gold += delta;
     }
 
-    public GameObject getReference()
+    public bool hasSettlementResources()
     {
-        return reference;
+        if(HasResources(1, ResourceKind.Grain) && HasResources(1,ResourceKind.Lumber) && HasResources(1,ResourceKind.Brick) && HasResources(1, ResourceKind.Wool))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void paySettlementResources()
+    {
+        PayResources(1, ResourceKind.Grain);
+        PayResources(1, ResourceKind.Lumber);
+        PayResources(1, ResourceKind.Brick);
+        PayResources(1, ResourceKind.Wool);
+    }
+
+    public void payRoadResources()
+    {
+        PayResources(1, ResourceKind.Lumber);
+        PayResources(1, ResourceKind.Brick);
+    }
+    public bool hasRoadResources()
+    {
+        if (HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick))
+        {
+            return true;
+        }
+        return false;
     }
     #endregion
 

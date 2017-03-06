@@ -7,6 +7,7 @@ using UnityEngine.Networking;
 
 public class MainMenuBehaviour : MonoBehaviour {
     GameObject createButton,joinButton,quitButton;
+    public GameObject gameState;
     public NetworkManager networkManage;
     private bool serverConnection = false;
 	// Use this for initialization
@@ -72,21 +73,19 @@ public class MainMenuBehaviour : MonoBehaviour {
         if(pressed.transform.GetChild(0).GetComponent<Text>().text.Equals("Join Game"))
         {
             GameObject window = transform.GetChild(4).gameObject;
-            Text ipAddress = window.transform.GetChild(0).GetChild(4).GetChild(1).GetComponent<Text>();
-            Text port = window.transform.GetChild(0).GetChild(3).GetChild(1).GetComponent<Text>();
+            Text ipAddress = window.transform.GetChild(0).GetChild(4).GetChild(2).GetComponent<Text>();
+            Text port = window.transform.GetChild(0).GetChild(3).GetChild(2).GetComponent<Text>();
+            //thse 2 for faster testing but need to be removed;
+            ipAddress.text = "192.168.2.21";
+            port.text = "7777";
             if(port.text != null && ipAddress.text != null)
             {
                 networkManage.networkAddress = ipAddress.GetComponent<Text>().text;
-                networkManage.networkPort = int.Parse(port.GetComponent<Text>().text);
+                networkManage.networkPort = int.Parse(port.text);
             }
             networkManage.StartClient();
-            if (NetworkServer.active)
-            {
-                transform.GetChild(4).gameObject.SetActive(false);
-            }
-            transform.GetChild(5).gameObject.SetActive(false);
-            serverConnection = true;
-
+            transform.GetChild(4).gameObject.SetActive(false);
+            transform.GetChild(5).gameObject.SetActive(true);
         }
         if (pressed.transform.GetChild(0).GetComponent<Text>().text.Equals("Start"))
         {
@@ -100,9 +99,5 @@ public class MainMenuBehaviour : MonoBehaviour {
         transform.GetChild(3).gameObject.SetActive(false);
         transform.GetChild(4).gameObject.SetActive(false);
         networkManage.StopHost();
-    }
-    public void startHosting()
-    {
-        
     }
 }
