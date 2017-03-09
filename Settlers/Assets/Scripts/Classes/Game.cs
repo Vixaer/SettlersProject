@@ -19,14 +19,15 @@ public class Game : NetworkBehaviour
     public Dictionary<GameObject, Player> reverseOrder = new Dictionary<GameObject, Player>();
     public GameObject[] board;
     public GameObject canvas;
-    int reverseCount = 0;
 
+    #region Initial Setup
     void Start()
     {
         currentPhase = GamePhase.SetupRoundOne;
         setupBoard();
     }
 
+    
     //setup references for the game
     public void setPlayer(GameObject setPlayer)
     {
@@ -64,11 +65,10 @@ public class Game : NetworkBehaviour
         }
 
     }
+    #endregion
 
-    /// <summary>
-    /// Methods used for updating Client UI
-    /// </summary>
-    /// 
+
+    #region UI Updates
 
     public void updateTurn()
     {
@@ -148,6 +148,7 @@ public class Game : NetworkBehaviour
         canvas.GetComponent<statistics>().RpcSetStatistics(player1, player2, player3, player4, names);
     }
 
+    //normal chat and server wide messages to inform all players, like barbarians have 1 space left to kill you get ready
     public void chatOnServer(GameObject player, string message)
     {
         IEnumerator keys = (gamePlayers.Keys).GetEnumerator();
@@ -160,10 +161,15 @@ public class Game : NetworkBehaviour
         }
     }
 
-    /// <summary>
-    /// Methods used for player Actions
-    /// </summary>
-    /// 
+    //personally sent to the player object that is referenced, used for messaging like you cant roll right now and stuff
+    public void logAPlayer(GameObject player, string message)
+    {
+        player.transform.GetComponent<playerControl>().RpcUpdateChat(message + "\n");
+    }
+    #endregion
+
+
+    #region Game Actions
     //selection when aqueduct is used and no resources gained
     public void updateSelection(GameObject player, int value)
     {
@@ -234,22 +240,31 @@ public class Game : NetworkBehaviour
             // log
             chatOnServer(player, log);
         }
+        else if(checkCorrectPlayer(player))
+        {
+            logAPlayer(player, "Please roll dice before performing trade.");
+        }
+        else
+        {
+            logAPlayer(player, "Can't trade! It isn't your turn.");
+        }
 
     }
 
     //buildSettlement ran on server from playerCOntrol class with authority
     //runs the build settlement on the intersection selected by the player
-    public void buildSettlement(GameObject player, GameObject intersection)
+    public void buildOnIntersection(GameObject player, GameObject intersection)
     {
         bool correctPlayer = checkCorrectPlayer(player);
         bool isOwned = intersection.GetComponent<Intersection>().owned;
+        Intersection inter = intersection.GetComponent<Intersection>();
 
         //first Phase Spawn settlement
         if (currentPhase == GamePhase.SetupRoundOne)
         {
             if (correctPlayer && !isOwned && !waitingForRoad)
             {
-                intersection.GetComponent<Intersection>().CmdBuildSettlement(gamePlayers[player]);
+                inter.BuildSettlement(gamePlayers[player]);
 
                 waitingForRoad = true;
             }
@@ -261,7 +276,7 @@ public class Game : NetworkBehaviour
             //TO-DO check if other settlement is only 2 roads away
             if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(gamePlayers[player], intersection))
             {
-                intersection.GetComponent<Intersection>().CmdBuildCity(gamePlayers[player]);
+               inter.BuildCity(gamePlayers[player]);
                 foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
                 {
                     payCitySpawn(gamePlayers[player], hex);
@@ -272,14 +287,27 @@ public class Game : NetworkBehaviour
             }
         }
         //during first phase building
-        else if (currentPhase == GamePhase.TurnFirstPhase)
+        else if (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnSecondPhase)
         {
-            if (correctPlayer && !isOwned && gamePlayers[player].hasSettlementResources())
+            if (correctPlayer && !isOwned && gamePlayers[player].hasSettlementResources() && canBuildConnectedCity(gamePlayers[player],intersection))
             {
                 gamePlayers[player].paySettlementResources();
-                intersection.GetComponent<Intersection>().CmdBuildSettlement(gamePlayers[player]);
+                inter.BuildSettlement(gamePlayers[player]);
                 //update his UI to let him know he lost the resources;
                 updatePlayerResourcesUI(player);
+            }
+            else if (isOwned && inter.positionedUnit.Owner == gamePlayers[player])
+            {
+                // Check that it actually is a settlement
+                var village = inter.positionedUnit as Village;
+                if (village != null && village.myKind == VillageKind.Settlement && gamePlayers[player].canPayCityUpgrade(false))
+                {
+                    gamePlayers[player].payCityResources(false);
+                    inter.UpgradeSettlement(gamePlayers[player]);
+                    //update his UI to let him know he lost the resources;
+                    updatePlayerResourcesUI(player);
+                    logAPlayer(player, "You upgraded your settlement into a city!");
+                }
             }
         }
         updateTurn();
@@ -370,14 +398,16 @@ public class Game : NetworkBehaviour
             currentPhase = GamePhase.TurnFirstPhase;
             DistributeResources();
         }
+        else
+        {
+            logAPlayer(player, "You've already rolled this turn");
+        }
         updateTurn();
     }
 
+    #endregion
 
-    /// <summary>
-    /// Methods used for check constraints
-    /// </summary>
-    /// 
+    #region Constraint Checks
     private bool checkCorrectPlayer(GameObject player)
     {
         if (currentPlayer == null)
@@ -419,27 +449,35 @@ public class Game : NetworkBehaviour
 
     private bool canBuildConnectedCity(Player player, GameObject intersection)
     {
-        bool check = true;
+        bool checkProximity = true;
+        bool checkRoadConnection = false;
         foreach (Edges e in intersection.GetComponent<Intersection>().paths)
         {
+            if((currentPhase == GamePhase.TurnFirstPhase) && e.belongsTo != null && e.belongsTo.Equals(player))
+            {
+                checkRoadConnection = true;
+            }
+            else if(currentPhase == GamePhase.SetupRoundOne || currentPhase == GamePhase.SetupRoundTwo)
+            {
+                checkRoadConnection = true;
+            }
             foreach (Intersection i in e.endPoints)
             {
 
                 if (i.owned)
                 {
-                    check = false;
+                    checkProximity = false;
                     break;
                 }
             }
         }
-        return check;
+        return (checkProximity && checkRoadConnection);
     }
 
-    /// <summary>
-    /// Method used to distribute resources based on the dice roll
-    /// </summary>
-    /// 
+    #endregion
 
+
+    #region Resource Modifiers
     //gives correct resources after a diced is rolled on beggining of turn
     public void DistributeResources()
     {
@@ -602,4 +640,5 @@ public class Game : NetworkBehaviour
                 }
         }
     }
+    #endregion
 }

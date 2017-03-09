@@ -96,8 +96,8 @@
     <Compile Include="Assets\Scripts\UI\Ingame_UI_Behaviour.cs" />
     <Compile Include="Assets\Scripts\UI\MainMenuBehaviour.cs" />
     <Compile Include="Assets\Scripts\UI\playerControl.cs" />
-    <Compile Include="Assets\Scripts\UI\userInterfaceControl.cs" />
     <Compile Include="Assets\Scripts\UI\statistics.cs" />
+    <Compile Include="Assets\Scripts\UI\userInterfaceControl.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

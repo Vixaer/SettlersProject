@@ -15,8 +15,6 @@ public class Player {
     public List<OwnableUnit> ownedUnits { get; set; }
 
     public string name;
-
-
     public Player() {
         myColor = playerCount;
         playerCount++;
@@ -150,6 +148,34 @@ public class Player {
             PayResources(3, ResourceKind.Ore);
         }
         settlement.setVillageType(VillageKind.City);
+    }
+
+    public void payCityResources(bool playedMedicinePC)
+    {
+        if (playedMedicinePC)
+        {
+            PayResources(1, ResourceKind.Grain);
+            PayResources(2, ResourceKind.Ore);
+        }
+        else
+        {
+            PayResources(2, ResourceKind.Grain);
+            PayResources(3, ResourceKind.Ore);
+        }
+    }
+    #endregion
+
+    #region Return
+    public bool canPayCityUpgrade(bool playedMedicinePC)
+    {
+        if (playedMedicinePC)
+        {
+            return HasResources(1, ResourceKind.Grain) && HasResources(2, ResourceKind.Ore);
+        }
+        else
+        {
+            return HasResources(2, ResourceKind.Grain) && HasResources(3, ResourceKind.Ore);
+        }
     }
     #endregion
 }

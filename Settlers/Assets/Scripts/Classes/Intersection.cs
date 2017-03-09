@@ -25,8 +25,9 @@ public class Intersection : NetworkBehaviour {
 	void Update () {
 		
 	}
-    [Command]
-    public void CmdBuildSettlement(Player player)
+
+    #region Actions
+    public void BuildSettlement(Player player)
     {
         positionedUnit = new Village(player);
         type = 1;
@@ -39,13 +40,7 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
-
-    public void OnOwned(Color value)
-    {
-        owned = true;
-        gameObject.GetComponent<SpriteRenderer>().color = value;
-    }
-    public void CmdBuildCity(Player player)
+    public void BuildCity(Player player)
     {
         positionedUnit = new Village(player);
         ((Village)positionedUnit).setVillageType(VillageKind.City);
@@ -59,7 +54,27 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+    public void UpgradeSettlement(Player player)
+    {
+        ((Village)positionedUnit).setVillageType(VillageKind.City);
+        type = 2;
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
+    #endregion
 
+    #region Sync Hooks
+    public void OnOwned(Color value)
+    {
+        owned = true;
+        gameObject.GetComponent<SpriteRenderer>().color = value;
+    }
+   
     public void OnBuild(int value)
     {
         type = value;
@@ -73,4 +88,5 @@ public class Intersection : NetworkBehaviour {
         }
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
     }
+    #endregion
 }

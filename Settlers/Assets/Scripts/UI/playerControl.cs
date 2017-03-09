@@ -15,8 +15,8 @@ public class playerControl : NetworkBehaviour {
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, MapSelector, DiceWindow, SelectionWindow, nameWindow;
 
-    //synced with server values (player attributes
-    //resource panel values;
+    #region SyncVar
+    //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
     string Brick;
     [SyncVar(hook = "OnChangedOre")]
@@ -33,7 +33,7 @@ public class playerControl : NetworkBehaviour {
     string Lumber;
     [SyncVar(hook = "OnChangedPaper")]
     string Paper;
-
+    
     //dice panel Values
     [SyncVar(hook = "OnChangedRed")]
     string Red;
@@ -41,15 +41,27 @@ public class playerControl : NetworkBehaviour {
     string Yellow;
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
-    // Use this for initialization
+    #endregion
+
+    #region Setup
     void Start () {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
         if (!isLocalPlayer) return;
         nameWindow.gameObject.SetActive(true);
 
     }
-	
-	// Update is called once per frame
+    void getGameStateOnServer()
+    {
+        if (!isServer) return;
+        gameState = GameObject.Find("GameState");
+
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        CmdStartUp();
+    }
+    #endregion
 	void Update () {
         if (!isLocalPlayer) return;
         if (Input.GetMouseButtonDown(0))
@@ -67,7 +79,8 @@ public class playerControl : NetworkBehaviour {
             }
         }
 	}
-    
+
+    #region UI Related
     public void switchResourcesView()
     {
         Animation resourcesAnimation = transform.GetChild(0).GetComponent<Animation>();
@@ -100,6 +113,62 @@ public class playerControl : NetworkBehaviour {
     {
         isSeletionOpen = false;
     }
+    public void setTextValues(Dictionary<ResourceKind,int> resources, Dictionary<CommodityKind, int> commodities)
+    {
+        if (!isServer) return;
+        int temp;
+        resources.TryGetValue(ResourceKind.Brick, out temp);
+        Brick = temp.ToString();
+        resources.TryGetValue(ResourceKind.Ore, out temp);
+        Ore = temp.ToString();
+        resources.TryGetValue(ResourceKind.Grain, out temp);
+        Grain = temp.ToString();
+        resources.TryGetValue(ResourceKind.Lumber, out temp);
+        Lumber = temp.ToString();
+        resources.TryGetValue(ResourceKind.Wool, out temp);
+        Wool = temp.ToString();
+
+        commodities.TryGetValue(CommodityKind.Cloth, out temp);
+        Cloth = temp.ToString();
+        commodities.TryGetValue(CommodityKind.Coin, out temp);
+        Coin = temp.ToString();
+        commodities.TryGetValue(CommodityKind.Paper, out temp);
+        Paper = temp.ToString();
+
+    }
+    public void setDiceValues(int red, int yellow, int eventValue)
+    {
+        if (!isServer) return;
+        this.Red = "Red Dice Roll: " + red.ToString();
+        this.Yellow = "Yellow Dice Roll: " + yellow.ToString();
+        this.Event = "Event Dice Roll: " + ((EventKind)eventValue).ToString();
+
+    }
+    public void setStatisticValues(int[] values)
+    {
+        for (int i = 0; i < 32; i++)
+        {
+            if (i < 8)
+            {
+                
+            }
+            else if (i < 16)
+            {
+
+            }
+            else if (i < 24)
+            {
+
+            }
+            else
+            {
+
+            }
+        }
+    }
+    #endregion
+
+    #region Retrieve Client Info
     void detectClickedObject()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -136,6 +205,17 @@ public class playerControl : NetworkBehaviour {
         }
         
     }
+
+    public void getTradeValue()
+    {
+        int toGive, wanted;
+        toGive = transform.GetChild(3).GetChild(2).GetComponent<Dropdown>().value;
+        wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
+        CmdSendNpcTrade(gameObject, toGive, wanted);
+    }
+    #endregion
+
+    #region Commands
     [Command]
     public void CmdStartUp()
     {
@@ -152,7 +232,7 @@ public class playerControl : NetworkBehaviour {
     [Command]
     void CmdBuildOnIntersection(GameObject player, GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildSettlement(player, intersection);
+        gameState.GetComponent<Game>().buildOnIntersection(player, intersection);
     }
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
@@ -175,11 +255,9 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().endTurn(player);
     }
     [Command]
-    void CmdSendNpcTrade(GameObject player)
+    void CmdSendNpcTrade(GameObject player, int toGive, int wanted)
     {
-        int toGive, wanted;
-        toGive = transform.GetChild(3).GetChild(2).GetComponent<Dropdown>().value;
-        wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
+        
         //obviously not going to trade 4 brick -> 1 brick
         if(toGive != wanted)
         {
@@ -187,82 +265,14 @@ public class playerControl : NetworkBehaviour {
         }
         
     }
-
     [Command]
     void CmdSendMessage(GameObject player,string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
     }
+    #endregion
 
-
-    //server ran only
-    void getGameStateOnServer()
-    {
-        if (!isServer) return;
-        gameState = GameObject.Find("GameState");
-
-    }
-
-    public override void OnStartLocalPlayer()
-    {
-        CmdStartUp();
-    }
-
-    //syncing function so that the cleitn can see his proper resources
-    public void setTextValues(Dictionary<ResourceKind,int> resources, Dictionary<CommodityKind, int> commodities)
-    {
-        if (!isServer) return;
-        int temp;
-        resources.TryGetValue(ResourceKind.Brick, out temp);
-        Brick = temp.ToString();
-        resources.TryGetValue(ResourceKind.Ore, out temp);
-        Ore = temp.ToString();
-        resources.TryGetValue(ResourceKind.Grain, out temp);
-        Grain = temp.ToString();
-        resources.TryGetValue(ResourceKind.Lumber, out temp);
-        Lumber = temp.ToString();
-        resources.TryGetValue(ResourceKind.Wool, out temp);
-        Wool = temp.ToString();
-
-        commodities.TryGetValue(CommodityKind.Cloth, out temp);
-        Cloth = temp.ToString();
-        commodities.TryGetValue(CommodityKind.Coin, out temp);
-        Coin = temp.ToString();
-        commodities.TryGetValue(CommodityKind.Paper, out temp);
-        Paper = temp.ToString();
-
-    }
-    public void setDiceValues(int red, int yellow, int eventValue)
-    {
-        if (!isServer) return;
-        this.Red = "Red Dice Roll: " + red.ToString();
-        this.Yellow = "Yellow Dice Roll: " + yellow.ToString();
-        this.Event = "Event Dice Roll: " + ((EventKind)eventValue).ToString();
-
-    }
-
-    public void setStatisticValues(int[] values)
-    {
-        for (int i = 0; i < 32; i++)
-        {
-            if (i < 8)
-            {
-                
-            }
-            else if (i < 16)
-            {
-
-            }
-            else if (i < 24)
-            {
-
-            }
-            else
-            {
-
-            }
-        }
-    }
+    #region Sync Hooks
     void OnChangedBrick(string value)
     {
         transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text = value;
@@ -307,7 +317,10 @@ public class playerControl : NetworkBehaviour {
     void OnChangedEvent(string value)
     {
         DiceWindow.transform.GetChild(1).GetComponent<Text>().text = value;
-    }    
+    }
+    #endregion
+
+    #region ClientRPC
     [ClientRpc]
     public void RpcUpdateChat(string message)
     {
@@ -344,4 +357,5 @@ public class playerControl : NetworkBehaviour {
     {
         transform.GetChild(8).GetComponent<Text>().text = value;
     }
+    #endregion
 }
