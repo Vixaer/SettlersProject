@@ -16,7 +16,7 @@ public class Game : NetworkBehaviour
     public Dictionary<Player, GameObject> playerObjects = new Dictionary<Player, GameObject>();
     //
     public IEnumerator currentPlayer;
-    public GameObject[] reverseOrder;
+    public Dictionary<GameObject, Player> reverseOrder = new Dictionary<GameObject, Player>();
     public GameObject[] board;
     public GameObject canvas;
     int reverseCount = 0;
@@ -34,8 +34,7 @@ public class Game : NetworkBehaviour
         gamePlayers.Add(setPlayer, temp);
         playerObjects.Add(temp, setPlayer);
         updatePlayerResourcesUI(setPlayer);
-        reverseOrder[reverseCount] = setPlayer;
-        reverseCount++;
+        reverseOrder = gamePlayers.Reverse().ToDictionary(x => x.Key, x => x.Value);
     }
 
     public void setPlayerName(GameObject player, string name)
@@ -80,10 +79,10 @@ public class Game : NetworkBehaviour
         while (remaining)
         {
             GameObject player = (GameObject)keys.Current;
-            string playerTurn =   playerTurn = ((Player)(currentPlayer.Current)).name;
+            string playerTurn = playerTurn = ((Player)(currentPlayer.Current)).name;
             switch (currentPhase)
             {
-                case GamePhase.TurnDiceRolled: playerTurn += " Roll Dice";break;
+                case GamePhase.TurnDiceRolled: playerTurn += " Roll Dice"; break;
                 case GamePhase.SetupRoundOne: playerTurn += " First Setup"; break;
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
@@ -185,7 +184,7 @@ public class Game : NetworkBehaviour
         string log = " has traded 4 ";
         if (checkCorrectPlayer(player) && (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnFirstPhase))
         {
-            
+
             //offering resrouce wants  a resource
             if (offer < 5 && wants < 5)
             {
@@ -204,7 +203,7 @@ public class Game : NetworkBehaviour
                 {
                     gamePlayers[player].PayResources(4, (ResourceKind)offer);
                     gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
-                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants-5).ToString();
+                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
                     check = true;
                 }
             }
@@ -215,7 +214,7 @@ public class Game : NetworkBehaviour
                 {
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
                     gamePlayers[player].AddResources(1, (ResourceKind)wants);
-                    log += ((CommodityKind)offer-5).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
+                    log += ((CommodityKind)offer - 5).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
                     check = true;
                 }
             }
@@ -226,7 +225,7 @@ public class Game : NetworkBehaviour
                 {
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
                     gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
-                    log += ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants-5).ToString();
+                    log += ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
                     check = true;
                 }
             }        //update his ui
@@ -244,7 +243,7 @@ public class Game : NetworkBehaviour
     {
         bool correctPlayer = checkCorrectPlayer(player);
         bool isOwned = intersection.GetComponent<Intersection>().owned;
-        
+
         //first Phase Spawn settlement
         if (currentPhase == GamePhase.SetupRoundOne)
         {
@@ -302,10 +301,11 @@ public class Game : NetworkBehaviour
             {
                 edge.GetComponent<Edges>().CmdBuildRoad(gamePlayers[player]);
                 waitingForRoad = false;
-                
+
                 if (!currentPlayer.MoveNext())
                 {
-                    currentPlayer.Reset();
+                    currentPlayer = reverseOrder.Values.GetEnumerator();
+                    //currentPlayer.Reset();
                     currentPlayer.MoveNext();
                     currentPhase = GamePhase.SetupRoundTwo;
                 }
@@ -318,15 +318,16 @@ public class Game : NetworkBehaviour
             {
                 edge.GetComponent<Edges>().CmdBuildRoad(gamePlayers[player]);
                 waitingForRoad = false;
-                
+
                 if (!currentPlayer.MoveNext())
                 {
-                    currentPlayer.Reset();
+                    //currentPlayer.Reset();
+                    currentPlayer = gamePlayers.Values.GetEnumerator();
                     currentPlayer.MoveNext();
                     currentPhase = GamePhase.TurnDiceRolled;
-                    
+
                 }
-               
+
             }
         }
         //during first phase building
@@ -345,7 +346,8 @@ public class Game : NetworkBehaviour
 
     public void endTurn(GameObject player)
     {
-        if (checkCorrectPlayer(player)) {
+        if (checkCorrectPlayer(player))
+        {
             currentPhase = GamePhase.TurnDiceRolled;
 
             if (!currentPlayer.MoveNext())
@@ -456,7 +458,8 @@ public class Game : NetworkBehaviour
                         {
                             Player gainer = connected.positionedUnit.Owner;
                             Village hisVillage = (Village)(connected.positionedUnit);
-                            switch (tile.GetComponent<TerrainHex>().myTerrain) {
+                            switch (tile.GetComponent<TerrainHex>().myTerrain)
+                            {
                                 case TerrainKind.Pasture:
                                     {
                                         gainer.AddResources(1, ResourceKind.Wool);
