@@ -45,23 +45,10 @@ public class Game : NetworkBehaviour
 
     private void setupBoard()
     {
-        bool firstSand = false;
         foreach (GameObject tile in board)
         {
             gameDices.rollTile();
-            if (!firstSand)
-            {
-                if (gameDices.getTerrain() == (int)TerrainKind.Desert)
-                {
-                    firstSand = true;
-                }
-                tile.GetComponent<TerrainHex>().setTile(gameDices.getTerrain(), gameDices.getToken());
-            }
-            else
-            {
-                tile.GetComponent<TerrainHex>().setTile(gameDices.getNonSand(), gameDices.getToken());
-            }
-
+            tile.GetComponent<TerrainHex>().setTile(gameDices.getTerrain(), gameDices.getToken());
         }
 
     }
@@ -262,7 +249,7 @@ public class Game : NetworkBehaviour
         //first Phase Spawn settlement
         if (currentPhase == GamePhase.SetupRoundOne)
         {
-            if (correctPlayer && !isOwned && !waitingForRoad)
+            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(gamePlayers[player], intersection))
             {
                 inter.BuildSettlement(gamePlayers[player]);
 
@@ -273,7 +260,7 @@ public class Game : NetworkBehaviour
         else if (currentPhase == GamePhase.SetupRoundTwo)
         {
 
-            //TO-DO check if other settlement is only 2 roads away
+            
             if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(gamePlayers[player], intersection))
             {
                inter.BuildCity(gamePlayers[player]);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
 
 public class DiceController
 {
@@ -15,6 +16,50 @@ public class DiceController
     static Random terrainSetter = new Random();
     static Random tokenRoll = new Random();
 
+    ArrayList tilePool = new ArrayList();
+    ArrayList tokenPool = new ArrayList();
+
+    public DiceController()
+    {
+        for(int i = 0; i<5; i++)
+        {
+            //added twice
+            if (i < 2)
+            {
+                tokenPool.Add(1);
+                tokenPool.Add(12);
+                
+                tilePool.Add(TerrainKind.GoldMine);
+            }
+            //basically added 3 times
+            if( i < 3)
+            {
+                tilePool.Add(TerrainKind.Desert);
+                tokenPool.Add(3);
+                tokenPool.Add(4);
+                tokenPool.Add(10);
+                tokenPool.Add(11);
+                tokenPool.Add(5);
+                tokenPool.Add(9);
+                tokenPool.Add(6);
+                tokenPool.Add(8);
+                
+            }
+            //added 5 times
+            tilePool.Add(TerrainKind.Hills);
+            tilePool.Add(TerrainKind.Mountains);
+            tilePool.Add(TerrainKind.Pasture);
+            tilePool.Add(TerrainKind.Fields);
+            tilePool.Add(TerrainKind.Forest);
+        }
+        for(int i = 0; i<19; i++)
+        {
+            tilePool.Add(TerrainKind.Sea);
+        }
+        
+
+    }
+
     int redDiceValue, yellowDiceValue, eventDiceValue, terrainKind, tokenValue;
     public void rollDice()
     {
@@ -24,17 +69,24 @@ public class DiceController
     }
     public void rollTile()
     {
-        terrainKind = roller.Next(0, 8);
-        bool getNon7 = false;
-        //cant be 7 so
-        while (!getNon7)
+        int tileIndex = roller.Next(0, tilePool.Count);
+        int tokenIndex = roller.Next(0, tokenPool.Count);
+        if (tilePool.Count > 0 && tokenPool.Count > 0)
         {
-            tokenValue = roller.Next(2, 13);
-            if (tokenValue != 7)
-            {
-                getNon7 = true;
-            }
+            terrainKind = (int)tilePool[tileIndex];
+            tokenValue = (int)tokenPool[tokenIndex];
         }
+        else
+        {
+            terrainKind = (int)tilePool[0];
+            tokenValue = (int)tokenPool[0];
+        }
+        //we dont waste token pool on sea and desert;
+        if(terrainKind != (int)TerrainKind.Desert && terrainKind != (int)TerrainKind.Sea)
+        {
+            tokenPool.Remove(tokenValue);
+        }
+        tilePool.Remove((TerrainKind)terrainKind);
         
     }
     private static EventKind generateEventDiceRoll()
@@ -51,19 +103,6 @@ public class DiceController
             default:
                 return EventKind.Barbarian;
         }
-    }
-    public int getNonSand()
-    {
-        bool getNonSand = false;
-        while (!getNonSand)
-        {
-            terrainKind = roller.Next(0, 8);
-            if (terrainKind != (int)TerrainKind.Desert)
-            {
-                getNonSand = true;
-            }
-        }
-        return terrainKind;
     }
     public int getRed()
     {

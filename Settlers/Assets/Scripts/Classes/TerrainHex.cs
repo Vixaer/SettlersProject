@@ -12,6 +12,9 @@ public class TerrainHex : NetworkBehaviour
 
     [SyncVar(hook = "OnSetToken")]
     public int numberToken = 1;
+
+    [SyncVar(hook = "OnChangeRobber")]
+    bool isRobber = false;
     public Intersection[] corners;
 
     // Use this for initialization
@@ -33,6 +36,14 @@ public class TerrainHex : NetworkBehaviour
     {
         numberToken = value;
         transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tokensSprites[value - 1];
+    }
+    void OnChangeRobber(bool value)
+    {
+        isRobber = value;
+        if (value)
+        {
+
+        }
     }
     public void setTile(int terrainKind, int tokenValue)
     {
