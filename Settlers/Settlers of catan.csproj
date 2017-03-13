@@ -77,7 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Classes\Card.cs" />
+    <Compile Include="Assets\Scripts\Classes\CardControl.cs" />
     <Compile Include="Assets\Scripts\Classes\DiceController.cs" />
     <Compile Include="Assets\Scripts\Classes\Edges.cs" />
     <Compile Include="Assets\Scripts\Classes\Game.cs" />
@@ -90,7 +90,6 @@
     <Compile Include="Assets\Scripts\Classes\SetOfOpponentMove.cs" />
     <Compile Include="Assets\Scripts\Classes\TerrainHex.cs" />
     <Compile Include="Assets\Scripts\Classes\Village.cs" />
-    <Compile Include="Assets\Scripts\Classes\myNetworkManager.cs" />
     <Compile Include="Assets\Scripts\Enum\Enums.cs" />
     <Compile Include="Assets\Scripts\Environment\CameraBehaviour.cs" />
     <Compile Include="Assets\Scripts\UI\Ingame_UI_Behaviour.cs" />

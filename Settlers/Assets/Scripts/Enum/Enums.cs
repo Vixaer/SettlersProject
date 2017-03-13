@@ -5,7 +5,7 @@ using UnityEngine;
 public enum VillageKind {Settlement,City,TradeMetropole,PoliticsMetropole,ScienceMetropole};
 public enum ResourceKind {Wool,Lumber,Ore,Brick,Grain};
 public enum CommodityKind {Coin,Cloth,Paper};
-public enum ProgressCardKind {ArchemistCard
+public enum ProgressCardKind {AlchemistCard
 	,CraneCard
 	,EngineerCard
 	,InventorCard

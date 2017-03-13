@@ -11,10 +11,11 @@ public class playerControl : NetworkBehaviour {
 
     private bool resourcesShown = true;
     private bool rollsShown = true;
+    private bool cardsShown = true;
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, MapSelector, DiceWindow, SelectionWindow, nameWindow;
-
+    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel;
+    public GameObject cardPrefab;
     #region SyncVar
     //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
@@ -33,7 +34,7 @@ public class playerControl : NetworkBehaviour {
     string Lumber;
     [SyncVar(hook = "OnChangedPaper")]
     string Paper;
-    
+
     //dice panel Values
     [SyncVar(hook = "OnChangedRed")]
     string Red;
@@ -44,7 +45,7 @@ public class playerControl : NetworkBehaviour {
     #endregion
 
     #region Setup
-    void Start () {
+    void Start() {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
         if (!isLocalPlayer) return;
         nameWindow.gameObject.SetActive(true);
@@ -62,7 +63,7 @@ public class playerControl : NetworkBehaviour {
         CmdStartUp();
     }
     #endregion
-	void Update () {
+    void Update() {
         if (!isLocalPlayer) return;
         if (Input.GetMouseButtonDown(0))
         {
@@ -72,13 +73,13 @@ public class playerControl : NetworkBehaviour {
         if (Input.GetButtonDown("Submit"))
         {
             string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
-            if(!message.Equals("") && message != null)
+            if (!message.Equals("") && message != null)
             {
                 ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
                 CmdSendMessage(gameObject, message);
             }
         }
-	}
+    }
 
     #region UI Related
     public void switchResourcesView()
@@ -94,10 +95,10 @@ public class playerControl : NetworkBehaviour {
         }
         resourcesShown = !resourcesShown;
     }
-    
+
     public void switchRollsView()
     {
-        Animation rollsAnimation = transform.GetChild(6).GetComponent<Animation>();
+        Animation rollsAnimation = DiceWindow.transform.GetComponent<Animation>();
         if (rollsShown)
         {
             rollsAnimation.Play("HideRolls");
@@ -109,11 +110,27 @@ public class playerControl : NetworkBehaviour {
         rollsShown = !rollsShown;
     }
 
+    public void switchCardPanel()
+    {
+        Animation cardsAnimation = CardPanel.transform.GetComponent<Animation>();
+        if (cardsShown)
+        {
+            cardsAnimation.Play("HideCards");
+            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Maximize";
+        }
+        else
+        {
+            cardsAnimation.Play("ShowCards");
+            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Minimize";
+        }
+        cardsShown = !cardsShown;
+    }
+
     public void closeSelectView()
     {
         isSeletionOpen = false;
     }
-    public void setTextValues(Dictionary<ResourceKind,int> resources, Dictionary<CommodityKind, int> commodities)
+    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities)
     {
         if (!isServer) return;
         int temp;
@@ -150,7 +167,7 @@ public class playerControl : NetworkBehaviour {
         {
             if (i < 8)
             {
-                
+
             }
             else if (i < 16)
             {
@@ -167,13 +184,12 @@ public class playerControl : NetworkBehaviour {
         }
     }
     #endregion
-
     #region Retrieve Client Info
     void detectClickedObject()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
-        if(hit && !EventSystem.current.IsPointerOverGameObject())
+        if (hit && !EventSystem.current.IsPointerOverGameObject())
         {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
@@ -184,26 +200,27 @@ public class playerControl : NetworkBehaviour {
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject);
             }
-        }   
+        }
     }
 
     public void getNameToSend()
     {
         if (!isLocalPlayer) return;
-        string playerName =  nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
-        if(!playerName.Equals("") && playerName != null)
+        string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
+        if (!playerName.Equals("") && playerName != null)
         {
-            
+
             //open the menus
             resourcesWindow.gameObject.SetActive(true);
             MenuWindow.gameObject.SetActive(true);
             DiceWindow.gameObject.SetActive(true);
             ChatWindow.gameObject.SetActive(true);
+            CardPanel.gameObject.SetActive(true);
             //closet the window
             nameWindow.SetActive(false);
             CmdSendName(playerName);
         }
-        
+
     }
 
     public void getTradeValue()
@@ -247,7 +264,7 @@ public class playerControl : NetworkBehaviour {
     [Command]
     void CmdSendSelection(GameObject player, int value)
     {
-        gameState.GetComponent<Game>().updateSelection(player,value);
+        gameState.GetComponent<Game>().updateSelection(player, value);
     }
     [Command]
     void CmdEndTurn(GameObject player)
@@ -257,16 +274,16 @@ public class playerControl : NetworkBehaviour {
     [Command]
     void CmdSendNpcTrade(GameObject player, int toGive, int wanted)
     {
-        
+
         //obviously not going to trade 4 brick -> 1 brick
-        if(toGive != wanted)
+        if (toGive != wanted)
         {
             gameState.GetComponent<Game>().NpcTrade(player, toGive, wanted);
         }
-        
+
     }
     [Command]
-    void CmdSendMessage(GameObject player,string message)
+    void CmdSendMessage(GameObject player, string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
     }
@@ -338,7 +355,7 @@ public class playerControl : NetworkBehaviour {
         int selectedValue = 0;
         while (isSeletionOpen)
         {
-           selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
+            selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
         }
         SelectionWindow.gameObject.SetActive(false);
         CmdSendSelection(gameObject, selectedValue);
@@ -357,5 +374,27 @@ public class playerControl : NetworkBehaviour {
     {
         transform.GetChild(8).GetComponent<Text>().text = value;
     }
+    
+    [ClientRpc]
+    public void RpcAddProgressCard(int value)
+    {
+        //adds a card to panel when received;
+        GameObject tempCard = Instantiate(cardPrefab);
+        //set the card value and it will change its sprite accordingly
+        tempCard.GetComponent<CardControl>().setCard(new Card((ProgressCardKind)value));
+        //put it in the view
+        Instantiate(cardPrefab).transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform);
+
+    }
     #endregion
+
+    public void testCardAdd()
+    {
+        //adds a card to panel when received;
+        GameObject tempCard = Instantiate(cardPrefab);
+        tempCard.GetComponent <CardControl>().setCard(new Card(ProgressCardKind.DeserterCard));
+        //put it in the view
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform);
+        
+    }
 }
