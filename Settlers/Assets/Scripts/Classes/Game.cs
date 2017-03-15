@@ -17,7 +17,11 @@ public class Game : NetworkBehaviour
     //
     public IEnumerator currentPlayer;
     public Dictionary<GameObject, Player> reverseOrder = new Dictionary<GameObject, Player>();
-    public GameObject[] board;
+
+    //added all the references for easier algorithm writing
+    public GameObject[] boardTile;
+    public GameObject[] edges;
+    public GameObject[] intersections;
     public GameObject canvas;
 
     #region Initial Setup
@@ -45,10 +49,67 @@ public class Game : NetworkBehaviour
 
     private void setupBoard()
     {
-        foreach (GameObject tile in board)
+        System.Random temp = new System.Random();
+        foreach (GameObject tile in boardTile)
         {
             gameDices.rollTile();
             tile.GetComponent<TerrainHex>().setTile(gameDices.getTerrain(), gameDices.getToken());
+        }
+        foreach (GameObject road in edges)
+        {
+            bool hasSea = false; bool hasLand = false; bool hasProximity = false;
+            if (road.GetComponent<Edges>().inBetween.Length == 2)
+            {
+                foreach (TerrainHex hex in road.GetComponent<Edges>().inBetween)
+                {
+                    if (hex.myTerrain == TerrainKind.Sea)
+                    {
+                        hasSea = true;
+                    }
+                    else
+                    {
+                        hasLand = true;
+                    }
+                    foreach (Intersection inter in road.GetComponent<Edges>().endPoints)
+                    {
+                        if (inter.harbor != HarbourKind.None)
+                        {
+                            hasProximity = true;
+                        }
+                    }
+                }
+
+            }
+            if(road.GetComponent<Edges>().inBetween.Length == 1)
+            {
+                // check doesnt need to be on edge we automatically assume outside board is sea
+                hasSea = true;
+                foreach (TerrainHex hex in road.GetComponent<Edges>().inBetween)
+                {
+                    if(hex.myTerrain != TerrainKind.Sea)
+                    {
+                        hasLand = true;
+                    }
+                    foreach (Intersection inter in road.GetComponent<Edges>().endPoints)
+                    {
+                        if (inter.harbor != HarbourKind.None)
+                        {
+                            hasProximity = true;
+                        }
+                    }
+                }
+            }
+            int luck = temp.Next(0, 7);
+            if (luck == 0 && hasSea && hasLand && !hasProximity)
+            {
+                HarbourKind type = gameDices.getHarbour();
+                foreach (Intersection inter in road.GetComponent<Edges>().endPoints)
+                {
+                    inter.harbor = type;
+                }
+                road.GetComponent<Edges>().setHarborKind(type);
+            }
+
         }
 
     }
@@ -88,7 +149,7 @@ public class Game : NetworkBehaviour
     {
         Player data;
         gamePlayers.TryGetValue(upPlayer, out data);
-        upPlayer.GetComponent<playerControl>().setTextValues(data.resources, data.commodities);
+        upPlayer.GetComponent<playerControl>().setTextValues(data.resources, data.commodities, data.gold, data.victoryPoints);
 
     }
 
@@ -174,40 +235,119 @@ public class Game : NetworkBehaviour
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;
-        string log = " has traded 4 ";
-        if (checkCorrectPlayer(player) && (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnFirstPhase))
-        {
+        Player tradingPlayer = gamePlayers[player];
+        bool hasSpecial = false;
+        bool hasGeneric = false;
+        string log = "";
 
+        if (checkCorrectPlayer(player) && (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnSecondPhase))
+        {
+            //check if he has the special kind of harbor for his trade type
+            switch (offer)
+            {
+                case 0:
+                    if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Wool))
+                    {
+                        hasSpecial = true;
+                        
+                    }
+                    break;
+                case 1:
+                    if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Lumber))
+                    {
+                        hasSpecial = true;
+
+                    }
+                    break;
+                case 2:
+                    if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Ore))
+                    {
+                        hasSpecial = true;
+                        
+                    }
+                    break;
+                case 3:
+                    if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Brick))
+                    {
+                        hasSpecial = true;
+
+                    }
+                    break;
+                case 4:
+                    if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Grain))
+                    {
+                        hasSpecial = true;
+
+                    }
+                    break;
+                default:
+                    break;
+
+            }
+            if (!hasSpecial && tradingPlayer.ownedHarbour.Contains(HarbourKind.Generic))
+            {
+                hasGeneric = true;
+            }
             //offering resrouce wants  a resource
             if (offer < 5 && wants < 5)
             {
-                if (gamePlayers[player].HasResources(4, (ResourceKind)offer))
+                //special payment
+                if (hasSpecial && tradingPlayer.HasResources(2, (ResourceKind)offer))
                 {
-                    gamePlayers[player].PayResources(4, (ResourceKind)offer);
-                    gamePlayers[player].AddResources(1, (ResourceKind)wants);
-                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
-                    check = true;
+                    tradingPlayer.PayResources(2, (ResourceKind)offer);
+                    log += "Has traded 2 ";
                 }
+                //generic
+                else if (hasGeneric && tradingPlayer.HasResources(3, (ResourceKind)offer))
+                {
+                    tradingPlayer.PayResources(3, (ResourceKind)offer);
+                    log += "Has traded 3 ";
+                }
+                //shitty
+                else if (tradingPlayer.HasResources(4, (ResourceKind)offer))
+                {
+                    tradingPlayer.PayResources(4, (ResourceKind)offer);
+                    log += "Has traded 4 ";
+                }  
+                tradingPlayer.AddResources(1, (ResourceKind)wants);
+                log += ((ResourceKind)offer).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
+                check = true;
             }
             //offering resources wants a commodity
             else if (offer < 5 && wants >= 5)
             {
-                if (gamePlayers[player].HasResources(4, (ResourceKind)offer))
+                //special
+                if (hasSpecial && tradingPlayer.HasResources(2, (ResourceKind)offer))
                 {
-                    gamePlayers[player].PayResources(4, (ResourceKind)offer);
-                    gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
-                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
-                    check = true;
+                    tradingPlayer.PayResources(2, (ResourceKind)offer);
+                    log += "Has traded 2 ";
                 }
+                //generic
+                else if (hasGeneric && tradingPlayer.HasResources(3, (ResourceKind)offer))
+                {
+                    tradingPlayer.PayResources(3, (ResourceKind)offer);
+                    log += "Has traded 3 ";
+                }
+                //shitty
+                else if (tradingPlayer.HasResources(4, (ResourceKind)offer))
+                {
+                    tradingPlayer.PayResources(4, (ResourceKind)offer);
+                    log += "Has traded 4 ";
+                }
+                gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
+                log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
+                check = true;
+
             }
             //offering commodity wants resource
             else if (offer >= 5 && wants < 5)
             {
                 if (gamePlayers[player].HasCommodities(4, (CommodityKind)(offer - 5)))
                 {
+
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
                     gamePlayers[player].AddResources(1, (ResourceKind)wants);
-                    log += ((CommodityKind)offer - 5).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
+                    log += "Has traded 4 " +((CommodityKind)offer - 5).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
                     check = true;
                 }
             }
@@ -218,7 +358,7 @@ public class Game : NetworkBehaviour
                 {
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
                     gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
-                    log += ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
+                    log += "Has Traded 4 " + ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
                     check = true;
                 }
             }        //update his ui
@@ -472,7 +612,7 @@ public class Game : NetworkBehaviour
         int sum = gameDices.getRed() + gameDices.getYellow();
         if (sum != 7)
         {
-            foreach (GameObject tile in board)
+            foreach (GameObject tile in boardTile)
             {
                 if (tile.GetComponent<TerrainHex>().numberToken == sum)
                 {

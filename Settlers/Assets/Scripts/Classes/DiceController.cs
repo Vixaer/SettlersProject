@@ -15,14 +15,26 @@ public class DiceController
     //these 2 are used for gameboard setup best place to keep cuz we need static randoms
     static Random terrainSetter = new Random();
     static Random tokenRoll = new Random();
+    static Random harborRoll = new Random();
 
     ArrayList tilePool = new ArrayList();
     ArrayList tokenPool = new ArrayList();
+    ArrayList harborPool = new ArrayList();
 
     public DiceController()
     {
         for(int i = 0; i<5; i++)
         {
+            //added once to the pool
+            if (i < 1)
+            {
+                //add to pool one of each type
+                harborPool.Add(HarbourKind.Brick);
+                harborPool.Add(HarbourKind.Wool);
+                harborPool.Add(HarbourKind.Lumber);
+                harborPool.Add(HarbourKind.Grain);
+                harborPool.Add(HarbourKind.Ore);
+            }
             //added twice
             if (i < 2)
             {
@@ -44,6 +56,11 @@ public class DiceController
                 tokenPool.Add(6);
                 tokenPool.Add(8);
                 
+            }
+            //added 4 times
+            if (i < 4)
+            {
+                harborPool.Add(HarbourKind.Generic);
             }
             //added 5 times
             tilePool.Add(TerrainKind.Hills);
@@ -124,6 +141,20 @@ public class DiceController
     {
         return tokenValue;
     }
-
+    
+    public HarbourKind getHarbour()
+    {
+        if (harborPool.Count > 0)
+        {
+            HarbourKind harbourType = (HarbourKind)harborPool[harborRoll.Next(0, harborPool.Count)];
+            harborPool.Remove(harbourType);
+            return harbourType;
+        }
+        else
+        {
+            return HarbourKind.None;
+        }
+        
+    }
 }
 

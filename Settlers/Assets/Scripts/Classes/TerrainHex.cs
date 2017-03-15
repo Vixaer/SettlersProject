@@ -16,6 +16,7 @@ public class TerrainHex : NetworkBehaviour
     [SyncVar(hook = "OnChangeRobber")]
     bool isRobber = false;
     public Intersection[] corners;
+    public Edges[] myEdges;
 
     // Use this for initialization
     void Start()

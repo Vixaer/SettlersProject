@@ -12,8 +12,9 @@ public class Player {
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
     public int gold { get; private set; }
+    public int victoryPoints { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
-
+    public List<HarbourKind> ownedHarbour { get; set;}
     public string name;
     public Player() {
         myColor = playerCount;
@@ -41,6 +42,8 @@ public class Player {
         };
         gold = 0;
         ownedUnits = new List<OwnableUnit>();
+        ownedHarbour = new List<HarbourKind>();
+        victoryPoints = 0;
     }
 
     #region Player attributes

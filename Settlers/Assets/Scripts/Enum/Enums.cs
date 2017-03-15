@@ -37,9 +37,14 @@ public enum EventKind {Barbarian,Trade,Politics,Science};
 
 public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnSecondPhase,Completed};
 
-public enum HarbourKind{None
-	,Generic
-	,Special};
+public enum HarbourKind{
+    Generic
+	,Lumber
+    ,Wool
+    ,Ore
+    ,Grain
+    ,Brick
+    ,None};
 
 public enum TerrainKind{Sea
 	,Desert

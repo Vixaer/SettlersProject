@@ -8,6 +8,9 @@ public class Intersection : NetworkBehaviour {
     public Edges[] paths;
     public Sprite settlement, city;
 
+    [SyncVar(hook ="OnHarbour")]
+    public HarbourKind harbor = HarbourKind.None;
+
     [SyncVar(hook = "OnOwned")]
     Color color;
     
@@ -39,6 +42,11 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
+        //add the harbour to the list of owned harbour for when he trades it knows
+        if (harbor != HarbourKind.None)
+        {
+            player.ownedHarbour.Add(harbor);
+        }
     }
     public void BuildCity(Player player)
     {
@@ -52,6 +60,11 @@ public class Intersection : NetworkBehaviour {
             case 1: color = Color.blue; break;
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
+        }
+        //add the harbour to the list of owned harbour for when he trades it knows
+        if (harbor != HarbourKind.None)
+        {
+            player.ownedHarbour.Add(harbor);
         }
     }
     public void UpgradeSettlement(Player player)
@@ -87,6 +100,11 @@ public class Intersection : NetworkBehaviour {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
+    }
+
+    public void OnHarbour(HarbourKind value)
+    {
+        harbor = value;
     }
     #endregion
 }

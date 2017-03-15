@@ -34,6 +34,10 @@ public class playerControl : NetworkBehaviour {
     string Lumber;
     [SyncVar(hook = "OnChangedPaper")]
     string Paper;
+    [SyncVar(hook = "OnChangedGold")]
+    string Gold;
+    [SyncVar(hook = "OnChangedVictory")]
+    string VictoryPoints;
 
     //dice panel Values
     [SyncVar(hook = "OnChangedRed")]
@@ -130,7 +134,7 @@ public class playerControl : NetworkBehaviour {
     {
         isSeletionOpen = false;
     }
-    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities)
+    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities, int gold, int victoryPoints)
     {
         if (!isServer) return;
         int temp;
@@ -151,6 +155,9 @@ public class playerControl : NetworkBehaviour {
         Coin = temp.ToString();
         commodities.TryGetValue(CommodityKind.Paper, out temp);
         Paper = temp.ToString();
+
+        Gold = gold.ToString();
+        VictoryPoints = victoryPoints.ToString();
 
     }
     public void setDiceValues(int red, int yellow, int eventValue)
@@ -184,6 +191,7 @@ public class playerControl : NetworkBehaviour {
         }
     }
     #endregion
+
     #region Retrieve Client Info
     void detectClickedObject()
     {
@@ -323,6 +331,14 @@ public class playerControl : NetworkBehaviour {
     {
         transform.GetChild(0).GetChild(8).GetChild(0).GetComponent<Text>().text = value;
     }
+    void OnChangedGold(string value)
+    {
+        transform.GetChild(0).GetChild(9).GetChild(0).GetComponent<Text>().text = value;
+    }
+    void OnChangedVictory(string value)
+    {
+        transform.GetChild(0).GetChild(10).GetChild(0).GetComponent<Text>().text = value;
+    }
     void OnChangedRed(string value)
     {
         DiceWindow.transform.GetChild(2).GetComponent<Text>().text = value;
@@ -394,7 +410,7 @@ public class playerControl : NetworkBehaviour {
         GameObject tempCard = Instantiate(cardPrefab);
         tempCard.GetComponent <CardControl>().setCard(new Card(ProgressCardKind.DeserterCard));
         //put it in the view
-        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform);
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
         
     }
 }
