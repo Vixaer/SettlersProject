@@ -9,6 +9,7 @@ public class Game : NetworkBehaviour
 {
     DiceController gameDices = new DiceController();
     public bool waitingForRoad = false;
+    public bool firstBarbAttack = false;
     public GamePhase currentPhase { get; private set; }
 
     public Dictionary<GameObject, Player> gamePlayers = new Dictionary<GameObject, Player>();
@@ -23,6 +24,10 @@ public class Game : NetworkBehaviour
     public GameObject[] edges;
     public GameObject[] intersections;
     public GameObject canvas;
+
+    //keep track of the tile where the robber is
+    public GameObject robberTile;
+   
 
     #region Initial Setup
     void Start()
@@ -49,11 +54,18 @@ public class Game : NetworkBehaviour
 
     private void setupBoard()
     {
+        bool robberSpawned = false;
         System.Random temp = new System.Random();
         foreach (GameObject tile in boardTile)
         {
             gameDices.rollTile();
             tile.GetComponent<TerrainHex>().setTile(gameDices.getTerrain(), gameDices.getToken());
+            if(gameDices.getTerrain() == (int)TerrainKind.Desert && !robberSpawned)
+            {
+                tile.GetComponent<TerrainHex>().isRobber = true;
+                robberTile = tile;
+                robberSpawned = true;
+            }
         }
         foreach (GameObject road in edges)
         {
@@ -134,7 +146,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundOne: playerTurn += " First Setup"; break;
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
-                case GamePhase.TurnSecondPhase: playerTurn += " Build & Trade"; break;
+                case GamePhase.TurnRobber: playerTurn += " Move Robber"; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -240,7 +252,7 @@ public class Game : NetworkBehaviour
         bool hasGeneric = false;
         string log = "";
 
-        if (checkCorrectPlayer(player) && (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnSecondPhase))
+        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase)
         {
             //check if he has the special kind of harbor for his trade type
             switch (offer)
@@ -414,7 +426,7 @@ public class Game : NetworkBehaviour
             }
         }
         //during first phase building
-        else if (currentPhase == GamePhase.TurnFirstPhase || currentPhase == GamePhase.TurnSecondPhase)
+        else if (currentPhase == GamePhase.TurnFirstPhase)
         {
             if (correctPlayer && !isOwned && gamePlayers[player].hasSettlementResources() && canBuildConnectedCity(gamePlayers[player],intersection))
             {
@@ -501,7 +513,7 @@ public class Game : NetworkBehaviour
 
     public void endTurn(GameObject player)
     {
-        if (checkCorrectPlayer(player))
+        if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobber)
         {
             currentPhase = GamePhase.TurnDiceRolled;
 
@@ -510,6 +522,10 @@ public class Game : NetworkBehaviour
                 currentPlayer.Reset();
                 currentPlayer.MoveNext();
             }
+        }
+        else
+        {
+            logAPlayer(player, "Move the robber before ending your turn.");
         }
         updateTurn();
     }
@@ -522,7 +538,17 @@ public class Game : NetworkBehaviour
         {
             gameDices.rollDice();
             updateRollsUI();
-            currentPhase = GamePhase.TurnFirstPhase;
+            if (gameDices.getRed() + gameDices.getYellow() == 7)
+            {
+                currentPhase = GamePhase.TurnRobber;
+                //SEND ClientRpc to discard correct amount;
+                robberDiscarding();
+
+            }
+            else
+            {
+                currentPhase = GamePhase.TurnFirstPhase;
+            }
             DistributeResources();
         }
         else
@@ -532,6 +558,41 @@ public class Game : NetworkBehaviour
         updateTurn();
     }
 
+    //allows client to actually move the robber
+    public void moveRobber(GameObject player, GameObject tile)
+    {
+        //TO-DO add constraint for first barbarian attack when they will be implemented
+        if(currentPhase == GamePhase.TurnRobber && checkCorrectPlayer(player))
+        {
+            if (tile.GetComponent<TerrainHex>().isRobber == true)
+            {
+                logAPlayer(player, "You can't reselect the same hextile");
+            }
+            else
+            {
+                robberTile.GetComponent<TerrainHex>().isRobber = false;
+                robberTile = tile;
+                tile.GetComponent<TerrainHex>().isRobber = true;
+                currentPhase = GamePhase.TurnFirstPhase;
+                updateTurn();
+            }
+        }
+    }
+
+    //send a popup to all players that have over 7 resource/commodities cards asking them to discard the correct amount
+    public void robberDiscarding()
+    {
+        IEnumerator values = (gamePlayers.Values).GetEnumerator();
+        while (values.MoveNext())
+        {
+            Player tempPlayer = (Player)values.Current;
+            if(tempPlayer.sumResources() > 7)
+            {
+                int toDiscard = (int)(tempPlayer.sumResources() / 2.0);
+                playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
+            }
+        }
+    }
     #endregion
 
     #region Constraint Checks
@@ -553,21 +614,51 @@ public class Game : NetworkBehaviour
     private bool canBuildConnectedRoad(Player player, GameObject edge)
     {
         bool check = false;
-        foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+        //on first setup road must be built connected to settlement built
+        if (currentPhase == GamePhase.SetupRoundOne)
         {
-            //check owned true or else owned is null pointer
-            if (i.owned && i.positionedUnit.Owner.Equals(player))
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
-                check = true;
-                break;
-            }
-            foreach (Edges e in i.paths)
-            {
-                //check to see if owned or else bleongs to is obviously null and return null pointer
-                if (e.owned && e.belongsTo.Equals(player))
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.Settlement)
                 {
                     check = true;
                     break;
+                }
+            }
+        }
+        //on second setup road must be connected to city
+        else if (currentPhase == GamePhase.SetupRoundTwo)
+        {
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.City)
+                {
+                    check = true;
+                    break;
+                }
+            }
+        }
+        //on build phase it can be built/connect to any road or city.
+        else if(currentPhase == GamePhase.TurnFirstPhase)
+        {
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;
+                    break;
+                }
+                foreach (Edges e in i.paths)
+                {
+                    //check to see if owned or else bleongs to is obviously null and return null pointer
+                    if (e.owned && e.belongsTo.Equals(player))
+                    {
+                        check = true;
+                        break;
+                    }
                 }
             }
         }
@@ -578,16 +669,27 @@ public class Game : NetworkBehaviour
     {
         bool checkProximity = true;
         bool checkRoadConnection = false;
+        bool checkIsLand = false;
+        foreach (TerrainHex tile in intersection.GetComponent<Intersection>().linked)
+        {
+            if(tile.myTerrain != TerrainKind.Sea)
+            {
+                checkIsLand = true;
+            }
+        }
         foreach (Edges e in intersection.GetComponent<Intersection>().paths)
         {
+            //check that a road is on any of the possible edges of this intersection
             if((currentPhase == GamePhase.TurnFirstPhase) && e.belongsTo != null && e.belongsTo.Equals(player))
             {
                 checkRoadConnection = true;
             }
+            //automatically can build in setup
             else if(currentPhase == GamePhase.SetupRoundOne || currentPhase == GamePhase.SetupRoundTwo)
             {
                 checkRoadConnection = true;
             }
+            //check if any close by intersection have already built settlements/cities
             foreach (Intersection i in e.endPoints)
             {
 
@@ -598,7 +700,7 @@ public class Game : NetworkBehaviour
                 }
             }
         }
-        return (checkProximity && checkRoadConnection);
+        return (checkProximity && checkRoadConnection && checkIsLand);
     }
 
     #endregion
@@ -614,7 +716,8 @@ public class Game : NetworkBehaviour
         {
             foreach (GameObject tile in boardTile)
             {
-                if (tile.GetComponent<TerrainHex>().numberToken == sum)
+                TerrainHex tempTile = tile.GetComponent<TerrainHex>();
+                if (tempTile.numberToken == sum && !tempTile.isRobber)
                 {
                     foreach (Intersection connected in tile.GetComponent<TerrainHex>().corners)
                     {
@@ -766,6 +869,61 @@ public class Game : NetworkBehaviour
                     break;
                 }
         }
+    }
+
+    public void discardResources(GameObject player,int[] values)
+    {
+        Player discardingPlayer = gamePlayers[player];
+        bool hasAll = true;
+        int i = 0;
+        //check if he has enough of what he tries to discard
+        while(i < values.Length)
+        {
+            if (i < 5 && !discardingPlayer.HasResources(values[i],(ResourceKind) i))
+            {
+                hasAll = false;
+                break;
+            }
+            else if (i >= 5 && !discardingPlayer.HasCommodities(values[i], (CommodityKind)(i-5)))
+            {
+                hasAll = false;
+                break;
+            }
+            i++;
+        }
+        if (hasAll)
+        {
+            i = 0;
+            //make payment loop no need to recheck has constraint was checked earlier
+            while (i < values.Length)
+            {
+                if (i < 5 )
+                {
+                    discardingPlayer.PayResources(values[i], (ResourceKind)i);
+                }
+                else if (i >= 5)
+                {
+                    discardingPlayer.PayCommoditys(values[i], (CommodityKind)(i - 5));
+                }
+                i++;
+            }
+        }
+        else
+        {
+            string notEnoughOf = "";
+            if (i < 5)
+            {
+                notEnoughOf += "You dont have enough: " + (ResourceKind)i;
+            }
+            else
+            {
+                notEnoughOf += "You dont have enough: " + (CommodityKind)(i-5);
+            }
+
+            player.GetComponent<playerControl>().RpcDiscardTime((int)(gamePlayers[player].sumResources() / 2.0), notEnoughOf);
+            
+        }
+        updatePlayerResourcesUI(player);
     }
     #endregion
 }

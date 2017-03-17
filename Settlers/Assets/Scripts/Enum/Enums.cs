@@ -35,7 +35,7 @@ public enum PlayerStatus {Offline,Available,InGame,Ready};
 
 public enum EventKind {Barbarian,Trade,Politics,Science};
 
-public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnSecondPhase,Completed};
+public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobber};
 
 public enum HarbourKind{
     Generic

@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class CardControl : MonoBehaviour{
     public Sprite[] ProgressCardSprites;
-    private GameObject myClient;
     private Card myCard;
     public void Start()
     {

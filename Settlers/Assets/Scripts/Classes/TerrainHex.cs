@@ -7,6 +7,7 @@ public class TerrainHex : NetworkBehaviour
 {
     public Sprite[] terrainSprites;
     public Sprite[] tokensSprites;
+    public Sprite robberSprite;
     [SyncVar(hook = "OnChangeKind")]
     public TerrainKind myTerrain = TerrainKind.None;
 
@@ -14,7 +15,7 @@ public class TerrainHex : NetworkBehaviour
     public int numberToken = 1;
 
     [SyncVar(hook = "OnChangeRobber")]
-    bool isRobber = false;
+    public bool isRobber = false;
     public Intersection[] corners;
     public Edges[] myEdges;
 
@@ -43,7 +44,18 @@ public class TerrainHex : NetworkBehaviour
         isRobber = value;
         if (value)
         {
-
+            transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = robberSprite;
+        }
+        else
+        {
+            if (numberToken == 1)
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+            }
+            else
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tokensSprites[numberToken - 1];
+            }
         }
     }
     public void setTile(int terrainKind, int tokenValue)

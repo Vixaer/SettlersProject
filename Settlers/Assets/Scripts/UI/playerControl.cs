@@ -14,7 +14,9 @@ public class playerControl : NetworkBehaviour {
     private bool cardsShown = true;
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel;
+    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, 
+                      MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
+                      discardPanel;
     public GameObject cardPrefab;
     #region SyncVar
     //resource panel values
@@ -208,6 +210,10 @@ public class playerControl : NetworkBehaviour {
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject);
             }
+            if (hit.collider.gameObject.CompareTag("TerrainHex"))
+            {
+                CmdMoveRobber(gameObject, hit.collider.gameObject);
+            }
         }
     }
 
@@ -237,6 +243,43 @@ public class playerControl : NetworkBehaviour {
         toGive = transform.GetChild(3).GetChild(2).GetComponent<Dropdown>().value;
         wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
         CmdSendNpcTrade(gameObject, toGive, wanted);
+    }
+
+    public void getDiscardValues()
+    {
+        int[] values = new int[8];
+        int sum = 0;
+        for(int i = 0; i< values.Length; i++)
+        {
+            //i = 0 is wool like enum 0 = wool etc...
+            if (discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text.Equals(""))
+            {
+                values[i] = 0;
+                sum += 0;
+            }
+            else
+            {
+                
+                values[i] = int.Parse(discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text);
+                sum += values[i];
+            }
+        }
+        int needed = int.Parse(discardPanel.transform.GetChild(10).GetComponent<Text>().text);
+        //loop to check if he has enough of all the resources
+        if (sum == needed)
+        {
+            CmdSendDiscards(gameObject, values);
+            discardPanel.SetActive(false);
+        }
+        else if(sum > needed)
+        {
+            discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please remove : " + (sum - needed);
+        }
+        else
+        {
+            discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please add : " + (needed - sum);
+        }
+        
     }
     #endregion
 
@@ -294,6 +337,16 @@ public class playerControl : NetworkBehaviour {
     void CmdSendMessage(GameObject player, string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
+    }
+    [Command]
+    void CmdMoveRobber (GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().moveRobber(player, tile);
+    }
+    [Command]
+    void CmdSendDiscards (GameObject player, int[] values)
+    {
+        gameState.GetComponent<Game>().discardResources(player, values);
     }
     #endregion
 
@@ -402,7 +455,26 @@ public class playerControl : NetworkBehaviour {
         Instantiate(cardPrefab).transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform);
 
     }
+
+    [ClientRpc]
+    public void RpcDiscardTime(int discardAmount, string ExtraInfo)
+    {
+        discardPanel.SetActive(true);
+        //in order of enums for easy for looping later
+        discardPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = Wool;
+        discardPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().text = Lumber;
+        discardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = Ore;
+        discardPanel.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = Brick;
+        discardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = Grain;
+        discardPanel.transform.GetChild(5).GetChild(0).GetComponent<Text>().text = Coin;
+        discardPanel.transform.GetChild(6).GetChild(0).GetComponent<Text>().text = Cloth;
+        discardPanel.transform.GetChild(7).GetChild(0).GetComponent<Text>().text = Paper;
+
+        discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard a total of : " + discardAmount.ToString() + "\n" + ExtraInfo;
+        discardPanel.transform.GetChild(10).GetComponent<Text>().text = discardAmount.ToString();
+    }
     #endregion
+
 
     public void testCardAdd()
     {

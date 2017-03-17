@@ -11,6 +11,7 @@ public class Player {
     public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
+    
     public int gold { get; private set; }
     public int victoryPoints { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
@@ -22,11 +23,11 @@ public class Player {
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
-            { ResourceKind.Brick, 20 },
-            { ResourceKind.Grain, 20 },
-            { ResourceKind.Lumber, 20 },
-            { ResourceKind.Ore, 20 },
-            { ResourceKind.Wool, 20 }
+            { ResourceKind.Brick, 100 },
+            { ResourceKind.Grain, 100 },
+            { ResourceKind.Lumber, 100 },
+            { ResourceKind.Ore, 100 },
+            { ResourceKind.Wool, 100 }
         };
         commodities = new Dictionary<CommodityKind, int>()
         {
@@ -179,6 +180,22 @@ public class Player {
         {
             return HasResources(2, ResourceKind.Grain) && HasResources(3, ResourceKind.Ore);
         }
+    }
+    //return how many resources a player currently has
+    public int sumResources()
+    {
+        int sum = 0;
+        IEnumerator counter = resources.Values.GetEnumerator();
+        while (counter.MoveNext())
+        {
+            sum += (int) counter.Current;
+        }
+        counter = commodities.Values.GetEnumerator();
+        while (counter.MoveNext())
+        {
+            sum += (int)counter.Current;
+        }
+        return sum;
     }
     #endregion
 }
