@@ -16,6 +16,11 @@ public class Player {
     public int victoryPoints { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
+
+    public List<VillageKind> settlementPool;
+
+    public List<VillageKind> citiesPool;
+
     public string name;
     public Player() {
         myColor = playerCount;
@@ -44,10 +49,20 @@ public class Player {
         gold = 0;
         ownedUnits = new List<OwnableUnit>();
         ownedHarbour = new List<HarbourKind>();
+        citiesPool = new List<VillageKind>();
+        settlementPool = new List<VillageKind>();
+
+        //add the tokens in the pool
+        for(int i = 0; i<4; i++)
+        {
+            citiesPool.Add(VillageKind.City);
+            settlementPool.Add(VillageKind.Settlement);
+        }
+	settlementPool.Add(VillageKind.Settlement);
         victoryPoints = 0;
     }
 
-    #region Player attributes
+    #region Player attributes Manipulation
     public void AddResources(int quantity, ResourceKind resourceKind)
     {
         resources[resourceKind] += quantity;
@@ -183,6 +198,43 @@ public class Player {
 
         return to_ret;
     }
+
+    public bool hasSettlements()
+    { 
+        if (settlementPool.Contains(VillageKind.Settlement))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool hasCities()
+    {
+        if (citiesPool.Contains(VillageKind.City))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void removeCity()
+    {
+        citiesPool.Remove(VillageKind.City);
+    }
+    public void removeSettlement()
+    {
+        settlementPool.Remove(VillageKind.Settlement);
+    }
+
+    public void addCity()
+    {
+        citiesPool.Add(VillageKind.City);
+    }
+    public void addSettlement()
+    {
+        settlementPool.Add(VillageKind.Settlement);
+    }
+
     #endregion
 
     #region GameActions

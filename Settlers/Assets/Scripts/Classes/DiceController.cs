@@ -9,17 +9,14 @@ public class DiceController
     //the random has to be static as if you reset each time its always the same value as the seed remains the same
     //static wont reset it
     static Random roller = new Random();
-    static Random yellowDiceRandom = new Random();
-    static Random eventDiceRandom = new Random();
-
-    //these 2 are used for gameboard setup best place to keep cuz we need static randoms
-    static Random terrainSetter = new Random();
-    static Random tokenRoll = new Random();
-    static Random harborRoll = new Random();
-
+    //tile pools and token pools for balanced board
     ArrayList tilePool = new ArrayList();
     ArrayList tokenPool = new ArrayList();
     ArrayList harborPool = new ArrayList();
+    //seperate card pools
+    ArrayList politicsPool = new ArrayList();
+    ArrayList sciencePool = new ArrayList();
+    ArrayList tradePool = new ArrayList();
 
     public DiceController()
     {
@@ -34,6 +31,13 @@ public class DiceController
                 harborPool.Add(HarbourKind.Lumber);
                 harborPool.Add(HarbourKind.Grain);
                 harborPool.Add(HarbourKind.Ore);
+
+                //added science cards
+                sciencePool.Add(ProgressCardKind.EngineerCard);
+                sciencePool.Add(ProgressCardKind.PrinterCard);
+
+                //added politics cards
+                politicsPool.Add(ProgressCardKind.ConstitutionCard);
             }
             //added twice
             if (i < 2)
@@ -42,11 +46,37 @@ public class DiceController
                 tokenPool.Add(12);
                 
                 tilePool.Add(TerrainKind.GoldMine);
+
+                //added science cards
+                sciencePool.Add(ProgressCardKind.AlchemistCard);
+                sciencePool.Add(ProgressCardKind.InventorCard);
+                sciencePool.Add(ProgressCardKind.CraneCard);
+                sciencePool.Add(ProgressCardKind.IrrigationCard);
+                sciencePool.Add(ProgressCardKind.MedicineCard);
+                sciencePool.Add(ProgressCardKind.MiningCard);
+                sciencePool.Add(ProgressCardKind.RoadBuildingCard);
+                sciencePool.Add(ProgressCardKind.SmithCard);
+
+                //added politics cards
+                politicsPool.Add(ProgressCardKind.BishopCard);
+                politicsPool.Add(ProgressCardKind.DiplomatCard);
+                politicsPool.Add(ProgressCardKind.DeserterCard);
+                politicsPool.Add(ProgressCardKind.IntrigueCard);
+                politicsPool.Add(ProgressCardKind.SaboteurCard);
+                politicsPool.Add(ProgressCardKind.WarlordCard);
+                politicsPool.Add(ProgressCardKind.WeddingCard);
+
+                //added trade cards
+                tradePool.Add(ProgressCardKind.ComercialHarborCard);
+                tradePool.Add(ProgressCardKind.MasterMerchantCard);
+                tradePool.Add(ProgressCardKind.MerchantFleetCard);
+                tradePool.Add(ProgressCardKind.ResourceMonopolyCard);
+                tradePool.Add(ProgressCardKind.ResourceMonopolyCard);
+                tradePool.Add(ProgressCardKind.TradeMonopolyCard);
             }
             //basically added 3 times
             if( i < 3)
-            {
-                tilePool.Add(TerrainKind.Desert);
+            {          
                 tokenPool.Add(3);
                 tokenPool.Add(4);
                 tokenPool.Add(10);
@@ -55,7 +85,15 @@ public class DiceController
                 tokenPool.Add(9);
                 tokenPool.Add(6);
                 tokenPool.Add(8);
-                
+
+                tilePool.Add(TerrainKind.Desert);
+
+                //added politics cards
+                politicsPool.Add(ProgressCardKind.SpyCard);
+
+                //added trade cards 6 times total 3x2
+                tradePool.Add(ProgressCardKind.MerchantCard);
+                tradePool.Add(ProgressCardKind.MerchantCard);
             }
             //added 4 times
             if (i < 4)
@@ -163,7 +201,7 @@ public class DiceController
     {
         if (harborPool.Count > 0)
         {
-            HarbourKind harbourType = (HarbourKind)harborPool[harborRoll.Next(0, harborPool.Count)];
+            HarbourKind harbourType = (HarbourKind)harborPool[roller.Next(0, harborPool.Count)];
             harborPool.Remove(harbourType);
             return harbourType;
         }

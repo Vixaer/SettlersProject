@@ -6,27 +6,21 @@ using UnityEngine.Networking;
 public class Intersection : NetworkBehaviour {
     public TerrainHex[] linked;
     public Edges[] paths;
-    public Sprite settlement, city;
+    public Sprite settlement, city;  
+    public bool owned;
+    public IntersectionUnit positionedUnit { get; private set; }
 
     [SyncVar(hook ="OnHarbour")]
     public HarbourKind harbor = HarbourKind.None;
-
     [SyncVar(hook = "OnOwned")]
     Color color;
-    
-    public bool owned;
-
     [SyncVar(hook = "OnBuild")]
     int type = 0;
-    public IntersectionUnit positionedUnit { get; private set; }
+
+    
 	// Use this for initialization
 	void Start () {
         positionedUnit = null;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
 	}
 
     #region Actions
@@ -47,6 +41,8 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
+        //remove one from the pool
+        player.removeSettlement();
     }
     public void BuildCity(Player player)
     {
@@ -66,6 +62,7 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
+        player.removeCity();
     }
     public void UpgradeSettlement(Player player)
     {
@@ -78,6 +75,8 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
+        player.removeCity();
+        player.addSettlement();
     }
     #endregion
 

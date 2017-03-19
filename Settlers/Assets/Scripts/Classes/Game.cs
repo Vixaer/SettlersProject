@@ -411,13 +411,14 @@ public class Game : NetworkBehaviour
         bool correctPlayer = checkCorrectPlayer(player);
         bool isOwned = intersection.GetComponent<Intersection>().owned;
         Intersection inter = intersection.GetComponent<Intersection>();
+        Player currentBuilder = gamePlayers[player];
 
         //first Phase Spawn settlement
         if (currentPhase == GamePhase.SetupRoundOne)
         {
-            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(gamePlayers[player], intersection))
+            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(currentBuilder, intersection))
             {
-                inter.BuildSettlement(gamePlayers[player]);
+                inter.BuildSettlement(currentBuilder);
 
                 waitingForRoad = true;
             }
@@ -427,12 +428,12 @@ public class Game : NetworkBehaviour
         {
 
             
-            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(gamePlayers[player], intersection))
+            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(currentBuilder, intersection))
             {
-               inter.BuildCity(gamePlayers[player]);
+               inter.BuildCity(currentBuilder);
                 foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
                 {
-                    payCitySpawn(gamePlayers[player], hex);
+                    payCitySpawn(currentBuilder, hex);
                 }
                 updatePlayerResourcesUI(player);
                 waitingForRoad = true;
@@ -440,23 +441,25 @@ public class Game : NetworkBehaviour
             }
         }
         //during first phase building
-        else if (currentPhase == GamePhase.TurnFirstPhase)
+        else if (currentPhase == GamePhase.TurnFirstPhase )
         {
-            if (correctPlayer && !isOwned && gamePlayers[player].hasSettlementResources() && canBuildConnectedCity(gamePlayers[player],intersection))
+            //check if empty spot, follow the distance rules and has resources and has not reached the 4 settlemnet cap
+            if (correctPlayer && !isOwned && currentBuilder.hasSettlementResources() && canBuildConnectedCity(currentBuilder,intersection) && currentBuilder.hasSettlements())
             {
-                gamePlayers[player].paySettlementResources();
-                inter.BuildSettlement(gamePlayers[player]);
+                currentBuilder.paySettlementResources();
+                inter.BuildSettlement(currentBuilder);
                 //update his UI to let him know he lost the resources;
                 updatePlayerResourcesUI(player);
             }
-            else if (isOwned && inter.positionedUnit.Owner == gamePlayers[player])
+            else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
             {
                 // Check that it actually is a settlement
                 var village = inter.positionedUnit as Village;
-                if (village != null && village.myKind == VillageKind.Settlement && gamePlayers[player].canPayCityUpgrade(false))
+                // check for player if he has resources and has actually not reached the 4 city cap
+                if (village != null && village.myKind == VillageKind.Settlement && currentBuilder.canPayCityUpgrade(false) && currentBuilder.hasCities())
                 {
-                    gamePlayers[player].payCityResources(false);
-                    inter.UpgradeSettlement(gamePlayers[player]);
+                    currentBuilder.payCityResources(false);
+                    inter.UpgradeSettlement(currentBuilder);
                     //update his UI to let him know he lost the resources;
                     updatePlayerResourcesUI(player);
                     logAPlayer(player, "You upgraded your settlement into a city!");
