@@ -130,6 +130,59 @@ public class Player {
         }
         return false;
     }
+
+    // Get the number of active knights owned by this player
+    public int getActiveKnightCount()
+    {
+        // TODO: Implement this method
+        return 0;
+    }
+
+    // Get the number of city villages owned by this player
+    public int getCityCount()
+    {
+        return getCities().Count;
+    }
+
+    // Get the total number of metropolises owned by this player of any kind
+    public int getMetropolisCount()
+    {
+        return getMetropolises().Count;
+    }
+
+    // get a list of villages that are cities
+    public List<Village> getCities()
+    {
+        List<Village> to_ret = new List<Village>();
+        foreach (OwnableUnit own in ownedUnits)
+        {
+            if (own is Village)
+            {
+                Village vil = own as Village;
+                if (vil.myKind == VillageKind.City)
+                    to_ret.Add(vil);
+            }
+        }
+
+        return to_ret;
+    }
+
+    // Get a list of villages that are metropolises
+    public List<Village> getMetropolises()
+    {
+        List<Village> to_ret = new List<Village>();
+        foreach (OwnableUnit own in ownedUnits)
+        {
+            if (own is Village)
+            {
+                Village vil = own as Village;
+                if (vil.myKind == VillageKind.PoliticsMetropole || vil.myKind == VillageKind.ScienceMetropole || vil.myKind == VillageKind.TradeMetropole)
+                    to_ret.Add(vil);
+            }
+        }
+
+        return to_ret;
+    }
     #endregion
 
     #region GameActions

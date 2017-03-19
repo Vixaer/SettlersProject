@@ -7,9 +7,14 @@ using UnityEngine.Networking;
 
 public class Game : NetworkBehaviour
 {
+    public const int BARB_ATTACK_POSITION = 7;
+
+    static System.Random rng = new System.Random();
+
     DiceController gameDices = new DiceController();
     public bool waitingForRoad = false;
     public bool firstBarbAttack = false;
+    public int barbPosition = 0; // Max 7. Use MoveBarbs()
     public GamePhase currentPhase { get; private set; }
 
     public Dictionary<GameObject, Player> gamePlayers = new Dictionary<GameObject, Player>();
@@ -218,6 +223,15 @@ public class Game : NetworkBehaviour
         {
             GameObject sendToPlayer = (GameObject)keys.Current;
             sendToPlayer.transform.GetComponent<playerControl>().RpcUpdateChat(gamePlayers[player].name + ": " + message + "\n");
+        }
+    }
+
+    // Game messages to everyone
+    public void broadcastMessage(string message)
+    {
+        foreach (GameObject recipient in gamePlayers.Keys)
+        {
+            recipient.transform.GetComponent<playerControl>().RpcUpdateChat("SettlersOfCatan: " + message + "\n");
         }
     }
 
@@ -538,6 +552,7 @@ public class Game : NetworkBehaviour
         {
             gameDices.rollDice();
             updateRollsUI();
+            HandleEventDice(); // Handle the outcome of the event dice
             if (gameDices.getRed() + gameDices.getYellow() == 7)
             {
                 currentPhase = GamePhase.TurnRobber;
@@ -592,6 +607,11 @@ public class Game : NetworkBehaviour
                 playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
             }
         }
+    }
+
+    public void MoveBarbs()
+    {
+        barbPosition = (barbPosition + 1) % 8;
     }
     #endregion
 
@@ -924,6 +944,126 @@ public class Game : NetworkBehaviour
             
         }
         updatePlayerResourcesUI(player);
+    }
+    #endregion
+
+    // Methods for handling event rolls
+    #region Event Roll
+
+    // Checks the event dice and dispatches the actions accordingly
+    private void HandleEventDice()
+    {
+        Debug.Log(gameDices.getEventKind());
+        EventKind roll = gameDices.getEventKind();
+        if (roll == EventKind.Barbarian)
+        {
+            HandleBarbarianRoll();
+        }
+        else
+        {
+            HandeCityGateRoll();
+        }
+    }
+
+    // Handles a barbarian dice roll
+    private void HandleBarbarianRoll()
+    {
+        MoveBarbs();
+        if (barbPosition == BARB_ATTACK_POSITION)
+        {
+            broadcastMessage("Barbarians Rolled. Prepare for the attack!");
+            BarbarianAttack();
+            firstBarbAttack = true;
+            barbPosition = 0;
+        }
+    }
+
+    // Handle the barbarian attack
+    private void BarbarianAttack()
+    {
+        int playerStrength = getActiveKnightCount();
+        int barbStrength = getCityAndMetrCount();
+        if (playerStrength > barbStrength)
+        {
+            broadcastMessage("Players win!");
+            defeatBarbarians();
+        }
+        else
+        {
+            broadcastMessage("Barbarians win. Prepare for punishment!");
+            barbarianPillage();
+        }
+    }
+
+    private void defeatBarbarians()
+    {
+        broadcastMessage("Victory Not Yet Implemented. Needs card draw.");
+        // TODO: Complete this method
+    }
+
+    // TODO: getActiveKnightCount()
+    // Handle the barbarian victory and pillaging
+    private void barbarianPillage()
+    {
+        // Find out which players are susceptable to the attack
+        List<Player> victims = new List<Player>();
+        foreach (Player p in gamePlayers.Values)
+        {
+            if (p.getCityCount() > 0)
+                victims.Add(p);
+        }
+
+        // Find out which victim contributed the least
+        int leastContributedAmount = 0;
+        List<Player> leastContributed = new List<Player>();
+        foreach(Player p in victims)
+        {
+            leastContributedAmount = Mathf.Min(leastContributedAmount, p.getActiveKnightCount());
+        }
+        foreach(Player p in victims)
+        {
+            if (p.getActiveKnightCount() == leastContributedAmount)
+                leastContributed.Add(p);
+        }
+
+        // Punish the victims
+        foreach(Player p in leastContributed)
+        {
+            broadcastMessage(p.name + " was punished for providing the least active knights. A city has been downgraded.");
+            List<Village> cities = p.getCities();
+            int ind = rng.Next(cities.Count);
+            cities[ind].downgradeToSettlement();
+        }
+    }
+
+    // get the total number of active knights
+    private int getActiveKnightCount()
+    {
+        int total = 0;
+        foreach (Player p in gamePlayers.Values)
+        {
+            total += p.getActiveKnightCount();
+        }
+        return total;
+    }
+
+    // get the total number of cities and metropolises
+    private int getCityAndMetrCount()
+    {
+        int total = 0;
+        foreach (Player p in gamePlayers.Values)
+        {
+            total += p.getCityCount();
+            total += p.getMetropolisCount();
+        }
+        return total;
+    }
+
+    // Handles what happens when a city gate is rolled on the event dice
+    private void HandeCityGateRoll()
+    {
+        EventKind gate = gameDices.getEventKind();
+        // TODO: Handle what happens when a city gate is rolled
     }
     #endregion
 }
