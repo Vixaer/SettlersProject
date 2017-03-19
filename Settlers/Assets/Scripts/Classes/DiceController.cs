@@ -133,6 +133,23 @@ public class DiceController
     {
         return eventDiceValue;
     }
+
+    // Returns the current event role as a kind
+    public EventKind getEventKind()
+    {
+        switch (eventDiceValue)
+        {
+            case 4:
+                return EventKind.Politics;
+            case 5:
+                return EventKind.Science;
+            case 6:
+                return EventKind.Trade;
+            default:
+                return EventKind.Barbarian;
+        }
+    }
+
     public int getTerrain()
     {
         return terrainKind;

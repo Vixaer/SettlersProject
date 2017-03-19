@@ -16,6 +16,13 @@ public class Village : IntersectionUnit
     public void setVillageType(VillageKind k)
     {
         this.myKind = k;
-    }       
+    }
+
+    // Used for barbarians to make sure city wall is cleared
+    public void downgradeToSettlement()
+    {
+        this.myKind = VillageKind.Settlement;
+        this.cityWall = false;
+    }
 }
 
