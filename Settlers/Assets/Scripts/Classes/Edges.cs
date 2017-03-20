@@ -8,10 +8,14 @@ public class Edges : NetworkBehaviour {
     [SyncVar(hook = "OnOwned")]
     Color color;
     public bool owned = false;
+    [SyncVar(hook = "OnShip")]
+    public bool isShip = false;
     public Player belongsTo;
     public Intersection[] endPoints;
     public TerrainHex[] inBetween;
     public Sprite[] harborSprites;
+    public Sprite shipSprite, roadSprite;
+
     [SyncVar(hook = "OnHarbor")]
     public HarbourKind harbor = HarbourKind.None;
 	// Use this for initialization
@@ -24,11 +28,24 @@ public class Edges : NetworkBehaviour {
 		
 	}
 
-    [Command]
-    public void CmdBuildRoad(Player player)
+    public void BuildRoad(Player player)
     {
         belongsTo = player;
         owned = true;
+        switch (belongsTo.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
+
+    public void BuildShip(Player player)
+    {
+        belongsTo = player;
+        owned = true;
+        isShip = true;
         switch (belongsTo.myColor)
         {
             case 0: color = Color.red; break;
@@ -41,7 +58,19 @@ public class Edges : NetworkBehaviour {
     {
         gameObject.GetComponent<SpriteRenderer>().color = value;
         owned = true;
+    }
 
+    public void OnShip(bool value)
+    {
+        isShip = value;
+        if (isShip)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = shipSprite;
+        }
+        else
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = roadSprite;
+        }
     }
     public void setHarborKind(HarbourKind kind)
     {

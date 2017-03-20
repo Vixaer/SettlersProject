@@ -42,7 +42,7 @@ public class Intersection : NetworkBehaviour {
             player.ownedHarbour.Add(harbor);
         }
         //remove one from the pool
-        player.removeSettlement();
+        player.RemoveSettlement();
     }
     public void BuildCity(Player player)
     {
@@ -62,7 +62,7 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        player.removeCity();
+        player.RemoveCity();
     }
     public void UpgradeSettlement(Player player)
     {
@@ -75,8 +75,8 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
-        player.removeCity();
-        player.addSettlement();
+        player.RemoveCity();
+        player.AddSettlement();
     }
     #endregion
 

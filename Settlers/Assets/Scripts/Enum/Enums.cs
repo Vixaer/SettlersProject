@@ -29,13 +29,14 @@ public enum ProgressCardKind {AlchemistCard
 	,MerchantCard
 	,MerchantFleetCard
 	,ResourceMonopolyCard
-	,TradeMonopolyCard};
+	,TradeMonopolyCard
+    ,NoCard};
 
 public enum PlayerStatus {Offline,Available,InGame,Ready};
 
 public enum EventKind {Barbarian,Trade,Politics,Science};
 
-public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobber};
+public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobberPirate};
 
 public enum HarbourKind{
     Generic

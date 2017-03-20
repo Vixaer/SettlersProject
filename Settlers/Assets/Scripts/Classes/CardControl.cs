@@ -15,6 +15,21 @@ public class CardControl : MonoBehaviour{
         myCard = card;
         transform.GetComponent<Image>().sprite = ProgressCardSprites[(int)myCard.k];
     }
+
+    public void clickedCard()
+    {
+        transform.parent.parent.parent.parent.parent.transform.gameObject.GetComponent<playerControl>().CmdUseCard(myCard.k);
+    }
+
+    public Card getCard()
+    {
+        return myCard;
+    }
+
+    public void removeCard()
+    {
+        DestroyImmediate(gameObject);
+    }
 }
 
 public class Card

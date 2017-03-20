@@ -17,9 +17,9 @@ public class Player {
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
 
-    public List<VillageKind> settlementPool;
+    public List<VillageKind> settlementPool { get; set; }
 
-    public List<VillageKind> citiesPool;
+    public List<VillageKind> citiesPool { get; set; }
 
     public string name;
     public Player() {
@@ -58,7 +58,7 @@ public class Player {
             citiesPool.Add(VillageKind.City);
             settlementPool.Add(VillageKind.Settlement);
         }
-	settlementPool.Add(VillageKind.Settlement);
+	    settlementPool.Add(VillageKind.Settlement);
         victoryPoints = 0;
     }
 
@@ -66,6 +66,18 @@ public class Player {
     public void AddResources(int quantity, ResourceKind resourceKind)
     {
         resources[resourceKind] += quantity;
+    }
+    public void AddCommodities(int quantity, CommodityKind commodityKind)
+    {
+        commodities[commodityKind] += quantity;
+    }
+    public void AddGold(int delta)
+    {
+        this.gold += delta;
+    }
+    public void AddVictoryPoints(int value)
+    {
+        victoryPoints += value;
     }
 
     public void PayResources(int quantity, ResourceKind resourceKind)
@@ -76,161 +88,38 @@ public class Player {
     {
         commodities[commodityKind] -= quantity;
     }
-    public void AddCommodities(int quantity, CommodityKind commodityKind)
-    {
-        commodities[commodityKind] += quantity;
-    }
-
-    public bool HasResources(int quantity, ResourceKind resourceKind)
-    {
-        return resources[resourceKind] >= quantity;
-    }
-
-    public bool HasCommodities(int quantity, CommodityKind commodityKind)
-    {
-        return commodities[commodityKind] >= quantity;
-    }
-
-    public int GetCityImprovementLevel(CommodityKind kind)
-    {
-        return cityImprovementLevels[kind];
-    }
-
-    public int[] getResourceValues()
-    {
-        int[] resourceValues = new int[8];
-        resourceValues[0] = resources[ResourceKind.Brick];
-        resourceValues[1] = resources[ResourceKind.Ore];
-        resourceValues[2] = resources[ResourceKind.Wool];
-        resourceValues[3] = commodities[CommodityKind.Coin];
-        resourceValues[4] = resources[ResourceKind.Grain];
-        resourceValues[5] = commodities[CommodityKind.Cloth];
-        resourceValues[6] = resources[ResourceKind.Lumber];
-        resourceValues[7] = commodities[CommodityKind.Paper];
-
-        return resourceValues;
-    }
-    public void updateGold(int delta)
-    {
-        this.gold += delta;
-    }
-
-    public bool hasSettlementResources()
-    {
-        if(HasResources(1, ResourceKind.Grain) && HasResources(1,ResourceKind.Lumber) && HasResources(1,ResourceKind.Brick) && HasResources(1, ResourceKind.Wool))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public void paySettlementResources()
+    public void PaySettlementResources()
     {
         PayResources(1, ResourceKind.Grain);
         PayResources(1, ResourceKind.Lumber);
         PayResources(1, ResourceKind.Brick);
         PayResources(1, ResourceKind.Wool);
     }
-
-    public void payRoadResources()
+    public void PayRoadResources()
     {
         PayResources(1, ResourceKind.Lumber);
         PayResources(1, ResourceKind.Brick);
     }
-    public bool hasRoadResources()
+    public void PayShipResources()
     {
-        if (HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick))
-        {
-            return true;
-        }
-        return false;
+        PayResources(1, ResourceKind.Lumber);
+        PayResources(1, ResourceKind.Wool);
     }
 
-    // Get the number of active knights owned by this player
-    public int getActiveKnightCount()
-    {
-        // TODO: Implement this method
-        return 0;
-    }
-
-    // Get the number of city villages owned by this player
-    public int getCityCount()
-    {
-        return getCities().Count;
-    }
-
-    // Get the total number of metropolises owned by this player of any kind
-    public int getMetropolisCount()
-    {
-        return getMetropolises().Count;
-    }
-
-    // get a list of villages that are cities
-    public List<Village> getCities()
-    {
-        List<Village> to_ret = new List<Village>();
-        foreach (OwnableUnit own in ownedUnits)
-        {
-            if (own is Village)
-            {
-                Village vil = own as Village;
-                if (vil.myKind == VillageKind.City)
-                    to_ret.Add(vil);
-            }
-        }
-
-        return to_ret;
-    }
-
-    // Get a list of villages that are metropolises
-    public List<Village> getMetropolises()
-    {
-        List<Village> to_ret = new List<Village>();
-        foreach (OwnableUnit own in ownedUnits)
-        {
-            if (own is Village)
-            {
-                Village vil = own as Village;
-                if (vil.myKind == VillageKind.PoliticsMetropole || vil.myKind == VillageKind.ScienceMetropole || vil.myKind == VillageKind.TradeMetropole)
-                    to_ret.Add(vil);
-            }
-        }
-
-        return to_ret;
-    }
-
-    public bool hasSettlements()
-    { 
-        if (settlementPool.Contains(VillageKind.Settlement))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public bool hasCities()
-    {
-        if (citiesPool.Contains(VillageKind.City))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public void removeCity()
+    public void RemoveCity()
     {
         citiesPool.Remove(VillageKind.City);
     }
-    public void removeSettlement()
+    public void RemoveSettlement()
     {
         settlementPool.Remove(VillageKind.Settlement);
     }
 
-    public void addCity()
+    public void AddCity()
     {
         citiesPool.Add(VillageKind.City);
     }
-    public void addSettlement()
+    public void AddSettlement()
     {
         settlementPool.Add(VillageKind.Settlement);
     }
@@ -301,6 +190,132 @@ public class Player {
             sum += (int)counter.Current;
         }
         return sum;
+    }
+
+    public bool HasResources(int quantity, ResourceKind resourceKind)
+    {
+        return resources[resourceKind] >= quantity;
+    }
+
+    public bool HasCommodities(int quantity, CommodityKind commodityKind)
+    {
+        return commodities[commodityKind] >= quantity;
+    }
+    public bool HasSettlementResources()
+    {
+        if (HasResources(1, ResourceKind.Grain) && HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick) && HasResources(1, ResourceKind.Wool))
+        {
+            return true;
+        }
+        return false;
+    }
+    public bool HasRoadResources()
+    {
+        if (HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool HasShipResources()
+    {
+        if (HasResources(1, ResourceKind.Wool) && HasResources(1, ResourceKind.Brick))
+        {
+            return true;
+        }
+        return false;
+    }
+    public int GetCityImprovementLevel(CommodityKind kind)
+    {
+        return cityImprovementLevels[kind];
+    }
+
+
+    public int[] getResourceValues()
+    {
+        int[] resourceValues = new int[8];
+        resourceValues[0] = resources[ResourceKind.Brick];
+        resourceValues[1] = resources[ResourceKind.Ore];
+        resourceValues[2] = resources[ResourceKind.Wool];
+        resourceValues[3] = commodities[CommodityKind.Coin];
+        resourceValues[4] = resources[ResourceKind.Grain];
+        resourceValues[5] = commodities[CommodityKind.Cloth];
+        resourceValues[6] = resources[ResourceKind.Lumber];
+        resourceValues[7] = commodities[CommodityKind.Paper];
+
+        return resourceValues;
+    }
+
+    // Get the number of active knights owned by this player
+    public int getActiveKnightCount()
+    {
+        // TODO: Implement this method
+        return 0;
+    }
+
+    // Get the number of city villages owned by this player
+    public int getCityCount()
+    {
+        return getCities().Count;
+    }
+
+    // Get the total number of metropolises owned by this player of any kind
+    public int getMetropolisCount()
+    {
+        return getMetropolises().Count;
+    }
+
+    // get a list of villages that are cities
+    public List<Village> getCities()
+    {
+        List<Village> to_ret = new List<Village>();
+        foreach (OwnableUnit own in ownedUnits)
+        {
+            if (own is Village)
+            {
+                Village vil = own as Village;
+                if (vil.myKind == VillageKind.City)
+                    to_ret.Add(vil);
+            }
+        }
+
+        return to_ret;
+    }
+
+    // Get a list of villages that are metropolises
+    public List<Village> getMetropolises()
+    {
+        List<Village> to_ret = new List<Village>();
+        foreach (OwnableUnit own in ownedUnits)
+        {
+            if (own is Village)
+            {
+                Village vil = own as Village;
+                if (vil.myKind == VillageKind.PoliticsMetropole || vil.myKind == VillageKind.ScienceMetropole || vil.myKind == VillageKind.TradeMetropole)
+                    to_ret.Add(vil);
+            }
+        }
+
+        return to_ret;
+    }
+
+    public bool hasSettlements()
+    {
+        if (settlementPool.Contains(VillageKind.Settlement))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool hasCities()
+    {
+        if (citiesPool.Contains(VillageKind.City))
+        {
+            return true;
+        }
+        return false;
     }
     #endregion
 }

@@ -14,6 +14,7 @@ public class Game : NetworkBehaviour
     DiceController gameDices = new DiceController();
     public bool waitingForRoad = false;
     public bool firstBarbAttack = false;
+   
     public int barbPosition = 0; // Max 7. Use MoveBarbs()
     public GamePhase currentPhase { get; private set; }
 
@@ -31,7 +32,9 @@ public class Game : NetworkBehaviour
     public GameObject canvas;
 
     //keep track of the tile where the robber is
-    public GameObject robberTile;
+    public GameObject robberTile,pirateTile;
+
+    public ProgressCardKind lastPlayed = ProgressCardKind.NoCard;
    
 
     #region Initial Setup
@@ -151,7 +154,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundOne: playerTurn += " First Setup"; break;
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
-                case GamePhase.TurnRobber: playerTurn += " Move Robber"; break;
+                case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -242,7 +245,6 @@ public class Game : NetworkBehaviour
     }
     #endregion
 
-
     #region Game Actions
     //selection when aqueduct is used and no resources gained
     public void updateSelection(GameObject player, int value)
@@ -258,6 +260,7 @@ public class Game : NetworkBehaviour
         updatePlayerResourcesUI(player);
 
     }
+
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;
@@ -408,82 +411,145 @@ public class Game : NetworkBehaviour
     //runs the build settlement on the intersection selected by the player
     public void buildOnIntersection(GameObject player, GameObject intersection)
     {
-        bool correctPlayer = checkCorrectPlayer(player);
-        bool isOwned = intersection.GetComponent<Intersection>().owned;
         Intersection inter = intersection.GetComponent<Intersection>();
         Player currentBuilder = gamePlayers[player];
+        bool correctPlayer = checkCorrectPlayer(player);
+        bool isOwned = intersection.GetComponent<Intersection>().owned;
+        bool canBuild = canBuildConnectedCity(currentBuilder, intersection);
+        bool hasSettlements = currentBuilder.hasSettlements();
+        bool hasLand = false;
 
-        //first Phase Spawn settlement
-        if (currentPhase == GamePhase.SetupRoundOne)
+        foreach(TerrainHex tile in intersection.GetComponent<Intersection>().linked)
         {
-            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(currentBuilder, intersection))
+            if(tile.myTerrain != TerrainKind.Sea)
+            {
+                hasLand = true;
+            }
+        }
+
+        if (!correctPlayer)
+        {
+            logAPlayer(player, "Can't build when it isn't your turn.");
+        }
+        else if (!hasLand)
+        {
+            logAPlayer(player, "Can't build in the sea.");
+        }
+        else if (!canBuild && !isOwned)
+        {
+            logAPlayer(player, "Not following the distance rule.");
+        }
+        if (correctPlayer && hasLand)
+        {
+            //first Phase Spawn settlement
+            if (currentPhase == GamePhase.SetupRoundOne && !waitingForRoad && canBuild)
             {
                 inter.BuildSettlement(currentBuilder);
 
                 waitingForRoad = true;
             }
-        }
-        //second setup spawns City
-        else if (currentPhase == GamePhase.SetupRoundTwo)
-        {
-
-            
-            if (correctPlayer && !isOwned && !waitingForRoad && canBuildConnectedCity(currentBuilder, intersection))
+            //second setup spawns City
+            else if (currentPhase == GamePhase.SetupRoundTwo && !waitingForRoad && canBuild)
             {
-               inter.BuildCity(currentBuilder);
-                foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
-                {
-                    payCitySpawn(currentBuilder, hex);
-                }
-                updatePlayerResourcesUI(player);
-                waitingForRoad = true;
-
-            }
-        }
-        //during first phase building
-        else if (currentPhase == GamePhase.TurnFirstPhase )
-        {
-            //check if empty spot, follow the distance rules and has resources and has not reached the 4 settlemnet cap
-            if (correctPlayer && !isOwned && currentBuilder.hasSettlementResources() && canBuildConnectedCity(currentBuilder,intersection) && currentBuilder.hasSettlements())
-            {
-                currentBuilder.paySettlementResources();
-                inter.BuildSettlement(currentBuilder);
-                //update his UI to let him know he lost the resources;
-                updatePlayerResourcesUI(player);
-            }
-            else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
-            {
-                // Check that it actually is a settlement
-                var village = inter.positionedUnit as Village;
-                // check for player if he has resources and has actually not reached the 4 city cap
-                if (village != null && village.myKind == VillageKind.Settlement && currentBuilder.canPayCityUpgrade(false) && currentBuilder.hasCities())
-                {
-                    currentBuilder.payCityResources(false);
-                    inter.UpgradeSettlement(currentBuilder);
-                    //update his UI to let him know he lost the resources;
+                    inter.BuildCity(currentBuilder);
+                    foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
+                    {
+                        payCitySpawn(currentBuilder, hex);
+                    }
                     updatePlayerResourcesUI(player);
-                    logAPlayer(player, "You upgraded your settlement into a city!");
-                }
+                    waitingForRoad = true;
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase)
+            {
+                //check if empty spot, follow the distance rules and has resources and has not reached the 4 settlemnet cap
+                if (currentBuilder.HasSettlementResources() && !isOwned && canBuild)
+                {
+                    if (currentBuilder.hasSettlements())
+                    {
+                        currentBuilder.PaySettlementResources();
+                        inter.BuildSettlement(currentBuilder);
+                        //update his UI to let him know he lost the resources;
+                        updatePlayerResourcesUI(player);
+                    }
+                    else
+                    {
+                        logAPlayer(player, "You've reached the 5 settlement cap, try upgrading a city before attempting to place another settlement");
+                    }
+                    
+                }
+                else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
+                {
+                    // Check that it actually is a settlement
+                    var village = inter.positionedUnit as Village;
+                    // check for player if he has resources and has actually not reached the 4 city cap
+                    if (village != null && village.myKind == VillageKind.Settlement)
+                    {
+                        if (!currentBuilder.canPayCityUpgrade(false))
+                        {
+                            logAPlayer(player, "You're resources are insufficient for upgrading to a city.");
+                        }
+                        else if (!currentBuilder.hasCities())
+                        {
+                            logAPlayer(player, "You've reached the cities cap (4).");
+                        }
+                        else if(currentBuilder.canPayCityUpgrade(false) && currentBuilder.hasCities())
+                        {
+                            currentBuilder.payCityResources(false);
+                            inter.UpgradeSettlement(currentBuilder);
+                            //update his UI to let him know he lost the resources;
+                            updatePlayerResourcesUI(player);
+                            logAPlayer(player, "You upgraded your settlement into a city!");
+                        }
+                       
+                    }
+                }
+            }   
+            updateTurn();
         }
-        updateTurn();
+
+        
+        //during first phase building
+       
     }
 
     //buildRoad ran on server from playerCOntrol class with authority
     //runs the build Road on the Edge selected by the player
     public void buildRoad(GameObject player, GameObject edge)
     {
-        bool canBuild = canBuildConnectedRoad(gamePlayers[player], edge);
-        //TO-DO check for ship or road to be built and ask when a choice needs to be made or send a variable bool when player has selected ship/road in UI
         bool correctPlayer = checkCorrectPlayer(player);
+        bool canBuild = canBuildConnectedRoad(gamePlayers[player], edge);
+        bool onLand = false;
         bool isOwned = edge.GetComponent<Edges>().owned;
-
-        //first Phase Spawn settlement
-        if (currentPhase == GamePhase.SetupRoundOne)
+        foreach (TerrainHex tile in edge.GetComponent<Edges>().inBetween)
         {
-            if (correctPlayer && !isOwned && waitingForRoad && canBuild)
+            if (tile.myTerrain != TerrainKind.Sea)
             {
-                edge.GetComponent<Edges>().CmdBuildRoad(gamePlayers[player]);
+                onLand = true;
+            }
+        }
+        if (!correctPlayer)
+        {
+            logAPlayer(player, "It isn't your turn.");
+        }
+        else if (!onLand)
+        {
+            logAPlayer(player, "You cant build a road in the sea.");
+        }
+        else if (isOwned)
+        {
+            logAPlayer(player, "There's already something built here.");
+        }
+        else if (!canBuild && currentPhase == GamePhase.TurnFirstPhase)
+        {
+            logAPlayer(player, "The road you are trying to build isn't connected");
+        }
+
+        if (correctPlayer && onLand && !isOwned && canBuild)
+        {
+            //first Phase Spawn settlement
+            if (currentPhase == GamePhase.SetupRoundOne && waitingForRoad)
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
                 waitingForRoad = false;
 
                 if (!currentPlayer.MoveNext())
@@ -494,13 +560,10 @@ public class Game : NetworkBehaviour
                     currentPhase = GamePhase.SetupRoundTwo;
                 }
             }
-        }
-        //second setup spawns City
-        else if (currentPhase == GamePhase.SetupRoundTwo)
-        {
-            if (correctPlayer && !isOwned && waitingForRoad && canBuild)
+            //second setup spawns City
+            else if (currentPhase == GamePhase.SetupRoundTwo && waitingForRoad)
             {
-                edge.GetComponent<Edges>().CmdBuildRoad(gamePlayers[player]);
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
                 waitingForRoad = false;
 
                 if (!currentPlayer.MoveNext())
@@ -511,26 +574,97 @@ public class Game : NetworkBehaviour
                     currentPhase = GamePhase.TurnDiceRolled;
 
                 }
-
             }
-        }
-        //during first phase building
-        else if (currentPhase == GamePhase.TurnFirstPhase)
-        {
-            if (correctPlayer && !isOwned && gamePlayers[player].hasRoadResources() && canBuild)
+            //during first phase building
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasRoadResources())
             {
-                gamePlayers[player].payRoadResources();
-                edge.GetComponent<Edges>().CmdBuildRoad(gamePlayers[player]);
+                gamePlayers[player].PayShipResources();
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
                 //update his UI to let him know he lost the resources;
                 updatePlayerResourcesUI(player);
             }
+            updateTurn();
         }
-        updateTurn();
     }
 
+    //buildShip on edges
+    public void buildShip(GameObject player, GameObject edge)
+    {
+        bool correctPlayer = checkCorrectPlayer(player);
+        bool canBuild = canBuildConnectedShip(gamePlayers[player], edge);
+        bool onWater = false;
+        bool isOwned = edge.GetComponent<Edges>().owned;
+        foreach(TerrainHex tile in edge.GetComponent<Edges>().inBetween)
+        {
+            if(tile.myTerrain == TerrainKind.Sea)
+            {
+                onWater = true;
+            }
+        }
+        if (!correctPlayer)
+        {
+            logAPlayer(player, "It isn't your turn.");
+        }
+        else if (!onWater)
+        {
+            logAPlayer(player, "You cant build a ship on land.");
+        }
+        else if (isOwned)
+        {
+            logAPlayer(player, "There's already something built here.");
+        }
+        else if (!canBuild && currentPhase == GamePhase.TurnFirstPhase)
+        {
+            logAPlayer(player, "The ship you are trying to build isn't connected.");
+        }
+        
+        if(correctPlayer && onWater && !isOwned && canBuild)
+        {
+            //first Phase Spawn settlement
+            if (currentPhase == GamePhase.SetupRoundOne && waitingForRoad)
+            {
+                    edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                    waitingForRoad = false;
+
+                    if (!currentPlayer.MoveNext())
+                    {
+                        currentPlayer = reverseOrder.Values.GetEnumerator();
+                        //currentPlayer.Reset();
+                        currentPlayer.MoveNext();
+                        currentPhase = GamePhase.SetupRoundTwo;
+                    }
+            }
+            //second setup spawns City
+            else if (currentPhase == GamePhase.SetupRoundTwo && waitingForRoad)
+            {
+                    edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                    waitingForRoad = false;
+
+                    if (!currentPlayer.MoveNext())
+                    {
+                        //currentPlayer.Reset();
+                        currentPlayer = gamePlayers.Values.GetEnumerator();
+                        currentPlayer.MoveNext();
+                        currentPhase = GamePhase.TurnDiceRolled;
+
+                    }
+            }
+            //during first phase building
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
+            {
+                    gamePlayers[player].PayShipResources();
+                    edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                    //update his UI to let him know he lost the resources;
+                    updatePlayerResourcesUI(player);
+            }
+            updateTurn();
+        } 
+    }
+
+    //end player turn
     public void endTurn(GameObject player)
     {
-        if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobber)
+        if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate)
         {
             currentPhase = GamePhase.TurnDiceRolled;
 
@@ -558,7 +692,7 @@ public class Game : NetworkBehaviour
             HandleEventDice(); // Handle the outcome of the event dice
             if (gameDices.getRed() + gameDices.getYellow() == 7)
             {
-                currentPhase = GamePhase.TurnRobber;
+                currentPhase = GamePhase.TurnRobberPirate;
                 //SEND ClientRpc to discard correct amount;
                 robberDiscarding();
 
@@ -580,7 +714,7 @@ public class Game : NetworkBehaviour
     public void moveRobber(GameObject player, GameObject tile)
     {
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if(currentPhase == GamePhase.TurnRobber && checkCorrectPlayer(player))
+        if(currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
         {
             if (tile.GetComponent<TerrainHex>().isRobber == true)
             {
@@ -597,20 +731,72 @@ public class Game : NetworkBehaviour
         }
     }
 
-    //send a popup to all players that have over 7 resource/commodities cards asking them to discard the correct amount
-    public void robberDiscarding()
+    public void movePirate(GameObject player, GameObject tile)
     {
-        IEnumerator values = (gamePlayers.Values).GetEnumerator();
-        while (values.MoveNext())
+        //TO-DO
+        //TO-DO add constraint for first barbarian attack when they will be implemented
+        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
         {
-            Player tempPlayer = (Player)values.Current;
-            if(tempPlayer.sumResources() > 7)
+            if (tile.GetComponent<TerrainHex>().isPirate == true)
             {
-                int toDiscard = (int)(tempPlayer.sumResources() / 2.0);
-                playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
+                logAPlayer(player, "You can't reselect the same hextile");
+            }
+            else
+            {
+                pirateTile.GetComponent<TerrainHex>().isPirate = false;
+                pirateTile = tile;
+                tile.GetComponent<TerrainHex>().isPirate = true;
+                currentPhase = GamePhase.TurnFirstPhase;
+                updateTurn();
             }
         }
     }
+
+    public void playCard(GameObject player, ProgressCardKind k)
+    {
+        bool rightPlayer = checkCorrectPlayer(player);
+        Player cardPlayer = gamePlayers[player];
+        if (rightPlayer && lastPlayed == ProgressCardKind.NoCard)
+        {
+            switch (k)
+            {
+                case ProgressCardKind.AlchemistCard: break;
+                case ProgressCardKind.CraneCard: break;
+                case ProgressCardKind.EngineerCard: break;
+                case ProgressCardKind.InventorCard: break;
+                case ProgressCardKind.IrrigationCard: break;
+                case ProgressCardKind.MedicineCard: break;
+                case ProgressCardKind.MiningCard: break;
+                case ProgressCardKind.PrinterCard:
+                    {
+                        cardPlayer.AddVictoryPoints(1);
+                        updatePlayerResourcesUI(player);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        break;
+                    }
+                case ProgressCardKind.RoadBuildingCard: break;
+                case ProgressCardKind.SmithCard: break;
+                case ProgressCardKind.BishopCard: break;
+                case ProgressCardKind.ConstitutionCard: break;
+                case ProgressCardKind.DeserterCard: break;
+                case ProgressCardKind.DiplomatCard: break;
+                case ProgressCardKind.IntrigueCard: break;
+                case ProgressCardKind.SaboteurCard: break;
+                case ProgressCardKind.SpyCard: break;
+                case ProgressCardKind.WarlordCard: break;
+                case ProgressCardKind.WeddingCard: break;
+                case ProgressCardKind.ComercialHarborCard: break;
+                case ProgressCardKind.MasterMerchantCard: break;
+                case ProgressCardKind.MerchantCard: break;
+                case ProgressCardKind.MerchantFleetCard: break;
+                case ProgressCardKind.ResourceMonopolyCard: break;
+                case ProgressCardKind.TradeMonopolyCard: break;
+
+            }
+        }
+    }
+    
+    
 
     public void MoveBarbs()
     {
@@ -677,7 +863,61 @@ public class Game : NetworkBehaviour
                 foreach (Edges e in i.paths)
                 {
                     //check to see if owned or else bleongs to is obviously null and return null pointer
-                    if (e.owned && e.belongsTo.Equals(player))
+                    if (e.owned && e.belongsTo.Equals(player) && e.isShip == false)
+                    {
+                        check = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return check;
+    }
+
+    private bool canBuildConnectedShip(Player player, GameObject edge)
+    {
+        bool check = false;
+        //on first setup road/ship must be built connected to settlement built
+        if (currentPhase == GamePhase.SetupRoundOne)
+        {
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.Settlement)
+                {
+                    check = true;
+                    break;
+                }
+            }
+        }
+        //on second setup road/ship must be connected to city
+        else if (currentPhase == GamePhase.SetupRoundTwo)
+        {
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.City)
+                {
+                    check = true;
+                    break;
+                }
+            }
+        }
+        //on build phase it has to be connected to a city or another boat.
+        else if (currentPhase == GamePhase.TurnFirstPhase)
+        {
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                //check owned true or else owned is null pointer
+                if (i.owned && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;
+                    break;
+                }
+                foreach (Edges e in i.paths)
+                {
+                    //check to see if owned or else bleongs to is obviously null and return null pointer
+                    if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
                     {
                         check = true;
                         break;
@@ -726,8 +966,8 @@ public class Game : NetworkBehaviour
         return (checkProximity && checkRoadConnection && checkIsLand);
     }
 
-    #endregion
 
+    #endregion
 
     #region Resource Modifiers
     //gives correct resources after a diced is rolled on beggining of turn
@@ -811,11 +1051,11 @@ public class Game : NetworkBehaviour
                                     {
                                         if (hisVillage.myKind == VillageKind.Settlement)
                                         {
-                                            gainer.updateGold(1);
+                                            gainer.AddGold(1);
                                         }
                                         else
                                         {
-                                            gainer.updateGold(2);
+                                            gainer.AddGold(2);
                                         }
                                         break;
                                     }
@@ -888,7 +1128,7 @@ public class Game : NetworkBehaviour
 
             case TerrainKind.GoldMine:
                 {
-                    paidTo.updateGold(2);
+                    paidTo.AddGold(2);
                     break;
                 }
         }
@@ -948,6 +1188,21 @@ public class Game : NetworkBehaviour
         }
         updatePlayerResourcesUI(player);
     }
+
+    //send a popup to all players that have over 7 resource/commodities cards asking them to discard the correct amount
+    public void robberDiscarding()
+        {
+            IEnumerator values = (gamePlayers.Values).GetEnumerator();
+            while (values.MoveNext())
+            {
+                Player tempPlayer = (Player)values.Current;
+                if(tempPlayer.sumResources() > 7)
+                {
+                    int toDiscard = (int)(tempPlayer.sumResources() / 2.0);
+                    playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
+                }
+            }
+        }
     #endregion
 
     // Methods for handling event rolls

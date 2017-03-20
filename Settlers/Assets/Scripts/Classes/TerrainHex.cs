@@ -8,6 +8,8 @@ public class TerrainHex : NetworkBehaviour
     public Sprite[] terrainSprites;
     public Sprite[] tokensSprites;
     public Sprite robberSprite;
+    public Sprite pirateSprite;
+
     [SyncVar(hook = "OnChangeKind")]
     public TerrainKind myTerrain = TerrainKind.None;
 
@@ -16,6 +18,11 @@ public class TerrainHex : NetworkBehaviour
 
     [SyncVar(hook = "OnChangeRobber")]
     public bool isRobber = false;
+
+    [SyncVar(hook = "OnChangePirate")]
+    public bool isPirate = false;
+
+
     public Intersection[] corners;
     public Edges[] myEdges;
 
@@ -45,6 +52,26 @@ public class TerrainHex : NetworkBehaviour
         if (value)
         {
             transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = robberSprite;
+        }
+        else
+        {
+            if (numberToken == 1)
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+            }
+            else
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tokensSprites[numberToken - 1];
+            }
+        }
+    }
+
+    void OnChangePirate(bool value)
+    {
+        isRobber = value;
+        if (value)
+        {
+            transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = pirateSprite;
         }
         else
         {

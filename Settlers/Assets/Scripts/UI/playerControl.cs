@@ -12,12 +12,15 @@ public class playerControl : NetworkBehaviour {
     private bool resourcesShown = true;
     private bool rollsShown = true;
     private bool cardsShown = true;
+    public bool buildShip = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, 
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
                       discardPanel;
     public GameObject cardPrefab;
+    
+
     #region SyncVar
     //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
@@ -49,6 +52,9 @@ public class playerControl : NetworkBehaviour {
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
     #endregion
+
+
+
 
     #region Setup
     void Start() {
@@ -170,27 +176,19 @@ public class playerControl : NetworkBehaviour {
         this.Event = "Event Dice Roll: " + ((EventKind)eventValue).ToString();
 
     }
-    public void setStatisticValues(int[] values)
+    
+    public void setToBuildRoads()
     {
-        for (int i = 0; i < 32; i++)
-        {
-            if (i < 8)
-            {
+        buildShip = false;
+        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+    }
 
-            }
-            else if (i < 16)
-            {
-
-            }
-            else if (i < 24)
-            {
-
-            }
-            else
-            {
-
-            }
-        }
+    public void setToBuildShips()
+    {
+        buildShip = true;
+        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
     }
     #endregion
 
@@ -212,7 +210,15 @@ public class playerControl : NetworkBehaviour {
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
-                CmdMoveRobber(gameObject, hit.collider.gameObject);
+                if(hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                {
+                    CmdMovePirate(gameObject, hit.collider.gameObject);
+                }
+                else
+                {
+                    CmdMoveRobber(gameObject, hit.collider.gameObject);
+                }
+                
             }
         }
     }
@@ -305,7 +311,15 @@ public class playerControl : NetworkBehaviour {
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
     {
-        gameState.GetComponent<Game>().buildRoad(player, edge);
+        if (buildShip)
+        {
+            gameState.GetComponent<Game>().buildShip(player, edge);
+        }
+        else
+        {
+            gameState.GetComponent<Game>().buildRoad(player, edge);
+        }
+        
     }
     [Command]
     void CmdRollDice(GameObject player)
@@ -344,9 +358,19 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().moveRobber(player, tile);
     }
     [Command]
+    void CmdMovePirate (GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().movePirate(player, tile);
+    }
+    [Command]
     void CmdSendDiscards (GameObject player, int[] values)
     {
         gameState.GetComponent<Game>().discardResources(player, values);
+    }
+    [Command]
+    public void CmdUseCard (ProgressCardKind k)
+    {
+        gameState.GetComponent<Game>().playCard(gameObject,k);
     }
     #endregion
 
@@ -445,15 +469,28 @@ public class playerControl : NetworkBehaviour {
     }
     
     [ClientRpc]
-    public void RpcAddProgressCard(int value)
+    public void RpcAddProgressCard(ProgressCardKind value)
     {
         //adds a card to panel when received;
         GameObject tempCard = Instantiate(cardPrefab);
         //set the card value and it will change its sprite accordingly
-        tempCard.GetComponent<CardControl>().setCard(new Card((ProgressCardKind)value));
+        tempCard.GetComponent<CardControl>().setCard(new Card(value));
         //put it in the view
-        Instantiate(cardPrefab).transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform);
+        Instantiate(cardPrefab).transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
+    }
 
+    [ClientRpc]
+    public void RpcRemoveProgressCard(ProgressCardKind value)
+    {
+        CardControl[] tempCards = CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).GetComponentsInChildren<CardControl>();
+        foreach(CardControl card in tempCards)
+        {
+            if(card.getCard().k == value)
+            {
+                card.removeCard();
+                break;
+            }
+        }
     }
 
     [ClientRpc]
@@ -475,14 +512,13 @@ public class playerControl : NetworkBehaviour {
     }
     #endregion
 
-
-    public void testCardAdd()
+    public void testCard()
     {
         //adds a card to panel when received;
         GameObject tempCard = Instantiate(cardPrefab);
-        tempCard.GetComponent <CardControl>().setCard(new Card(ProgressCardKind.DeserterCard));
+        //set the card value and it will change its sprite accordingly
+        tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
         //put it in the view
-        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
-        
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
     }
 }
