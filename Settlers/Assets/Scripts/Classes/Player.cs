@@ -21,6 +21,8 @@ public class Player {
 
     public List<VillageKind> citiesPool { get; set; }
 
+    public List<ProgressCardKind> cardsInHand { get; set; }
+
     public string name;
     public Player() {
         myColor = playerCount;
@@ -51,6 +53,7 @@ public class Player {
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
         settlementPool = new List<VillageKind>();
+        cardsInHand = new List<ProgressCardKind>();
 
         //add the tokens in the pool
         for(int i = 0; i<4; i++)
@@ -60,6 +63,7 @@ public class Player {
         }
 	    settlementPool.Add(VillageKind.Settlement);
         victoryPoints = 0;
+
     }
 
     #region Player attributes Manipulation

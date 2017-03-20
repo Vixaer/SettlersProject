@@ -18,6 +18,9 @@ public class DiceController
     ArrayList sciencePool = new ArrayList();
     ArrayList tradePool = new ArrayList();
 
+    int redDiceValue, yellowDiceValue, eventDiceValue, terrainKind, tokenValue;
+
+
     public DiceController()
     {
         for(int i = 0; i<5; i++)
@@ -113,9 +116,7 @@ public class DiceController
         }
         
 
-    }
-
-    int redDiceValue, yellowDiceValue, eventDiceValue, terrainKind, tokenValue;
+    }   
     public void rollDice()
     {
         redDiceValue = roller.Next(1, 7);
@@ -144,21 +145,28 @@ public class DiceController
         tilePool.Remove((TerrainKind)terrainKind);
         
     }
-    private static EventKind generateEventDiceRoll()
+
+    #region Cards
+    public void returnCard(ProgressCardKind k)
     {
-        var randomRoll = new Random().Next(1, 6);
-        switch (randomRoll)
+        if((int)k < 9)
         {
-            case 4:
-                return EventKind.Politics;
-            case 5:
-                return EventKind.Science;
-            case 6:
-                return EventKind.Trade;
-            default:
-                return EventKind.Barbarian;
+            sciencePool.Add(k);
+        }
+        else if((int)k < 19)
+        {
+            politicsPool.Add(k);
+        }
+        else
+        {
+            tradePool.Add(k);
         }
     }
+    #endregion
+
+
+
+
     public int getRed()
     {
         return redDiceValue;
@@ -167,11 +175,6 @@ public class DiceController
     {
         return yellowDiceValue;
     }
-    public int getEvent()
-    {
-        return eventDiceValue;
-    }
-
     // Returns the current event role as a kind
     public EventKind getEventKind()
     {

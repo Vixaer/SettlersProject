@@ -27,6 +27,7 @@ public class Intersection : NetworkBehaviour {
     public void BuildSettlement(Player player)
     {
         positionedUnit = new Village(player);
+        player.ownedUnits.Add(positionedUnit);
         type = 1;
         owned = true;
         switch (positionedUnit.Owner.myColor)
@@ -49,6 +50,7 @@ public class Intersection : NetworkBehaviour {
         positionedUnit = new Village(player);
         ((Village)positionedUnit).setVillageType(VillageKind.City);
         owned = true;
+        player.ownedUnits.Add(positionedUnit);
         type = 2;
         switch (positionedUnit.Owner.myColor)
         {

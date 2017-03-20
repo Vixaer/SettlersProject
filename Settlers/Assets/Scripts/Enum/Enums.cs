@@ -56,3 +56,10 @@ public enum TerrainKind{Sea
 	,Fields
 	,GoldMine
     ,None};
+
+public enum KnightLevel
+{
+    Basic,
+    Strong,
+    Mighty,
+}

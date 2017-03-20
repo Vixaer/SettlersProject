@@ -32,9 +32,9 @@ public class Game : NetworkBehaviour
     public GameObject canvas;
 
     //keep track of the tile where the robber is
-    public GameObject robberTile,pirateTile;
+    public GameObject robberTile,pirateTile,merchantTile;
 
-    public ProgressCardKind lastPlayed = ProgressCardKind.NoCard;
+    public List<ProgressCardKind> CardsInPlay = new List<ProgressCardKind>();
    
 
     #region Initial Setup
@@ -182,7 +182,7 @@ public class Game : NetworkBehaviour
         while (remaining)
         {
             GameObject player = (GameObject)keys.Current;
-            player.GetComponent<playerControl>().setDiceValues(gameDices.getRed(), gameDices.getYellow(), gameDices.getEvent());
+            player.GetComponent<playerControl>().setDiceValues(gameDices.getRed(), gameDices.getYellow(), (int)gameDices.getEventKind());
             if (!keys.MoveNext())
             {
                 remaining = false;
@@ -312,6 +312,11 @@ public class Game : NetworkBehaviour
                 default:
                     break;
 
+            }
+            //merchant fleet makes auto 2:1 trade for the duration of the turn
+            if (CardsInPlay.Contains(ProgressCardKind.MerchantFleetCard))
+            {
+                hasSpecial = true;
             }
             if (!hasSpecial && tradingPlayer.ownedHarbour.Contains(HarbourKind.Generic))
             {
@@ -484,7 +489,12 @@ public class Game : NetworkBehaviour
                     // check for player if he has resources and has actually not reached the 4 city cap
                     if (village != null && village.myKind == VillageKind.Settlement)
                     {
-                        if (!currentBuilder.canPayCityUpgrade(false))
+                        bool medCard = false;
+                        if (CardsInPlay.Contains(ProgressCardKind.MedicineCard))
+                        {
+                            medCard = true;
+                        }
+                        if (!currentBuilder.canPayCityUpgrade(medCard))
                         {
                             logAPlayer(player, "You're resources are insufficient for upgrading to a city.");
                         }
@@ -492,10 +502,11 @@ public class Game : NetworkBehaviour
                         {
                             logAPlayer(player, "You've reached the cities cap (4).");
                         }
-                        else if(currentBuilder.canPayCityUpgrade(false) && currentBuilder.hasCities())
+                        else if(currentBuilder.canPayCityUpgrade(medCard) && currentBuilder.hasCities())
                         {
-                            currentBuilder.payCityResources(false);
+                            currentBuilder.payCityResources(medCard);
                             inter.UpgradeSettlement(currentBuilder);
+                            CardsInPlay.Remove(ProgressCardKind.MedicineCard);
                             //update his UI to let him know he lost the resources;
                             updatePlayerResourcesUI(player);
                             logAPlayer(player, "You upgraded your settlement into a city!");
@@ -575,6 +586,12 @@ public class Game : NetworkBehaviour
 
                 }
             }
+            else if(currentPhase == GamePhase.TurnFirstPhase && CardsInPlay.Contains(ProgressCardKind.RoadBuildingCard))
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
+                logAPlayer(player, "You built a free road because of the Road Building Card.");
+            }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasRoadResources())
             {
@@ -649,6 +666,13 @@ public class Game : NetworkBehaviour
 
                     }
             }
+            //check to see if the road card was built
+            else if (currentPhase == GamePhase.TurnFirstPhase && CardsInPlay.Contains(ProgressCardKind.RoadBuildingCard))
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
+                logAPlayer(player, "You built a free ship because of the Road Building Card.");
+            }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
             {
@@ -664,15 +688,22 @@ public class Game : NetworkBehaviour
     //end player turn
     public void endTurn(GameObject player)
     {
+        
         if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate)
         {
-            currentPhase = GamePhase.TurnDiceRolled;
-
-            if (!currentPlayer.MoveNext())
+            if(currentPhase != GamePhase.TurnDiceRolled)
             {
-                currentPlayer.Reset();
-                currentPlayer.MoveNext();
+                currentPhase = GamePhase.TurnDiceRolled;
+
+                if (!currentPlayer.MoveNext())
+                {
+                    currentPlayer.Reset();
+                    currentPlayer.MoveNext();
+                }
+                //remove all remaining cards
+                CardsInPlay.Clear();
             }
+            
         }
         else
         {
@@ -756,7 +787,7 @@ public class Game : NetworkBehaviour
     {
         bool rightPlayer = checkCorrectPlayer(player);
         Player cardPlayer = gamePlayers[player];
-        if (rightPlayer && lastPlayed == ProgressCardKind.NoCard)
+        if (rightPlayer)
         {
             switch (k)
             {
@@ -764,9 +795,70 @@ public class Game : NetworkBehaviour
                 case ProgressCardKind.CraneCard: break;
                 case ProgressCardKind.EngineerCard: break;
                 case ProgressCardKind.InventorCard: break;
-                case ProgressCardKind.IrrigationCard: break;
-                case ProgressCardKind.MedicineCard: break;
-                case ProgressCardKind.MiningCard: break;
+                case ProgressCardKind.IrrigationCard:
+                    {
+                        int sum = 0;
+                        foreach(GameObject tile in boardTile)
+                        {
+                            if(tile.GetComponent<TerrainHex>().myTerrain == TerrainKind.Fields)
+                            {
+                                foreach (Intersection inter in tile.GetComponent<TerrainHex>().corners)
+                                {
+                                    if (inter.owned && inter.positionedUnit.Owner.Equals(player))
+                                    {
+                                        cardPlayer.AddResources(2, ResourceKind.Grain);
+                                        sum += 2;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                        }
+                        updatePlayerResourcesUI(player);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        gameDices.returnCard(k);
+                        logAPlayer(player, "The Irrigation card has given you : " + sum + " grain.");
+                        break;
+                    }
+                case ProgressCardKind.MedicineCard:
+                    {
+                        if(cardPlayer.hasCities() && cardPlayer.canPayCityUpgrade(true))
+                        {
+                            CardsInPlay.Add(k);
+                            player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                            gameDices.returnCard(k);
+                        }
+                        else
+                        {
+                            logAPlayer(player, "You will waste the card as you can't build due to lack of resources or city cap.");
+                        }
+                        break;
+                    }
+                case ProgressCardKind.MiningCard:
+                    {
+                        int sum = 0;
+                        foreach (GameObject tile in boardTile)
+                        {
+                            if (tile.GetComponent<TerrainHex>().myTerrain == TerrainKind.Mountains)
+                            {
+                                foreach (Intersection inter in tile.GetComponent<TerrainHex>().corners)
+                                {
+                                    if (inter.owned && inter.positionedUnit.Owner.Equals(player))
+                                    {
+                                        cardPlayer.AddResources(2, ResourceKind.Ore);
+                                        sum += 2;
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                        updatePlayerResourcesUI(player);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        gameDices.returnCard(k);
+                        logAPlayer(player, "The Irrigation card has given you : " + sum + " ore.");
+                        break;
+                    }
                 case ProgressCardKind.PrinterCard:
                     {
                         cardPlayer.AddVictoryPoints(1);
@@ -774,21 +866,66 @@ public class Game : NetworkBehaviour
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
-                case ProgressCardKind.RoadBuildingCard: break;
-                case ProgressCardKind.SmithCard: break;
+                case ProgressCardKind.RoadBuildingCard:
+                    {
+                        //almost like 2 bools but will be removed when road is built.
+                        CardsInPlay.Add(k);
+                        CardsInPlay.Add(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.SmithCard:
+                    {
+                        //to bool checks for when promoting a knight
+                        CardsInPlay.Add(k);
+                        CardsInPlay.Add(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+
                 case ProgressCardKind.BishopCard: break;
                 case ProgressCardKind.ConstitutionCard: break;
                 case ProgressCardKind.DeserterCard: break;
                 case ProgressCardKind.DiplomatCard: break;
                 case ProgressCardKind.IntrigueCard: break;
-                case ProgressCardKind.SaboteurCard: break;
+                case ProgressCardKind.SaboteurCard:
+                    {
+                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
+                        while (keys.MoveNext())
+                        {
+                            Player temp = (Player)keys.Current;
+                            if(!temp.Equals(cardPlayer) && temp.victoryPoints >= cardPlayer.victoryPoints)
+                            {
+                                //send the discard request to all involved players
+                                playerObjects[temp].GetComponent<playerControl>().RpcDiscardTime((int)(temp.sumResources() / 2.0), 
+                                    cardPlayer.name +": has played the saboteur card and you must discard some cards.");
+                            }
+                        }
+                        break;
+                    }
                 case ProgressCardKind.SpyCard: break;
-                case ProgressCardKind.WarlordCard: break;
+                case ProgressCardKind.WarlordCard:
+                    {
+                        List<OwnableUnit> units = cardPlayer.ownedUnits;
+                        foreach(OwnableUnit unit in units)
+                        {
+                            if(unit is Knight)
+                            {
+                                ((Knight)unit).activateKnight();
+                            }
+                        }
+                        gameDices.returnCard(k);
+                        break;
+                    }
                 case ProgressCardKind.WeddingCard: break;
                 case ProgressCardKind.ComercialHarborCard: break;
                 case ProgressCardKind.MasterMerchantCard: break;
                 case ProgressCardKind.MerchantCard: break;
-                case ProgressCardKind.MerchantFleetCard: break;
+                case ProgressCardKind.MerchantFleetCard:
+                    {
+                        CardsInPlay.Add(k);
+                        break;
+                    }
                 case ProgressCardKind.ResourceMonopolyCard: break;
                 case ProgressCardKind.TradeMonopolyCard: break;
 
