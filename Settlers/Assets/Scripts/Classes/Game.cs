@@ -884,7 +884,13 @@ public class Game : NetworkBehaviour
                     }
 
                 case ProgressCardKind.BishopCard: break;
-                case ProgressCardKind.ConstitutionCard: break;
+				case ProgressCardKind.ConstitutionCard:
+					{
+						cardPlayer.AddVictoryPoints (1);
+						updatePlayerResourcesUI(player);
+						player.GetComponent<playerControl> ().RpcRemoveProgressCard (k);
+						break;
+					}
                 case ProgressCardKind.DeserterCard: break;
                 case ProgressCardKind.DiplomatCard: break;
                 case ProgressCardKind.IntrigueCard: break;
