@@ -13,6 +13,7 @@ public class playerControl : NetworkBehaviour {
     private bool rollsShown = true;
     private bool cardsShown = true;
     public bool buildShip = false;
+    public bool interactKnight = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, 
@@ -190,6 +191,19 @@ public class playerControl : NetworkBehaviour {
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
     }
+    public void setToInteractWithSettlements()
+    {
+        interactKnight = false;
+        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+    }
+
+    public void setToInteractWithKnights()
+    {
+        interactKnight = true;
+        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+    }
     #endregion
 
     #region Retrieve Client Info
@@ -202,7 +216,15 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-                CmdBuildOnIntersection(gameObject, hit.collider.gameObject);
+                if (interactKnight)
+                {
+                    CmdBuildKnight(gameObject, hit.collider.gameObject);
+                }
+                else
+                {
+                    CmdBuildOnIntersection(gameObject, hit.collider.gameObject);
+                }
+                
             }
             if (hit.collider.gameObject.CompareTag("Edge"))
             {
@@ -371,6 +393,11 @@ public class playerControl : NetworkBehaviour {
     public void CmdUseCard (ProgressCardKind k)
     {
         gameState.GetComponent<Game>().playCard(gameObject,k);
+    }
+    [Command]
+    public void CmdBuildKnight(GameObject player, GameObject intersection)
+    {
+        gameState.GetComponent<Game>().buildKnightOnIntersection(player, intersection);
     }
     #endregion
 

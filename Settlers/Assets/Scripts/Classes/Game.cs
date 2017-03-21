@@ -421,7 +421,7 @@ public class Game : NetworkBehaviour
         bool correctPlayer = checkCorrectPlayer(player);
         bool isOwned = intersection.GetComponent<Intersection>().owned;
         bool canBuild = canBuildConnectedCity(currentBuilder, intersection);
-        bool hasSettlements = currentBuilder.hasSettlements();
+        bool hasSettlements = currentBuilder.HasSettlements();
         bool hasLand = false;
 
         foreach(TerrainHex tile in intersection.GetComponent<Intersection>().linked)
@@ -469,7 +469,7 @@ public class Game : NetworkBehaviour
                 //check if empty spot, follow the distance rules and has resources and has not reached the 4 settlemnet cap
                 if (currentBuilder.HasSettlementResources() && !isOwned && canBuild)
                 {
-                    if (currentBuilder.hasSettlements())
+                    if (currentBuilder.HasSettlements())
                     {
                         currentBuilder.PaySettlementResources();
                         inter.BuildSettlement(currentBuilder);
@@ -494,15 +494,15 @@ public class Game : NetworkBehaviour
                         {
                             medCard = true;
                         }
-                        if (!currentBuilder.canPayCityUpgrade(medCard))
+                        if (!currentBuilder.HasCityUpgradeResources(medCard))
                         {
                             logAPlayer(player, "You're resources are insufficient for upgrading to a city.");
                         }
-                        else if (!currentBuilder.hasCities())
+                        else if (!currentBuilder.HasCities())
                         {
                             logAPlayer(player, "You've reached the cities cap (4).");
                         }
-                        else if(currentBuilder.canPayCityUpgrade(medCard) && currentBuilder.hasCities())
+                        else if(currentBuilder.HasCityUpgradeResources(medCard) && currentBuilder.HasCities())
                         {
                             currentBuilder.payCityResources(medCard);
                             inter.UpgradeSettlement(currentBuilder);
@@ -516,13 +516,154 @@ public class Game : NetworkBehaviour
                 }
             }   
             updateTurn();
-        }
-
-        
-        //during first phase building
-       
+        }     
     }
 
+    public void buildKnightOnIntersection(GameObject player, GameObject intersection)
+    {
+        Intersection inter = intersection.GetComponent<Intersection>();
+        Player currentBuilder = gamePlayers[player];
+        bool correctPlayer = checkCorrectPlayer(player);
+        bool isOwned = intersection.GetComponent<Intersection>().owned;
+        bool canBuild = canBuildKnight(currentBuilder, intersection);
+        bool hasKnights = currentBuilder.HasKnights(KnightLevel.Basic);
+        bool hasLand = false;
+
+        foreach (TerrainHex tile in intersection.GetComponent<Intersection>().linked)
+        {
+            if (tile.myTerrain != TerrainKind.Sea)
+            {
+                hasLand = true;
+            }
+        }
+
+        if (!correctPlayer)
+        {
+            logAPlayer(player, "Can't build when it isn't your turn.");
+        }
+        else if (!hasLand)
+        {
+            logAPlayer(player, "Can't build a Knight in the sea.");
+        }
+        else if (!canBuild)
+        {
+            logAPlayer(player, "You need to be connected to your road structure.");
+        }
+        else
+        {
+            //if nothing is build hire a knight
+            if (!isOwned)
+            {
+                if (currentPhase == GamePhase.TurnFirstPhase)
+                {
+                    if (currentBuilder.HasKnightResources())
+                    {
+                        if (currentBuilder.HasKnights(KnightLevel.Basic))
+                        {
+                            currentBuilder.PayKnightResources();
+                            inter.BuildKnight(currentBuilder);
+                            currentBuilder.RemoveKnight(KnightLevel.Basic);
+                            //update his UI to let him know he lost the resources;
+                            updatePlayerResourcesUI(player);
+                        }
+                        else
+                        {
+                            logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a kngiht before attempting to hire another knight");
+                        }
+                    }
+                    else
+                    {
+                        logAPlayer(player, "You need 1 wool and 1 ore to hire a basic knight.");
+                    }
+
+                }
+                else
+                {
+                    logAPlayer(player, "You can't hire knights on this phase.");
+                }
+            }
+            //check for activation or upgrading
+            else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
+            {
+                if (currentPhase == GamePhase.TurnFirstPhase)
+                {
+                    // Check that it actually is a knight
+                    var knight = inter.positionedUnit as Knight;
+                    // Upgrading knight
+                    if (knight != null && knight.isKnightActive())
+                    {
+                        if (!currentBuilder.HasKnightResources())
+                        {
+                            logAPlayer(player, "You're resources are insufficient for upgrading this Knight.");
+                        }
+                        else if (knight.level == KnightLevel.Mighty)
+                        {
+                            logAPlayer(player, "Can't upgrade further he's already the mightiest.");
+                        }
+                        else if (knight.level == KnightLevel.Basic)
+                        {
+                            if (currentBuilder.HasKnights(KnightLevel.Strong))
+                            {
+                                currentBuilder.PayKnightResources();
+                                knight.upgradeKnight();
+                                inter.knight = KnightLevel.Strong;
+                                currentBuilder.AddKnight(KnightLevel.Basic);
+                                currentBuilder.RemoveKnight(KnightLevel.Strong);
+                                updatePlayerResourcesUI(player);
+                            }
+                            else
+                            {
+                                logAPlayer(player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
+                            }
+                            
+                        }
+                        else if (knight.level == KnightLevel.Strong)
+                        {
+                            if (currentBuilder.HasKnights(KnightLevel.Mighty))
+                            {
+                                currentBuilder.PayKnightResources();
+                                knight.upgradeKnight();
+                                inter.knight = KnightLevel.Mighty;
+                                currentBuilder.AddKnight(KnightLevel.Strong);
+                                currentBuilder.RemoveKnight(KnightLevel.Mighty);
+                                updatePlayerResourcesUI(player);
+                            }
+                            else
+                            {
+                                logAPlayer(player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
+                            }
+                        }
+                    }
+                    //activation
+                    else if (knight != null && !knight.isKnightActive())
+                    {
+                        if (!currentBuilder.HasKnightActivatingResources())
+                        {
+                            logAPlayer(player, "You're resources are insufficient to activate this Knight.");
+                        }
+                        else
+                        {
+                            currentBuilder.PayKnightActivationResources();
+                            knight.activateKnight();
+                            inter.knightActive = true;
+                            updatePlayerResourcesUI(player);
+                            logAPlayer(player, "You have activated this knight.");
+                        }
+                    }
+                }
+                else
+                {
+                    logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+                }
+
+            }
+            else
+            {
+                logAPlayer(player, "This Place is already occupied by something else.");
+            }
+            updateTurn();
+        }
+    }
     //buildRoad ran on server from playerCOntrol class with authority
     //runs the build Road on the Edge selected by the player
     public void buildRoad(GameObject player, GameObject edge)
@@ -685,6 +826,7 @@ public class Game : NetworkBehaviour
         } 
     }
 
+    
     //end player turn
     public void endTurn(GameObject player)
     {
@@ -774,7 +916,10 @@ public class Game : NetworkBehaviour
             }
             else
             {
-                pirateTile.GetComponent<TerrainHex>().isPirate = false;
+                if(pirateTile != null)
+                {
+                    pirateTile.GetComponent<TerrainHex>().isPirate = false;
+                } 
                 pirateTile = tile;
                 tile.GetComponent<TerrainHex>().isPirate = true;
                 currentPhase = GamePhase.TurnFirstPhase;
@@ -822,7 +967,7 @@ public class Game : NetworkBehaviour
                     }
                 case ProgressCardKind.MedicineCard:
                     {
-                        if(cardPlayer.hasCities() && cardPlayer.canPayCityUpgrade(true))
+                        if(cardPlayer.HasCities() && cardPlayer.HasCityUpgradeResources(true))
                         {
                             CardsInPlay.Add(k);
                             player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
@@ -1109,6 +1254,32 @@ public class Game : NetworkBehaviour
         return (checkProximity && checkRoadConnection && checkIsLand);
     }
 
+    private bool canBuildKnight(Player player, GameObject intersection)
+    {
+        bool checkRoadConnection = false;
+        bool checkIsLand = false;
+        foreach (TerrainHex tile in intersection.GetComponent<Intersection>().linked)
+        {
+            if (tile.myTerrain != TerrainKind.Sea)
+            {
+                checkIsLand = true;
+            }
+        }
+        foreach (Edges e in intersection.GetComponent<Intersection>().paths)
+        {
+            //check that a road is on any of the possible edges of this intersection
+            if ((currentPhase == GamePhase.TurnFirstPhase) && e.belongsTo != null && e.belongsTo.Equals(player))
+            {
+                checkRoadConnection = true;
+            }
+            //automatically can build in setup
+            else if (currentPhase == GamePhase.SetupRoundOne || currentPhase == GamePhase.SetupRoundTwo)
+            {
+                checkRoadConnection = true;
+            }
+        }
+        return (checkRoadConnection && checkIsLand);
+    }
 
     #endregion
 

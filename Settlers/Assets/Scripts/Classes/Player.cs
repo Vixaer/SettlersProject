@@ -23,6 +23,8 @@ public class Player {
 
     public List<ProgressCardKind> cardsInHand { get; set; }
 
+    public List<KnightLevel> knightTokens { get; set; }
+
     public string name;
     public Player() {
         myColor = playerCount;
@@ -54,12 +56,20 @@ public class Player {
         citiesPool = new List<VillageKind>();
         settlementPool = new List<VillageKind>();
         cardsInHand = new List<ProgressCardKind>();
+        knightTokens = new List<KnightLevel>();
 
         //add the tokens in the pool
         for(int i = 0; i<4; i++)
         {
             citiesPool.Add(VillageKind.City);
             settlementPool.Add(VillageKind.Settlement);
+            if (i < 3)
+            {
+                //add 3 of each knight that can be built
+                knightTokens.Add(KnightLevel.Basic);
+                knightTokens.Add(KnightLevel.Mighty);
+                knightTokens.Add(KnightLevel.Strong);
+            }
         }
 	    settlementPool.Add(VillageKind.Settlement);
         victoryPoints = 0;
@@ -109,6 +119,15 @@ public class Player {
         PayResources(1, ResourceKind.Lumber);
         PayResources(1, ResourceKind.Wool);
     }
+    public void PayKnightResources()
+    {
+        PayResources(1, ResourceKind.Wool);
+        PayResources(1, ResourceKind.Ore);
+    }
+    public void PayKnightActivationResources()
+    {
+        PayResources(1, ResourceKind.Grain);
+    }
 
     public void RemoveCity()
     {
@@ -118,6 +137,10 @@ public class Player {
     {
         settlementPool.Remove(VillageKind.Settlement);
     }
+    public void RemoveKnight(KnightLevel level)
+    {
+        knightTokens.Remove(level);
+    }
 
     public void AddCity()
     {
@@ -126,6 +149,10 @@ public class Player {
     public void AddSettlement()
     {
         settlementPool.Add(VillageKind.Settlement);
+    }
+    public void AddKnight(KnightLevel level)
+    {
+        knightTokens.Add(level);
     }
 
     #endregion
@@ -168,7 +195,7 @@ public class Player {
     #endregion
 
     #region Return
-    public bool canPayCityUpgrade(bool playedMedicinePC)
+    public bool HasCityUpgradeResources(bool playedMedicinePC)
     {
         if (playedMedicinePC)
         {
@@ -230,6 +257,16 @@ public class Player {
         }
         return false;
     }
+    public bool HasKnightResources()
+    {
+        return this.HasResources(1, ResourceKind.Wool) && this.HasResources(1, ResourceKind.Ore);
+    }
+    public bool HasKnightActivatingResources()
+    {
+        return this.HasResources(1, ResourceKind.Grain);
+    }
+
+
     public int GetCityImprovementLevel(CommodityKind kind)
     {
         return cityImprovementLevels[kind];
@@ -304,7 +341,7 @@ public class Player {
         return to_ret;
     }
 
-    public bool hasSettlements()
+    public bool HasSettlements()
     {
         if (settlementPool.Contains(VillageKind.Settlement))
         {
@@ -313,13 +350,17 @@ public class Player {
         return false;
     }
 
-    public bool hasCities()
+    public bool HasCities()
     {
         if (citiesPool.Contains(VillageKind.City))
         {
             return true;
         }
         return false;
+    }
+    public bool HasKnights(KnightLevel level)
+    {
+        return knightTokens.Contains(level);
     }
     #endregion
 }

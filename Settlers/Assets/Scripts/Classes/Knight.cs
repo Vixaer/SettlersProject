@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class Knight : IntersectionUnit {
 
-    KnightLevel level;
+    public KnightLevel level;
     bool isActive = false;
+    bool firstTurn = true;
 	// Use this for initialization
 	void Start () {
 		
@@ -21,7 +22,11 @@ public class Knight : IntersectionUnit {
     }
     public void upgradeKnight()
     {
-        level = (KnightLevel)(((int)level) + 1);
+        if(level != KnightLevel.Mighty)
+        {
+            level = (KnightLevel)(((int)level) + 1);
+        }
+        
     }
     public void activateKnight()
     {
@@ -30,5 +35,10 @@ public class Knight : IntersectionUnit {
     public void deactivateKnight()
     {
         isActive = false;
+    }
+
+    public bool isKnightActive()
+    {
+        return isActive;
     }
 }

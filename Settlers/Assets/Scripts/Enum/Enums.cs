@@ -62,4 +62,5 @@ public enum KnightLevel
     Basic,
     Strong,
     Mighty,
+    None
 }
