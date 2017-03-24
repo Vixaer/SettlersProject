@@ -16,9 +16,9 @@ public class playerControl : NetworkBehaviour {
     public bool interactKnight = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, 
+    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel;
+                      discardPanel, improvementPanel;
     public GameObject cardPrefab;
     
 
@@ -218,11 +218,11 @@ public class playerControl : NetworkBehaviour {
             {
                 if (interactKnight)
                 {
-                    CmdBuildKnight(gameObject, hit.collider.gameObject);
+                    CmdBuildKnight(hit.collider.gameObject);
                 }
                 else
                 {
-                    CmdBuildOnIntersection(gameObject, hit.collider.gameObject);
+                    CmdBuildOnIntersection(hit.collider.gameObject);
                 }
                 
             }
@@ -326,9 +326,9 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().setPlayerName(gameObject, name);
     }
     [Command]
-    void CmdBuildOnIntersection(GameObject player, GameObject intersection)
+    void CmdBuildOnIntersection(GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildOnIntersection(player, intersection);
+        gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
@@ -395,9 +395,15 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().playCard(gameObject,k);
     }
     [Command]
-    public void CmdBuildKnight(GameObject player, GameObject intersection)
+    public void CmdBuildKnight(GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildKnightOnIntersection(player, intersection);
+        gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+    }
+
+    [Command]
+    public void CmdCityUpgrade(int kind)
+    {
+        gameState.GetComponent<Game>().improveCity(gameObject, kind);
     }
     #endregion
 
@@ -467,6 +473,7 @@ public class playerControl : NetworkBehaviour {
         Canvas.ForceUpdateCanvases();
     }
 
+    // the value to get if he has aquaduct and doesnt receive anything
     [ClientRpc]
     public void RpcAskDesiredAquaResource()
     {
@@ -536,6 +543,16 @@ public class playerControl : NetworkBehaviour {
 
         discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard a total of : " + discardAmount.ToString() + "\n" + ExtraInfo;
         discardPanel.transform.GetChild(10).GetComponent<Text>().text = discardAmount.ToString();
+    }
+
+    [ClientRpc]
+    public void RpcUpdateSliders(int level,int kind)
+    {
+        if(level == 1)
+        {
+            improvementPanel.transform.GetChild(kind).GetChild(0).GetChild(1).GetChild(0).gameObject.SetActive(true);
+        }
+        improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
     }
     #endregion
 

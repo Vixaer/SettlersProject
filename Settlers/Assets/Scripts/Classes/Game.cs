@@ -1048,7 +1048,7 @@ public class Game : NetworkBehaviour
                             if(!temp.Equals(cardPlayer) && temp.victoryPoints >= cardPlayer.victoryPoints)
                             {
                                 //send the discard request to all involved players
-                                playerObjects[temp].GetComponent<playerControl>().RpcDiscardTime((int)(temp.sumResources() / 2.0), 
+                                playerObjects[temp].GetComponent<playerControl>().RpcDiscardTime((int)(temp.SumResources() / 2.0), 
                                     cardPlayer.name +": has played the saboteur card and you must discard some cards.");
                             }
                         }
@@ -1084,7 +1084,53 @@ public class Game : NetworkBehaviour
         }
     }
     
-    
+    public void improveCity(GameObject player, int kind)
+    {
+        bool turnCheck = checkCorrectPlayer(player);
+        bool hasCity = false;
+        Player currentUpgrader = gamePlayers[player];
+        foreach (OwnableUnit unit in currentUpgrader.ownedUnits)
+        {
+            if(unit is Village && ((Village)unit).myKind == VillageKind.City)
+            {
+                hasCity = true;
+                break;
+            }
+        }
+        if (!turnCheck)
+        {
+            logAPlayer(player, "Not your turn!");
+        }
+        else if (currentPhase != GamePhase.TurnFirstPhase)
+        {
+            logAPlayer(player, "Can't improve cities on this phase!");
+        }
+        else if (!hasCity)
+        {
+            logAPlayer(player, "Can't upgrade without a city. Get a city first!");
+        }
+        else
+        {        
+            int level = currentUpgrader.GetCityImprovementLevel((CommodityKind)kind);
+            if(level == 5)
+            {
+                logAPlayer(player, "Your improvement level in this category is MAXED!");
+            }
+            else if (!currentUpgrader.HasCommodities(level + 1, (CommodityKind)kind))
+            {
+                logAPlayer(player, "You dont have the Commodities to upgrade you need " + (level+1) + " of " + ((CommodityKind)kind).ToString() + ".");
+             
+            }
+            else
+            {
+                currentUpgrader.improveCity((CommodityKind)kind);
+                logAPlayer(player, "You just improved your cities!");
+                player.GetComponent<playerControl>().RpcUpdateSliders(level + 1, kind);
+                updatePlayerResourcesUI(player);
+            }
+        }
+        
+    }
 
     public void MoveBarbs()
     {
@@ -1497,7 +1543,7 @@ public class Game : NetworkBehaviour
                 notEnoughOf += "You dont have enough: " + (CommodityKind)(i-5);
             }
 
-            player.GetComponent<playerControl>().RpcDiscardTime((int)(gamePlayers[player].sumResources() / 2.0), notEnoughOf);
+            player.GetComponent<playerControl>().RpcDiscardTime((int)(gamePlayers[player].SumResources() / 2.0), notEnoughOf);
             
         }
         updatePlayerResourcesUI(player);
@@ -1510,9 +1556,9 @@ public class Game : NetworkBehaviour
             while (values.MoveNext())
             {
                 Player tempPlayer = (Player)values.Current;
-                if(tempPlayer.sumResources() > 7)
+                if(tempPlayer.SumResources() > 7)
                 {
-                    int toDiscard = (int)(tempPlayer.sumResources() / 2.0);
+                    int toDiscard = (int)(tempPlayer.SumResources() / 2.0);
                     playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
                 }
             }

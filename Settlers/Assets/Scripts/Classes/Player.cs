@@ -40,9 +40,9 @@ public class Player {
         };
         commodities = new Dictionary<CommodityKind, int>()
         {
-            { CommodityKind.Cloth, 0 },
-            { CommodityKind.Coin, 0 },
-            { CommodityKind.Paper, 0 }
+            { CommodityKind.Cloth, 100 },
+            { CommodityKind.Coin, 100 },
+            { CommodityKind.Paper, 100 }
         };
         cityImprovementLevels = new Dictionary<CommodityKind, int>()
         {
@@ -192,6 +192,13 @@ public class Player {
             PayResources(3, ResourceKind.Ore);
         }
     }
+
+    public void improveCity(CommodityKind kind)
+    {
+        //pay and upgrade
+        PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+        cityImprovementLevels[kind] += 1;
+    }
     #endregion
 
     #region Return
@@ -207,7 +214,7 @@ public class Player {
         }
     }
     //return how many resources a player currently has
-    public int sumResources()
+    public int SumResources()
     {
         int sum = 0;
         IEnumerator counter = resources.Values.GetEnumerator();
