@@ -936,10 +936,38 @@ public class Game : NetworkBehaviour
         {
             switch (k)
             {
-                case ProgressCardKind.AlchemistCard: break;
-                case ProgressCardKind.CraneCard: break;
-                case ProgressCardKind.EngineerCard: break;
-                case ProgressCardKind.InventorCard: break;
+                case ProgressCardKind.AlchemistCard:
+                    {
+                        if (currentPhase == GamePhase.TurnDiceRolled)
+                        {
+                            // command to choose dice rolls
+                            cardPlayer.cardsInHand.Remove(k);
+                            gameDices.returnCard(k);
+                        }
+                        else
+                        {
+                            logAPlayer(player, "Can only play this alchemist card before rolling due to it's effect.");
+                        }
+                        break;
+                    }
+                case ProgressCardKind.CraneCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.EngineerCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.InventorCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
                 case ProgressCardKind.IrrigationCard:
                     {
                         int sum = 0;
@@ -961,6 +989,7 @@ public class Game : NetworkBehaviour
                         }
                         updatePlayerResourcesUI(player);
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         logAPlayer(player, "The Irrigation card has given you : " + sum + " grain.");
                         break;
@@ -971,6 +1000,7 @@ public class Game : NetworkBehaviour
                         {
                             CardsInPlay.Add(k);
                             player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                            cardPlayer.cardsInHand.Remove(k);
                             gameDices.returnCard(k);
                         }
                         else
@@ -1000,6 +1030,7 @@ public class Game : NetworkBehaviour
                         }
                         updatePlayerResourcesUI(player);
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         logAPlayer(player, "The Irrigation card has given you : " + sum + " ore.");
                         break;
@@ -1008,7 +1039,6 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.AddVictoryPoints(1);
                         updatePlayerResourcesUI(player);
-                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.RoadBuildingCard:
@@ -1016,6 +1046,7 @@ public class Game : NetworkBehaviour
                         //almost like 2 bools but will be removed when road is built.
                         CardsInPlay.Add(k);
                         CardsInPlay.Add(k);
+                        cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         break;
                     }
@@ -1024,21 +1055,41 @@ public class Game : NetworkBehaviour
                         //to bool checks for when promoting a knight
                         CardsInPlay.Add(k);
                         CardsInPlay.Add(k);
+                        cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         break;
                     }
 
-                case ProgressCardKind.BishopCard: break;
+                case ProgressCardKind.BishopCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
 				case ProgressCardKind.ConstitutionCard:
 					{
 						cardPlayer.AddVictoryPoints (1);
 						updatePlayerResourcesUI(player);
-						player.GetComponent<playerControl> ().RpcRemoveProgressCard (k);
 						break;
 					}
-                case ProgressCardKind.DeserterCard: break;
-                case ProgressCardKind.DiplomatCard: break;
-                case ProgressCardKind.IntrigueCard: break;
+                case ProgressCardKind.DeserterCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.DiplomatCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.IntrigueCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
                 case ProgressCardKind.SaboteurCard:
                     {
                         IEnumerator keys = gamePlayers.Keys.GetEnumerator();
@@ -1052,6 +1103,8 @@ public class Game : NetworkBehaviour
                                     cardPlayer.name +": has played the saboteur card and you must discard some cards.");
                             }
                         }
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
                         break;
                     }
                 case ProgressCardKind.SpyCard: break;
@@ -1065,22 +1118,59 @@ public class Game : NetworkBehaviour
                                 ((Knight)unit).activateKnight();
                             }
                         }
+                        cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         break;
                     }
-                case ProgressCardKind.WeddingCard: break;
-                case ProgressCardKind.ComercialHarborCard: break;
-                case ProgressCardKind.MasterMerchantCard: break;
-                case ProgressCardKind.MerchantCard: break;
+                case ProgressCardKind.WeddingCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.ComercialHarborCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.MasterMerchantCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.MerchantCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
                 case ProgressCardKind.MerchantFleetCard:
                     {
                         CardsInPlay.Add(k);
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
                         break;
                     }
-                case ProgressCardKind.ResourceMonopolyCard: break;
-                case ProgressCardKind.TradeMonopolyCard: break;
+                case ProgressCardKind.ResourceMonopolyCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
+                case ProgressCardKind.TradeMonopolyCard:
+                    {
+                        cardPlayer.cardsInHand.Remove(k);
+                        gameDices.returnCard(k);
+                        break;
+                    }
 
             }
+        }
+        else
+        {
+            logAPlayer(player, "Can't play cards when it isn't your turn.");
         }
     }
     
@@ -1681,7 +1771,117 @@ public class Game : NetworkBehaviour
     private void HandeCityGateRoll()
     {
         EventKind gate = gameDices.getEventKind();
+        IEnumerator values = gamePlayers.Values.GetEnumerator();
         // TODO: Handle what happens when a city gate is rolled
+        switch (gate)
+        {
+            case EventKind.Politics:
+                {
+                    while (values.MoveNext())
+                    {
+                        Player temp = (Player)(values.Current);
+                        int hisLevel = temp.GetCityImprovementLevel(CommodityKind.Coin);
+                        if(hisLevel != 0 && hisLevel+1 >= gameDices.getRed())
+                        {
+                            if (temp.cardsInHand.Count == 4)
+                            {
+                                logAPlayer(playerObjects[temp], "You weren't awarded your card as your hand is full(4).");
+                            }
+                            else if (!gameDices.HasCardsInPool(EventKind.Politics))
+                            {
+                                logAPlayer(playerObjects[temp], "All cards have been drawn, better luck next time.");
+                            }
+                            else
+                            {
+                                ProgressCardKind card = gameDices.rollCard(EventKind.Politics);
+                                //handle the automatically played constitution card
+                                if(card == ProgressCardKind.ConstitutionCard)
+                                {
+                                    playCard(playerObjects[temp], card);
+                                    logAPlayer(playerObjects[temp], "You were awarded 1 VP for drawing the constitution Card. Lucky You!");
+                                }
+                                else
+                                {
+                                    //card added to hand for reference
+                                    temp.cardsInHand.Add(card);
+                                    playerObjects[temp].GetComponent<playerControl>().RpcAddProgressCard(card);
+                                    logAPlayer(playerObjects[temp], "You have just drawn " + card.ToString());
+                                }
+                                
+                            }
+                        }
+                    }
+                    break;
+                }
+            case EventKind.Science:
+                {
+                    while (values.MoveNext())
+                    {
+                        Player temp = (Player)(values.Current);
+                        int hisLevel = temp.GetCityImprovementLevel(CommodityKind.Paper);
+                        if (hisLevel != 0 && hisLevel + 1 >= gameDices.getRed())
+                        {
+                            if (temp.cardsInHand.Count == 4)
+                            {
+                                logAPlayer(playerObjects[temp], "You weren't awarded your card as your hand is full(4).");
+                            }
+                            else if (!gameDices.HasCardsInPool(EventKind.Science))
+                            {
+                                logAPlayer(playerObjects[temp], "All cards have been drawn, better luck next time.");
+                            }
+                            else
+                            {
+                                ProgressCardKind card = gameDices.rollCard(EventKind.Science);
+                                //the printer card is handle differently so thats why there's an if condition
+                                if (card == ProgressCardKind.PrinterCard)
+                                {
+                                    playCard(playerObjects[temp], card);
+                                    logAPlayer(playerObjects[temp], "You were awarded 1 VP for drawing the Printer Card. Lucky You!");
+                                }
+                                else
+                                {
+                                    temp.cardsInHand.Add(card);
+                                    playerObjects[temp].GetComponent<playerControl>().RpcAddProgressCard(card);
+                                    logAPlayer(playerObjects[temp], "You have just drawn " + card.ToString());
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            case EventKind.Trade:
+                {
+                    while (values.MoveNext())
+                    {
+                        Player temp = (Player)(values.Current);
+                        int hisLevel = temp.GetCityImprovementLevel(CommodityKind.Cloth);
+                        if (hisLevel != 0 && hisLevel + 1 >= gameDices.getRed())
+                        {
+                            if (temp.cardsInHand.Count == 4)
+                            {
+                                logAPlayer(playerObjects[temp], "You weren't awarded your card as your hand is full(4).");
+                            }
+                            else if (!gameDices.HasCardsInPool(EventKind.Trade))
+                            {
+                                logAPlayer(playerObjects[temp], "All cards have been drawn, better luck next time.");
+                            }
+                            else
+                            {
+                                ProgressCardKind card = gameDices.rollCard(EventKind.Trade);
+                                temp.cardsInHand.Add(card);
+                                playerObjects[temp].GetComponent<playerControl>().RpcAddProgressCard(card);
+                                logAPlayer(playerObjects[temp], "You have just drawn "+ card.ToString());
+                            }
+                            
+                        }
+                    }
+                    break;
+                }
+            default:
+                {
+                    break;
+                }
+        }
     }
     #endregion
 }

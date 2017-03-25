@@ -164,6 +164,35 @@ public class DiceController
     }
     #endregion
 
+    public ProgressCardKind rollCard(EventKind k)
+    {
+        switch (k)
+        {
+            case EventKind.Science:
+                {
+                    ProgressCardKind to_ret = (ProgressCardKind)sciencePool[roller.Next(0, sciencePool.Count)];
+                    sciencePool.Remove(to_ret);
+                    return to_ret;
+                }
+            case EventKind.Trade:
+                {
+                    ProgressCardKind to_ret = (ProgressCardKind)tradePool[roller.Next(0, tradePool.Count)];
+                    tradePool.Remove(to_ret);
+                    return to_ret;
+                }
+            case EventKind.Politics:
+                {
+                    ProgressCardKind to_ret = (ProgressCardKind)politicsPool[roller.Next(0, politicsPool.Count)];
+                    politicsPool.Remove(to_ret);
+                    return to_ret;
+                }
+            default:
+                {
+                    //will actually never return this its just to shut up compiler.
+                    return ProgressCardKind.NoCard;
+                }
+        }
+    }
 
 
 
@@ -213,6 +242,40 @@ public class DiceController
             return HarbourKind.None;
         }
         
+    }
+
+    public bool HasCardsInPool(EventKind k)
+    {
+        bool to_ret = false;
+        switch (k)
+        {
+            case EventKind.Science:
+                {
+                    if(sciencePool.Count != 0)
+                    {
+                        to_ret = true;
+                    }
+                    break;
+                }
+            case EventKind.Trade:
+                {
+                    if (tradePool.Count != 0)
+                    {
+                        to_ret = true;
+                    }
+                    return to_ret;
+                }
+            case EventKind.Politics:
+                {
+                    if (politicsPool.Count != 0)
+                    {
+                        to_ret = true;
+                    }
+                    return to_ret;
+                }
+
+        }
+        return to_ret;
     }
 }
 

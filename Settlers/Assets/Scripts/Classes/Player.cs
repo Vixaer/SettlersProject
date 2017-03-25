@@ -213,7 +213,7 @@ public class Player {
             return HasResources(2, ResourceKind.Grain) && HasResources(3, ResourceKind.Ore);
         }
     }
-    //return how many resources a player currently has
+
     public int SumResources()
     {
         int sum = 0;
@@ -239,6 +239,7 @@ public class Player {
     {
         return commodities[commodityKind] >= quantity;
     }
+
     public bool HasSettlementResources()
     {
         if (HasResources(1, ResourceKind.Grain) && HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick) && HasResources(1, ResourceKind.Wool))
@@ -247,6 +248,7 @@ public class Player {
         }
         return false;
     }
+
     public bool HasRoadResources()
     {
         if (HasResources(1, ResourceKind.Lumber) && HasResources(1, ResourceKind.Brick))
@@ -264,21 +266,21 @@ public class Player {
         }
         return false;
     }
+
     public bool HasKnightResources()
     {
         return this.HasResources(1, ResourceKind.Wool) && this.HasResources(1, ResourceKind.Ore);
     }
+
     public bool HasKnightActivatingResources()
     {
         return this.HasResources(1, ResourceKind.Grain);
     }
 
-
     public int GetCityImprovementLevel(CommodityKind kind)
     {
         return cityImprovementLevels[kind];
     }
-
 
     public int[] getResourceValues()
     {
@@ -365,9 +367,11 @@ public class Player {
         }
         return false;
     }
+
     public bool HasKnights(KnightLevel level)
     {
         return knightTokens.Contains(level);
     }
+
     #endregion
 }

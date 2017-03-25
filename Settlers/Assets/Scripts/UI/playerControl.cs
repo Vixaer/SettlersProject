@@ -510,7 +510,7 @@ public class playerControl : NetworkBehaviour {
         //set the card value and it will change its sprite accordingly
         tempCard.GetComponent<CardControl>().setCard(new Card(value));
         //put it in the view
-        Instantiate(cardPrefab).transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
     }
 
     [ClientRpc]
