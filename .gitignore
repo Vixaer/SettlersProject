@@ -1,3 +1,6 @@
 Settlers/Temp
 Settlers/Library
 Settlers/obj
+Settlers/.vs
+*.csproj
+*.sln
