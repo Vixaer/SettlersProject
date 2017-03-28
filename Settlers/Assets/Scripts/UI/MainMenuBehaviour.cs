@@ -61,7 +61,7 @@ public class MainMenuBehaviour : MonoBehaviour {
         if (pressed == loadButton)
         {
             isLoaded = true;
-            var filePath = FileHelper.SanitizePath(loadFilePath.text);
+            var filePath = Application.persistentDataPath + "/" + loadFilePath.text + ".dat";
             if (File.Exists(filePath))
             {
                 var bf = new BinaryFormatter();

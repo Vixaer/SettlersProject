@@ -1993,6 +1993,7 @@ public class Game : NetworkBehaviour
 
         // Ordering issue: assign the robber tile here
         if (robberTile != null) robberTile.GetComponent<TerrainHex>().isRobber = true;
+        if (pirateTile != null) pirateTile.GetComponent<TerrainHex>().isRobber = true;
     }
 
     #endregion

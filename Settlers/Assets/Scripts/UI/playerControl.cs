@@ -332,12 +332,12 @@ public class playerControl : NetworkBehaviour {
     public void SaveGame()
     {
         var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
-        if (!string.IsNullOrEmpty(savePath) && Directory.Exists(Path.GetDirectoryName(savePath)))
+        if (!string.IsNullOrEmpty(savePath))
         {
             CmdGetGameData();
             if (this.saveGameData != null)
             {
-                File.WriteAllBytes(savePath, this.saveGameData.ToArray());
+                File.WriteAllBytes(Application.persistentDataPath + "/" + savePath + ".dat", this.saveGameData.ToArray());
             }
         }
     }
