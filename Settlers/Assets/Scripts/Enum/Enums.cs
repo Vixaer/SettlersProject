@@ -5,7 +5,7 @@ using UnityEngine;
 public enum VillageKind {Settlement,City,TradeMetropole,PoliticsMetropole,ScienceMetropole};
 public enum ResourceKind {Wool,Lumber,Ore,Brick,Grain};
 public enum CommodityKind {Coin,Cloth,Paper};
-public enum ProgressCardKind {ArchemistCard
+public enum ProgressCardKind {AlchemistCard
 	,CraneCard
 	,EngineerCard
 	,InventorCard
@@ -29,17 +29,23 @@ public enum ProgressCardKind {ArchemistCard
 	,MerchantCard
 	,MerchantFleetCard
 	,ResourceMonopolyCard
-	,TradeMonopolyCard};
+	,TradeMonopolyCard
+    ,NoCard};
 
 public enum PlayerStatus {Offline,Available,InGame,Ready};
 
 public enum EventKind {Barbarian,Trade,Politics,Science};
 
-public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnSecondPhase,Completed};
+public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobberPirate};
 
-public enum HarbourKind{None
-	,Generic
-	,Special};
+public enum HarbourKind{
+    Generic
+	,Lumber
+    ,Wool
+    ,Ore
+    ,Grain
+    ,Brick
+    ,None};
 
 public enum TerrainKind{Sea
 	,Desert
@@ -48,4 +54,13 @@ public enum TerrainKind{Sea
 	,Mountains
 	,Hills
 	,Fields
-	,GoldMine};
+	,GoldMine
+    ,None};
+
+public enum KnightLevel
+{
+    Basic,
+    Strong,
+    Mighty,
+    None
+}

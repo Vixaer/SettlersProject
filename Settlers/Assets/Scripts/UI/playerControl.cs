@@ -5,17 +5,25 @@ using System.IO;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class playerControl : NetworkBehaviour {
 
     private bool resourcesShown = true;
     private bool rollsShown = true;
+    private bool cardsShown = true;
+    public bool buildShip = false;
+    public bool interactKnight = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    private GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow, MapSelector, DiceWindow, SelectionWindow, nameWindow;
+    public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
+                      MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
+                      discardPanel, improvementPanel;
+    public GameObject cardPrefab;
+    
 
-    //synced with server values (player attributes
-    //resource panel values;
+    #region SyncVar
+    //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
     string Brick;
     [SyncVar(hook = "OnChangedOre")]
@@ -32,6 +40,10 @@ public class playerControl : NetworkBehaviour {
     string Lumber;
     [SyncVar(hook = "OnChangedPaper")]
     string Paper;
+    [SyncVar(hook = "OnChangedGold")]
+    string Gold;
+    [SyncVar(hook = "OnChangedVictory")]
+    string VictoryPoints;
 
     //dice panel Values
     [SyncVar(hook = "OnChangedRed")]
@@ -40,27 +52,31 @@ public class playerControl : NetworkBehaviour {
     string Yellow;
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
+    #endregion
 
-    // Use this for initialization
-    void Start () {
+
+
+
+    #region Setup
+    void Start() {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
-        //open all menu for the client
         if (!isLocalPlayer) return;
-        resourcesWindow = transform.GetChild(0).gameObject;
-        ChatWindow = transform.GetChild(1).gameObject;
-        MenuWindow = transform.GetChild(2).gameObject;
-        MaritimeWindow = transform.GetChild(3).gameObject;
-        MapSelector = transform.GetChild(4).gameObject;
-        DiceWindow = transform.GetChild(5).gameObject;
-        SelectionWindow = transform.GetChild(6).gameObject;
-        nameWindow = transform.GetChild(7).gameObject;
-        nameWindow.SetActive(true);
-
+        nameWindow.gameObject.SetActive(true);
 
     }
-	
-	// Update is called once per frame
-	void Update () {
+    void getGameStateOnServer()
+    {
+        if (!isServer) return;
+        gameState = GameObject.Find("GameState");
+
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        CmdStartUp();
+    }
+    #endregion
+    void Update() {
         if (!isLocalPlayer) return;
         if (Input.GetMouseButtonDown(0))
         {
@@ -70,14 +86,15 @@ public class playerControl : NetworkBehaviour {
         if (Input.GetButtonDown("Submit"))
         {
             string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
-            if(!message.Equals("") && message != null)
+            if (!message.Equals("") && message != null)
             {
                 ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
                 CmdSendMessage(gameObject, message);
             }
         }
-	}
-    
+    }
+
+    #region UI Related
     public void switchResourcesView()
     {
         Animation resourcesAnimation = transform.GetChild(0).GetComponent<Animation>();
@@ -91,10 +108,10 @@ public class playerControl : NetworkBehaviour {
         }
         resourcesShown = !resourcesShown;
     }
-    
+
     public void switchRollsView()
     {
-        Animation rollsAnimation = transform.GetChild(6).GetComponent<Animation>();
+        Animation rollsAnimation = DiceWindow.transform.GetComponent<Animation>();
         if (rollsShown)
         {
             rollsAnimation.Play("HideRolls");
@@ -106,109 +123,27 @@ public class playerControl : NetworkBehaviour {
         rollsShown = !rollsShown;
     }
 
+    public void switchCardPanel()
+    {
+        Animation cardsAnimation = CardPanel.transform.GetComponent<Animation>();
+        if (cardsShown)
+        {
+            cardsAnimation.Play("HideCards");
+            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Maximize";
+        }
+        else
+        {
+            cardsAnimation.Play("ShowCards");
+            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Minimize";
+        }
+        cardsShown = !cardsShown;
+    }
+
     public void closeSelectView()
     {
         isSeletionOpen = false;
     }
-    void detectClickedObject()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
-        if(hit)
-        {
-            Debug.Log(hit.collider.gameObject.name);
-            if (hit.collider.gameObject.CompareTag("Intersection"))
-            {
-                CmdBuildOnIntersection(gameObject, hit.collider.gameObject);
-            }
-            if (hit.collider.gameObject.CompareTag("Edge"))
-            {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
-            }
-        }   
-    }
-
-    [Command]
-    void CmdGiveName()
-    {
-        string playerName =  nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
-        if(!playerName.Equals("") && playerName != null)
-        {
-            gameState.GetComponent<Game>().setPlayerName(gameObject, playerName);
-            //open the menus
-            resourcesWindow.gameObject.SetActive(true);
-            MenuWindow.gameObject.SetActive(true);
-            DiceWindow.gameObject.SetActive(true);
-            ChatWindow.gameObject.SetActive(true);
-            //closet the window
-            nameWindow.SetActive(false);
-        }
-        
-    }
-    [Command]
-    void CmdBuildOnIntersection(GameObject player, GameObject intersection)
-    {
-        gameState.GetComponent<Game>().buildSettlement(player, intersection);
-    }
-    [Command]
-    void CmdBuildOnEdge(GameObject player, GameObject edge)
-    {
-        gameState.GetComponent<Game>().buildRoad(player, edge);
-    }
-    [Command]
-    void CmdRollDice(GameObject player)
-    {
-        gameState.GetComponent<Game>().rollDice(player);
-    }
-    [Command]
-    void CmdSendSelection(GameObject player, int value)
-    {
-        gameState.GetComponent<Game>().updateSelection(player,value);
-    }
-    [Command]
-    void CmdEndTurn(GameObject player)
-    {
-        gameState.GetComponent<Game>().endTurn(player);
-    }
-    [Command]
-    void CmdSendNpcTrade(GameObject player)
-    {
-        int toGive, wanted;
-        toGive = transform.GetChild(4).GetChild(2).GetComponent<Dropdown>().value;
-        wanted = transform.GetChild(4).GetChild(3).GetComponent<Dropdown>().value;
-        //obviously not going to trade 4 brick -> 1 brick
-        if(toGive != wanted)
-        {
-            gameState.GetComponent<Game>().NpcTrade(player, toGive, wanted);
-        }
-        
-    }
-
-    [Command]
-    void CmdSendMessage(GameObject player,string message)
-    {
-        gameState.GetComponent<Game>().chatOnServer(player, message);
-    }
-
-
-    //server ran only
-    void getGameStateOnServer()
-    {
-        if (!isServer) return;
-        gameState = GameObject.Find("GameState");
-
-    }
-
-    public override void OnStartServer()
-    {
-        if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
-        getGameStateOnServer();
-        gameState.GetComponent<Game>().setPlayer(gameObject);
-        base.OnStartServer();
-    }
-
-    //syncing function so that the cleitn can see his proper resources
-    public void setTextValues(Dictionary<ResourceKind,int> resources, Dictionary<CommodityKind, int> commodities)
+    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities, int gold, int victoryPoints)
     {
         if (!isServer) return;
         int temp;
@@ -230,6 +165,9 @@ public class playerControl : NetworkBehaviour {
         commodities.TryGetValue(CommodityKind.Paper, out temp);
         Paper = temp.ToString();
 
+        Gold = gold.ToString();
+        VictoryPoints = victoryPoints.ToString();
+
     }
     public void setDiceValues(int red, int yellow, int eventValue)
     {
@@ -239,29 +177,237 @@ public class playerControl : NetworkBehaviour {
         this.Event = "Event Dice Roll: " + ((EventKind)eventValue).ToString();
 
     }
-
-    public void setStatisticValues(int[] values)
+    
+    public void setToBuildRoads()
     {
-        for (int i = 0; i < 32; i++)
+        buildShip = false;
+        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+    }
+
+    public void setToBuildShips()
+    {
+        buildShip = true;
+        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+    }
+    public void setToInteractWithSettlements()
+    {
+        interactKnight = false;
+        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+    }
+
+    public void setToInteractWithKnights()
+    {
+        interactKnight = true;
+        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+    }
+    #endregion
+
+    #region Retrieve Client Info
+    void detectClickedObject()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity);
+        if (hit && !EventSystem.current.IsPointerOverGameObject())
         {
-            if (i < 8)
+            Debug.Log(hit.collider.gameObject.name);
+            if (hit.collider.gameObject.CompareTag("Intersection"))
             {
+                if (interactKnight)
+                {
+                    CmdBuildKnight(hit.collider.gameObject);
+                }
+                else
+                {
+                    CmdBuildOnIntersection(hit.collider.gameObject);
+                }
                 
             }
-            else if (i < 16)
+            if (hit.collider.gameObject.CompareTag("Edge"))
             {
-
+                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
             }
-            else if (i < 24)
+            if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
-
-            }
-            else
-            {
-
+                if(hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                {
+                    CmdMovePirate(gameObject, hit.collider.gameObject);
+                }
+                else
+                {
+                    CmdMoveRobber(gameObject, hit.collider.gameObject);
+                }
+                
             }
         }
     }
+
+    public void getNameToSend()
+    {
+        if (!isLocalPlayer) return;
+        string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
+        if (!playerName.Equals("") && playerName != null)
+        {
+
+            //open the menus
+            resourcesWindow.gameObject.SetActive(true);
+            MenuWindow.gameObject.SetActive(true);
+            DiceWindow.gameObject.SetActive(true);
+            ChatWindow.gameObject.SetActive(true);
+            CardPanel.gameObject.SetActive(true);
+            //closet the window
+            nameWindow.SetActive(false);
+            CmdSendName(playerName);
+        }
+
+    }
+
+    public void getTradeValue()
+    {
+        int toGive, wanted;
+        toGive = transform.GetChild(3).GetChild(2).GetComponent<Dropdown>().value;
+        wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
+        CmdSendNpcTrade(gameObject, toGive, wanted);
+    }
+
+    public void getDiscardValues()
+    {
+        int[] values = new int[8];
+        int sum = 0;
+        for(int i = 0; i< values.Length; i++)
+        {
+            //i = 0 is wool like enum 0 = wool etc...
+            if (discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text.Equals(""))
+            {
+                values[i] = 0;
+                sum += 0;
+            }
+            else
+            {
+                
+                values[i] = int.Parse(discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text);
+                sum += values[i];
+            }
+        }
+        int needed = int.Parse(discardPanel.transform.GetChild(10).GetComponent<Text>().text);
+        //loop to check if he has enough of all the resources
+        if (sum == needed)
+        {
+            CmdSendDiscards(gameObject, values);
+            discardPanel.SetActive(false);
+        }
+        else if(sum > needed)
+        {
+            discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please remove : " + (sum - needed);
+        }
+        else
+        {
+            discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please add : " + (needed - sum);
+        }
+        
+    }
+    #endregion
+
+    #region Commands
+    [Command]
+    public void CmdStartUp()
+    {
+        if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
+        getGameStateOnServer();
+        gameState.GetComponent<Game>().setPlayer(gameObject);
+        base.OnStartServer();
+    }
+    [Command]
+    public void CmdSendName(string name)
+    {
+        gameState.GetComponent<Game>().setPlayerName(gameObject, name);
+    }
+    [Command]
+    void CmdBuildOnIntersection(GameObject intersection)
+    {
+        gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
+    }
+    [Command]
+    void CmdBuildOnEdge(GameObject player, GameObject edge)
+    {
+        if (buildShip)
+        {
+            gameState.GetComponent<Game>().buildShip(player, edge);
+        }
+        else
+        {
+            gameState.GetComponent<Game>().buildRoad(player, edge);
+        }
+        
+    }
+    [Command]
+    void CmdRollDice(GameObject player)
+    {
+        gameState.GetComponent<Game>().rollDice(player);
+    }
+    [Command]
+    void CmdSendSelection(GameObject player, int value)
+    {
+        gameState.GetComponent<Game>().updateSelection(player, value);
+    }
+    [Command]
+    void CmdEndTurn(GameObject player)
+    {
+        gameState.GetComponent<Game>().endTurn(player);
+    }
+    [Command]
+    void CmdSendNpcTrade(GameObject player, int toGive, int wanted)
+    {
+
+        //obviously not going to trade 4 brick -> 1 brick
+        if (toGive != wanted)
+        {
+            gameState.GetComponent<Game>().NpcTrade(player, toGive, wanted);
+        }
+
+    }
+    [Command]
+    void CmdSendMessage(GameObject player, string message)
+    {
+        gameState.GetComponent<Game>().chatOnServer(player, message);
+    }
+    [Command]
+    void CmdMoveRobber (GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().moveRobber(player, tile);
+    }
+    [Command]
+    void CmdMovePirate (GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().movePirate(player, tile);
+    }
+    [Command]
+    void CmdSendDiscards (GameObject player, int[] values)
+    {
+        gameState.GetComponent<Game>().discardResources(player, values);
+    }
+    [Command]
+    public void CmdUseCard (ProgressCardKind k)
+    {
+        gameState.GetComponent<Game>().playCard(gameObject,k);
+    }
+    [Command]
+    public void CmdBuildKnight(GameObject intersection)
+    {
+        gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+    }
+
+    [Command]
+    public void CmdCityUpgrade(int kind)
+    {
+        gameState.GetComponent<Game>().improveCity(gameObject, kind);
+    }
+    #endregion
+
+    #region Sync Hooks
     void OnChangedBrick(string value)
     {
         transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text = value;
@@ -295,6 +441,14 @@ public class playerControl : NetworkBehaviour {
     {
         transform.GetChild(0).GetChild(8).GetChild(0).GetComponent<Text>().text = value;
     }
+    void OnChangedGold(string value)
+    {
+        transform.GetChild(0).GetChild(9).GetChild(0).GetComponent<Text>().text = value;
+    }
+    void OnChangedVictory(string value)
+    {
+        transform.GetChild(0).GetChild(10).GetChild(0).GetComponent<Text>().text = value;
+    }
     void OnChangedRed(string value)
     {
         DiceWindow.transform.GetChild(2).GetComponent<Text>().text = value;
@@ -307,7 +461,9 @@ public class playerControl : NetworkBehaviour {
     {
         DiceWindow.transform.GetChild(1).GetComponent<Text>().text = value;
     }
-    
+    #endregion
+
+    #region ClientRPC
     [ClientRpc]
     public void RpcUpdateChat(string message)
     {
@@ -317,6 +473,7 @@ public class playerControl : NetworkBehaviour {
         Canvas.ForceUpdateCanvases();
     }
 
+    // the value to get if he has aquaduct and doesnt receive anything
     [ClientRpc]
     public void RpcAskDesiredAquaResource()
     {
@@ -325,7 +482,7 @@ public class playerControl : NetworkBehaviour {
         int selectedValue = 0;
         while (isSeletionOpen)
         {
-           selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
+            selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
         }
         SelectionWindow.gameObject.SetActive(false);
         CmdSendSelection(gameObject, selectedValue);
@@ -337,5 +494,75 @@ public class playerControl : NetworkBehaviour {
         {
             MaritimeWindow.gameObject.SetActive(false);
         }
+    }
+
+    [ClientRpc]
+    public void RpcUpdateTurn(string value)
+    {
+        transform.GetChild(8).GetComponent<Text>().text = value;
+    }
+    
+    [ClientRpc]
+    public void RpcAddProgressCard(ProgressCardKind value)
+    {
+        //adds a card to panel when received;
+        GameObject tempCard = Instantiate(cardPrefab);
+        //set the card value and it will change its sprite accordingly
+        tempCard.GetComponent<CardControl>().setCard(new Card(value));
+        //put it in the view
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
+    }
+
+    [ClientRpc]
+    public void RpcRemoveProgressCard(ProgressCardKind value)
+    {
+        CardControl[] tempCards = CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).GetComponentsInChildren<CardControl>();
+        foreach(CardControl card in tempCards)
+        {
+            if(card.getCard().k == value)
+            {
+                card.removeCard();
+                break;
+            }
+        }
+    }
+
+    [ClientRpc]
+    public void RpcDiscardTime(int discardAmount, string ExtraInfo)
+    {
+        discardPanel.SetActive(true);
+        //in order of enums for easy for looping later
+        discardPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = Wool;
+        discardPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().text = Lumber;
+        discardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = Ore;
+        discardPanel.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = Brick;
+        discardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = Grain;
+        discardPanel.transform.GetChild(5).GetChild(0).GetComponent<Text>().text = Coin;
+        discardPanel.transform.GetChild(6).GetChild(0).GetComponent<Text>().text = Cloth;
+        discardPanel.transform.GetChild(7).GetChild(0).GetComponent<Text>().text = Paper;
+
+        discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard a total of : " + discardAmount.ToString() + "\n" + ExtraInfo;
+        discardPanel.transform.GetChild(10).GetComponent<Text>().text = discardAmount.ToString();
+    }
+
+    [ClientRpc]
+    public void RpcUpdateSliders(int level,int kind)
+    {
+        if(level == 1)
+        {
+            improvementPanel.transform.GetChild(kind).GetChild(0).GetChild(1).GetChild(0).gameObject.SetActive(true);
+        }
+        improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
+    }
+    #endregion
+
+    public void testCard()
+    {
+        //adds a card to panel when received;
+        GameObject tempCard = Instantiate(cardPrefab);
+        //set the card value and it will change its sprite accordingly
+        tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
+        //put it in the view
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
     }
 }
