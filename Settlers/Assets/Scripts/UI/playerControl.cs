@@ -18,7 +18,6 @@ public class playerControl : NetworkBehaviour {
     public bool interactKnight = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    private bool isValidName;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
                       discardPanel, improvementPanel, inGameMenuPanel;
@@ -55,6 +54,10 @@ public class playerControl : NetworkBehaviour {
     string Yellow;
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
+
+    // valid name
+    [SyncVar(hook = "OnNameValidated")]
+    public bool isValidName;
     #endregion
 
 
@@ -279,9 +282,8 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().ValidateName(gameObject, name);
     }
 
-    [ClientRpc]
-    public void RpcCheckNameResult(bool result)
-    { 
+    public void validateName(bool result)
+    {
         this.isValidName = result;
     }
     public void getTradeValue()
@@ -524,6 +526,10 @@ public class playerControl : NetworkBehaviour {
     void OnChangedEvent(string value)
     {
         DiceWindow.transform.GetChild(1).GetComponent<Text>().text = value;
+    }
+    void OnNameValidated(bool value)
+    {
+        this.isValidName = value;
     }
     #endregion
 
