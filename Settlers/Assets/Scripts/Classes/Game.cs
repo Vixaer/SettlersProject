@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,7 @@ public class Game : NetworkBehaviour
     public Dictionary<Player, GameObject> playerObjects = new Dictionary<Player, GameObject>();
     //
     public IEnumerator currentPlayer;
+    private string currentPlayerString;
     public Dictionary<GameObject, Player> reverseOrder = new Dictionary<GameObject, Player>();
 
     //added all the references for easier algorithm writing
@@ -35,16 +38,28 @@ public class Game : NetworkBehaviour
     public GameObject robberTile,pirateTile,merchantTile;
 
     public List<ProgressCardKind> CardsInPlay = new List<ProgressCardKind>();
-   
+
+    public bool isLoaded = false;
+
+    private Dictionary<string, Player> tempPlayersByName;
 
     #region Initial Setup
     void Start()
     {
-        currentPhase = GamePhase.SetupRoundOne;
-        setupBoard();
+        if (!isLoaded)
+        {
+            currentPhase = GamePhase.SetupRoundOne;
+            setupBoard();
+        }
+        this.pirateTile = null;
+        this.merchantTile = null;
     }
 
-    
+    public void ValidateName(GameObject player, string name)
+    {
+        player.transform.GetComponent<playerControl>().RpcCheckNameResult(!isLoaded || tempPlayersByName.ContainsKey(name));
+    }
+
     //setup references for the game
     public void setPlayer(GameObject setPlayer)
     {
@@ -57,7 +72,30 @@ public class Game : NetworkBehaviour
 
     public void setPlayerName(GameObject player, string name)
     {
-        gamePlayers[player].name = name;
+        if (isLoaded)
+        {
+            var p = tempPlayersByName[name];
+            gamePlayers.Add(player, p);
+            playerObjects.Add(p, player);
+            updatePlayerResourcesUI(player);
+            reverseOrder = gamePlayers.Reverse().ToDictionary(x => x.Key, x => x.Value);
+            tempPlayersByName.Remove(name);
+            if (tempPlayersByName.Count == 0)
+            {
+                tempPlayersByName = null;
+                // All players have joined, we can try setting the current player
+                this.currentPlayer = gamePlayers.Values.GetEnumerator();
+                currentPlayer.MoveNext();
+                while(((Player)currentPlayer.Current).name != currentPlayerString)
+                {
+                    currentPlayer.MoveNext();
+                }
+            }
+        }
+        else
+        {
+            gamePlayers[player].name = name;
+        }
     }
 
     private void setupBoard()
@@ -1884,4 +1922,120 @@ public class Game : NetworkBehaviour
         }
     }
     #endregion
+
+    #region Save/Load
+    public void SaveGameData(playerControl client)
+    {
+        if (currentPhase == GamePhase.SetupRoundOne || currentPhase == GamePhase.SetupRoundTwo) return;
+        var toSave = new GameData(this);
+        MemoryStream stream = new MemoryStream();
+        BinaryFormatter binaryFormatter = new BinaryFormatter();
+        binaryFormatter.Serialize(stream, toSave);
+        FileHelper.SendGameData(stream.GetBuffer(), client);
+    }
+
+    public void Load(GameData game)
+    {
+            LoadFromDataFile(game);
+    }
+
+    private void LoadFromDataFile(GameData data)
+    {
+        this.waitingForRoad = data.waitingForRoad;
+        this.firstBarbAttack = data.firstBarbAttack;
+        this.barbPosition = data.barbPosition;
+        this.currentPhase = data.currentPhase;
+        this.CardsInPlay = data.CardsInPlay;
+        this.currentPlayerString = data.currentPlayer;
+        this.tempPlayersByName = new Dictionary<string, Player>();
+        this.robberTile = string.IsNullOrEmpty(data.robberTile) ? null : GameObject.Find(data.robberTile);
+        this.pirateTile = string.IsNullOrEmpty(data.pirateTile) ? null : GameObject.Find(data.pirateTile);
+        this.merchantTile = string.IsNullOrEmpty(data.merchantTile) ? null : GameObject.Find(data.merchantTile);
+        var tempOwnedUnitsByPlayer = new Dictionary<IntersectionUnit, Player>();
+        foreach (PlayerData pd in data.gamePlayers)
+        {
+            var player = Player.Load(pd);
+            tempPlayersByName.Add(pd.name, player);
+            foreach (IntersectionUnit ou in player.ownedUnits)
+            {
+                tempOwnedUnitsByPlayer.Add(ou, player);
+            }
+
+        }
+
+        for (int i = 0; i < data.boardTile.Length; i++)
+        {
+            var tile = boardTile.First(t => t.name == data.boardTile[i].name);
+            if (tile != null)
+                tile.GetComponent<TerrainHex>().Load(data.boardTile[i]);
+        }
+        for (int j = 0; j < data.edges.Length; j++)
+        {
+            var edge = edges.First(e => e.name == data.edges[j].name);
+            if (edge != null)
+            {
+                if (!string.IsNullOrEmpty(data.edges[j].belongsTo))
+                    edge.GetComponent<Edges>().Load(data.edges[j], tempPlayersByName[data.edges[j].belongsTo]);
+                else
+                    edge.GetComponent<Edges>().Load(data.edges[j], null);
+            }
+            
+        }
+        for (int k = 0; k < data.intersections.Length; k++)
+        {
+            var inter = intersections.First(i => i.name == data.intersections[k].name);
+            if (inter != null)
+            {
+                var positionedUnit = tempOwnedUnitsByPlayer.Keys.FirstOrDefault(u => u.id == data.intersections[k].positionedUnit);
+                inter.GetComponent<Intersection>().Load(data.intersections[k], positionedUnit);
+            }  
+        }
+
+        // Ordering issue: assign the robber tile here
+        if (robberTile != null) robberTile.GetComponent<TerrainHex>().isRobber = true;
+    }
+
+    #endregion
+}
+
+[Serializable]
+public class GameData
+{
+    public bool waitingForRoad  { get; set; }
+    public bool firstBarbAttack { get; set; }
+    public int barbPosition { get; set; }
+    public GamePhase currentPhase { get; set; }
+    public List<PlayerData> gamePlayers { get; set; }
+    public string currentPlayer;
+    public TerrainHexData[] boardTile { get; set; }
+    public EdgeData[] edges { get; set; }
+    public IntersectionData[] intersections { get; set; }
+    public List<ProgressCardKind> CardsInPlay { get; set; }
+    public string robberTile { get; set; }
+    public string pirateTile { get; set; }
+    public string merchantTile { get; set; }
+
+    public GameData(Game source)
+    {
+        this.waitingForRoad = source.waitingForRoad;
+        this.firstBarbAttack = source.firstBarbAttack;
+        this.barbPosition = source.barbPosition;
+        this.currentPhase = source.currentPhase;
+        this.currentPlayer = source.currentPlayer == null ? 
+            null : 
+            ((Player)source.currentPlayer.Current).name;
+        this.CardsInPlay = source.CardsInPlay;
+        this.gamePlayers = source.gamePlayers.Values.Select(p => new PlayerData(p)).ToList();
+        this.boardTile = source.boardTile.Select(t => new TerrainHexData(t.GetComponent<TerrainHex>())).ToArray();
+        this.edges = source.edges.Select(t => new EdgeData(t.GetComponent<Edges>())).ToArray();
+        this.intersections = source.intersections.Select(t => new IntersectionData(t.GetComponent<Intersection>())).ToArray();
+        this.robberTile = source.robberTile == null ? string.Empty : source.robberTile.name;
+        this.pirateTile = source.pirateTile == null ? string.Empty : source.pirateTile.name;
+        this.merchantTile = source.merchantTile == null ? string.Empty : source.merchantTile.name;
+    }
+    // Dummy constructor for Unet
+    public GameData()
+    {
+
+    }
 }

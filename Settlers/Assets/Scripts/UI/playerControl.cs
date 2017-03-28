@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using System.IO;
@@ -16,11 +18,12 @@ public class playerControl : NetworkBehaviour {
     public bool interactKnight = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
+    private bool isValidName;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel, improvementPanel;
+                      discardPanel, improvementPanel, inGameMenuPanel;
     public GameObject cardPrefab;
-    
+    private List<byte> saveGameData = null;
 
     #region SyncVar
     //resource panel values
@@ -91,6 +94,10 @@ public class playerControl : NetworkBehaviour {
                 ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
                 CmdSendMessage(gameObject, message);
             }
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
         }
     }
 
@@ -251,7 +258,9 @@ public class playerControl : NetworkBehaviour {
         string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
         if (!playerName.Equals("") && playerName != null)
         {
-
+            CmdValidateName(playerName);
+            if (!isValidName) return;
+            CmdSendName(playerName);
             //open the menus
             resourcesWindow.gameObject.SetActive(true);
             MenuWindow.gameObject.SetActive(true);
@@ -259,12 +268,22 @@ public class playerControl : NetworkBehaviour {
             ChatWindow.gameObject.SetActive(true);
             CardPanel.gameObject.SetActive(true);
             //closet the window
-            nameWindow.SetActive(false);
-            CmdSendName(playerName);
+            nameWindow.SetActive(false);  
         }
 
     }
 
+    [Command]
+    private void CmdValidateName(string name)
+    {
+        gameState.GetComponent<Game>().ValidateName(gameObject, name);
+    }
+
+    [ClientRpc]
+    public void RpcCheckNameResult(bool result)
+    { 
+        this.isValidName = result;
+    }
     public void getTradeValue()
     {
         int toGive, wanted;
@@ -272,7 +291,7 @@ public class playerControl : NetworkBehaviour {
         wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
         CmdSendNpcTrade(gameObject, toGive, wanted);
     }
-
+    
     public void getDiscardValues()
     {
         int[] values = new int[8];
@@ -309,6 +328,19 @@ public class playerControl : NetworkBehaviour {
         }
         
     }
+
+    public void SaveGame()
+    {
+        var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
+        if (!string.IsNullOrEmpty(savePath) && Directory.Exists(Path.GetDirectoryName(savePath)))
+        {
+            CmdGetGameData();
+            if (this.saveGameData != null)
+            {
+                File.WriteAllBytes(savePath, this.saveGameData.ToArray());
+            }
+        }
+    }
     #endregion
 
     #region Commands
@@ -317,7 +349,19 @@ public class playerControl : NetworkBehaviour {
     {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
         getGameStateOnServer();
-        gameState.GetComponent<Game>().setPlayer(gameObject);
+        if (MainMenuBehaviour.isLoaded)
+        {
+            if (!gameState.GetComponent<Game>().isLoaded)
+            {
+                // Load the game from a file
+                gameState.GetComponent<Game>().Load(MainMenuBehaviour.loadedGameData);
+                gameState.GetComponent<Game>().isLoaded = true;
+            }
+        }
+        else
+        {
+            gameState.GetComponent<Game>().setPlayer(gameObject);
+        }
         base.OnStartServer();
     }
     [Command]
@@ -404,6 +448,26 @@ public class playerControl : NetworkBehaviour {
     public void CmdCityUpgrade(int kind)
     {
         gameState.GetComponent<Game>().improveCity(gameObject, kind);
+    }
+
+    [Command]
+    public void CmdGetGameData()
+    {
+        gameState.GetComponent<Game>().SaveGameData(this);
+    }
+
+    [ClientRpc]
+    public void RpcGetGameData(byte[] data, int offset)
+    {
+        if (this.saveGameData == null)
+        {
+            this.saveGameData = new List<byte>();
+        }
+        for (int i = offset; i < offset + data.Length; i++)
+        {
+            this.saveGameData.Add(data[i - offset]);
+        }
+
     }
     #endregion
 

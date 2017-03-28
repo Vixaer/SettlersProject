@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -124,5 +125,50 @@ public class Edges : NetworkBehaviour {
                 transform.GetChild(0).localScale = new Vector3(-1, -1, 1);
             }
         }
+    }
+
+    public void Load(EdgeData data, Player p)
+    {
+        if (p != null)
+        {
+            if (data.isShip)
+            {
+                BuildShip(p);
+            }
+            else
+            {
+                BuildRoad(p);
+            }
+        }
+    }
+}
+[Serializable]
+public class EdgeData
+{
+    public string name { get; set; }
+    public string belongsTo { get; set; }
+    public string[] inBetween { get; set; }
+    public string[] endPoints { get; set; }
+    public bool isShip { get; set; }
+    public float[] position { get; set; }
+
+    public EdgeData(Edges source)
+    {
+        this.name = source.name;
+        this.belongsTo = source.belongsTo == null ? string.Empty : source.belongsTo.name;
+        this.inBetween = new string[source.inBetween.Length];
+        for (int i = 0; i < source.inBetween.Length; i++)
+        {
+            this.inBetween[i] = source.inBetween[i].name;
+        }
+
+        this.endPoints = new string[source.endPoints.Length];
+        for (int i = 0; i < source.endPoints.Length; i++)
+        {
+            this.endPoints[i] = source.endPoints[i].name;
+        }
+
+        this.isShip = source.isShip;
+        this.position = new float[3] { source.transform.position.x, source.transform.position.y, source.transform.position.z };
     }
 }

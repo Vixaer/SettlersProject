@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
-
 
 public class Player {
     public int myColor;
@@ -374,4 +374,66 @@ public class Player {
     }
 
     #endregion
+
+    public static Player Load(PlayerData data)
+    {
+        var p = new Player();
+        p.name = data.name;
+        p.myColor = data.myColor;
+        p.cityImprovementLevels = data.cityImprovementLevels;
+        p.commodities = data.commodities;
+        p.resources = data.resources;
+        p.gold = data.gold;
+        p.victoryPoints = data.victoryPoints;
+        p.ownedHarbour = data.ownedHarbour;
+        p.cardsInHand = data.cardsInHand;
+        foreach (OwnableUnitData o in data.ownedUnits)
+        {
+            if (o is VillageData)
+            {
+                p.ownedUnits.Add(Village.Load((VillageData)o, p));
+            }
+            else if (o is KnightData)
+            {
+                p.ownedUnits.Add(Knight.Load((KnightData)o, p));
+            }
+        }
+        return p;
+    }
+}
+
+[Serializable]
+public class PlayerData
+{
+    public int myColor { get; set; }
+    public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
+    public Dictionary<ResourceKind, int> resources { get; set; }
+    public Dictionary<CommodityKind, int> commodities { get; set; }
+    public int gold { get; private set; }
+    public int victoryPoints { get; private set; }
+    public List<OwnableUnitData> ownedUnits { get; set; }
+    public List<HarbourKind> ownedHarbour { get; set; }
+    public List<ProgressCardKind> cardsInHand { get; set; }
+    public string name { get; set; }
+
+    public PlayerData(Player source)
+    {
+        this.name = source.name;
+        this.myColor = source.myColor;
+        this.cityImprovementLevels = source.cityImprovementLevels;
+        this.resources = source.resources;
+        this.commodities = source.commodities;
+        this.gold = source.gold;
+        this.victoryPoints = source.victoryPoints;
+        this.ownedHarbour = source.ownedHarbour;
+        this.cardsInHand = source.cardsInHand;
+        this.ownedUnits = source.ownedUnits.Select<OwnableUnit, OwnableUnitData>(u =>
+        {
+            if (u is Village)
+                return new VillageData((Village)u);
+            else if (u is Knight)
+                return new KnightData((Knight)u);
+            else return null;
+        }).ToList();
+    }
 }

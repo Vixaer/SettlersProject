@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -25,9 +26,19 @@ public class Intersection : NetworkBehaviour {
 
     
 	// Use this for initialization
-	void Start () {
+	void Awake () {
         positionedUnit = null;
 	}
+
+    public Color getColor()
+    {
+        return color;
+    }
+
+    public int getType()
+    {
+        return type;
+    }
 
     #region Actions
     public void BuildSettlement(Player player)
@@ -90,6 +101,7 @@ public class Intersection : NetworkBehaviour {
     public void BuildKnight(Player player)
     {
         positionedUnit = new Knight(player, KnightLevel.Basic);
+        player.ownedUnits.Add(positionedUnit);
         owned = true;
         knight = KnightLevel.Basic;
         switch (positionedUnit.Owner.myColor)
@@ -137,16 +149,17 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
         }
-        else if (!knightActive)
-        {
-            transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
-        }
-        else if( knight == KnightLevel.None)
+        else if (knight == KnightLevel.None)
         {
             transform.GetComponent<SpriteRenderer>().sprite = intersection;
             transform.GetComponent<SpriteRenderer>().color = Color.white;
             transform.GetComponent<CircleCollider2D>().radius = 0.2f;
-        }        
+        }
+        else if (!knightActive)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
+        }
+             
     }
     public void OnActivateKnight(bool value)
     {
@@ -157,8 +170,101 @@ public class Intersection : NetworkBehaviour {
         }
         else
         {
-            transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
+            if (knight != KnightLevel.None)
+                transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
         }
     }
     #endregion
+
+    #region Loading
+    public void Load(IntersectionData data, IntersectionUnit u)
+    {
+        this.harbor = data.harbourKind;
+        if (u != null)
+        {
+            if (u is Village)
+            {
+                var village = (Village)u;
+                LoadVillage(village, data);
+            }
+            else if (u is Knight)
+            {
+                var knight = (Knight)u;
+                LoadKnight(knight);
+            }
+        }
+    }
+
+    private void LoadVillage(Village village, IntersectionData data)
+    {
+        positionedUnit = village;
+        type = data.type;
+        owned = true;
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
+
+    private void LoadKnight(Knight k)
+    {
+        positionedUnit = k;
+        owned = true;
+        knight = k.level;
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
+    #endregion
+}
+
+[Serializable]
+public class IntersectionData
+{
+    public string name { get; set; }
+    public string[] linkedHexes { get; set; }
+    public string[] paths { get; set; }
+    public float[] color { get; set; }
+    public Guid positionedUnit { get; set; }
+    public float[] position { get; set; }
+    public HarbourKind harbourKind { get; set; }
+    public KnightLevel knight { get; set; }
+    public bool knightActive { get; set; }
+    public int type { get; set; }
+    
+    public IntersectionData(Intersection source)
+    {
+        this.name = source.name;
+        this.color = source.getColor() != null ? 
+            new float[] { source.getColor().r, source.getColor().g, source.getColor().b, source.getColor().a } : 
+            null;
+        this.knight = source.knight;
+        this.knightActive = source.knightActive;
+        this.type = source.getType();
+        this.positionedUnit = source.positionedUnit == null ? 
+            Guid.Empty : 
+            source.positionedUnit.id;
+        this.harbourKind = source.harbor;
+
+        this.linkedHexes = new string[source.linked.Length];
+        for (int i = 0; i < source.linked.Length; i++)
+        {
+            this.linkedHexes[i] = source.linked[i].name;
+        }
+
+        this.paths = new string[source.paths.Length];
+        for (int i = 0; i < source.paths.Length; i++)
+        {
+            this.paths[i] = source.paths[i].name;
+        }
+
+        this.position = new float[3] { source.transform.position.x, source.transform.position.y, source.transform.position.z };
+    }
 }

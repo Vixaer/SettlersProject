@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -68,7 +69,7 @@ public class TerrainHex : NetworkBehaviour
 
     void OnChangePirate(bool value)
     {
-        isRobber = value;
+        isPirate = value;
         if (value)
         {
             transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = pirateSprite;
@@ -92,5 +93,48 @@ public class TerrainHex : NetworkBehaviour
         {
             numberToken = tokenValue;
         }
+    }
+
+    public void Load(TerrainHexData data)
+    {
+        this.myTerrain = data.myTerrain;
+        this.numberToken = data.numberToken;
+        this.isRobber = data.isRobber;
+        this.isPirate = data.isPirate;
+    }
+}
+
+[Serializable]
+public class TerrainHexData
+{
+    public string name { get; set; }
+    public string[] edges { get; set; }
+    public string[] corners { get; set; }
+    public TerrainKind myTerrain { get; set; }
+    public int numberToken { get; set; }
+    public bool isRobber { get; set; }
+    public bool isPirate { get; set; }
+    public float[] position { get; set; }
+
+    public TerrainHexData(TerrainHex source)
+    {
+        this.name = source.name;
+        this.myTerrain = source.myTerrain;
+        this.numberToken = source.numberToken;
+        this.isRobber = source.isRobber;
+        this.isPirate = source.isPirate;
+        this.edges = new string[source.myEdges.Length];
+        for (int i = 0; i < source.myEdges.Length; i++)
+        {
+            this.edges[i] = source.myEdges[i].name;
+        }
+
+        this.corners = new string[source.corners.Length];
+        for (int i = 0; i < source.corners.Length; i++)
+        {
+            this.corners[i] = source.corners[i].name;
+        }
+
+        this.position = new float[3] { source.transform.position.x, source.transform.position.y, source.transform.position.z };
     }
 }

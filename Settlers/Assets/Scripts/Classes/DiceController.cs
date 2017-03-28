@@ -45,7 +45,7 @@ public class DiceController
             //added twice
             if (i < 2)
             {
-                tokenPool.Add(1);
+                tokenPool.Add(2);
                 tokenPool.Add(12);
                 
                 tilePool.Add(TerrainKind.GoldMine);

@@ -1,10 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 public enum VillageKind {Settlement,City,TradeMetropole,PoliticsMetropole,ScienceMetropole};
+[Serializable]
 public enum ResourceKind {Wool,Lumber,Ore,Brick,Grain};
+[Serializable]
 public enum CommodityKind {Coin,Cloth,Paper};
+[Serializable]
 public enum ProgressCardKind {AlchemistCard
 	,CraneCard
 	,EngineerCard
@@ -35,9 +40,9 @@ public enum ProgressCardKind {AlchemistCard
 public enum PlayerStatus {Offline,Available,InGame,Ready};
 
 public enum EventKind {Barbarian,Trade,Politics,Science};
-
+[Serializable]
 public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobberPirate};
-
+[Serializable]
 public enum HarbourKind{
     Generic
 	,Lumber
@@ -46,7 +51,7 @@ public enum HarbourKind{
     ,Grain
     ,Brick
     ,None};
-
+[Serializable]
 public enum TerrainKind{Sea
 	,Desert
 	,Pasture
@@ -56,7 +61,7 @@ public enum TerrainKind{Sea
 	,Fields
 	,GoldMine
     ,None};
-
+[Serializable]
 public enum KnightLevel
 {
     Basic,
