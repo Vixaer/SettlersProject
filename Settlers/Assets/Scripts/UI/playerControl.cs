@@ -3,7 +3,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using System.IO;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections.Generic;
@@ -56,9 +55,6 @@ public class playerControl : NetworkBehaviour {
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
     #endregion
-
-
-
 
     #region Setup
     void Start() {

@@ -57,7 +57,7 @@ public class Game : NetworkBehaviour
 
     public void ValidateName(GameObject player, string name)
     {
-        player.transform.GetComponent<playerControl>().RpcCheckNameResult(!isLoaded || tempPlayersByName.ContainsKey(name));
+
     }
 
     //setup references for the game
