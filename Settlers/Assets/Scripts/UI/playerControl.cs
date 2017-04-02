@@ -25,6 +25,14 @@ public class playerControl : NetworkBehaviour {
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
+	// @author xingwei
+	// P2P Trade Resources
+	private List<int> P2PTrade_ResourcesPlayerWants = null;
+	private List<int> P2PTrade_ResourcesPlayerGives = null;
+	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives;
+	public Text P2PTrade_DebugText;
+
+
     #region SyncVar
     //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
@@ -211,6 +219,23 @@ public class playerControl : NetworkBehaviour {
         MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
         MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
     }
+
+	public void confirmP2PTradeStatus(){
+		this.P2PTrade_ResourcesPlayerGives = new List<int>();
+		this.P2PTrade_ResourcesPlayerWants = new List<int>();
+		//InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
+		string txt = "";
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform)
+		{
+			string input = child.transform.GetComponentInChildren<InputField> ().text;
+			int number = 0;
+			if (int.TryParse(input, out number) && number != 0) {
+				txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+			}
+		}
+		this.P2PTrade_DebugText.text = txt;
+	}
+
     #endregion
 
     #region Retrieve Client Info
