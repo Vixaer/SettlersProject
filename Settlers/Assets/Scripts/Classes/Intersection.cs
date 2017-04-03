@@ -23,6 +23,8 @@ public class Intersection : NetworkBehaviour {
     Color color;
     [SyncVar(hook = "OnBuild")]
     int type = 0;
+    [SyncVar(hook = "OnMetropole")]
+    public VillageKind metropolis = VillageKind.City;
 
     
 	// Use this for initialization
@@ -59,8 +61,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        //remove one from the pool
-        player.RemoveSettlement();
     }
     public void BuildCity(Player player)
     {
@@ -81,7 +81,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        player.RemoveCity();
     }
     public void UpgradeSettlement(Player player)
     {
@@ -94,8 +93,6 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
-        player.RemoveCity();
-        player.AddSettlement();
     }
     #endregion
     public void BuildKnight(Player player)
@@ -174,6 +171,23 @@ public class Intersection : NetworkBehaviour {
                 transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
         }
     }
+
+    public void OnMetropole(VillageKind value)
+    {
+        metropolis = value;
+        ((Village)positionedUnit).setVillageType(value);
+        switch (metropolis)
+        {
+            case VillageKind.PoliticsMetropole:
+                break;
+            case VillageKind.ScienceMetropole:
+                break;
+            case VillageKind.TradeMetropole:
+                break;
+            default:
+                break;
+        }
+    }
     #endregion
 
     #region Loading
@@ -207,6 +221,7 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
+        metropolis = data.metropolis;
     }
 
     private void LoadKnight(Knight k)
@@ -238,6 +253,7 @@ public class IntersectionData
     public KnightLevel knight { get; set; }
     public bool knightActive { get; set; }
     public int type { get; set; }
+    public VillageKind metropolis { get; set; }
     
     public IntersectionData(Intersection source)
     {
@@ -248,6 +264,7 @@ public class IntersectionData
         this.knight = source.knight;
         this.knightActive = source.knightActive;
         this.type = source.getType();
+        this.metropolis = source.metropolis;
         this.positionedUnit = source.positionedUnit == null ? 
             Guid.Empty : 
             source.positionedUnit.id;

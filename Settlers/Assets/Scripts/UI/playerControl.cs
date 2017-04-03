@@ -16,13 +16,15 @@ public class playerControl : NetworkBehaviour {
     private bool cardsShown = true;
     public bool buildShip = false;
     public bool interactKnight = false;
+    private bool pickMetropolis = false;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel, improvementPanel, inGameMenuPanel;
+                      discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
+    private VillageKind metropolisType = VillageKind.City;
 
     #region SyncVar
     //resource panel values
@@ -226,7 +228,11 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-                if (interactKnight)
+                if (pickMetropolis)
+                {
+                    CmdSetMetropole(metropolisType, gameObject, hit.collider.gameObject);
+                }
+                else if (interactKnight)
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
@@ -294,6 +300,12 @@ public class playerControl : NetworkBehaviour {
         CmdSendNpcTrade(gameObject, toGive, wanted);
     }
     
+    public void GetTradeBuyValue()
+    {
+        var toBuy = goldShopPanel.transform.GetChild(1).GetComponent<Dropdown>().value;
+        CmdBuyWithGold(gameObject, toBuy);
+    }
+
     public void getDiscardValues()
     {
         int[] values = new int[8];
@@ -416,6 +428,11 @@ public class playerControl : NetworkBehaviour {
 
     }
     [Command]
+    void CmdBuyWithGold(GameObject player, int toBuy)
+    {
+        gameState.GetComponent<Game>().BuyWithGold(player, toBuy);
+    }
+    [Command]
     void CmdSendMessage(GameObject player, string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
@@ -444,6 +461,12 @@ public class playerControl : NetworkBehaviour {
     public void CmdBuildKnight(GameObject intersection)
     {
         gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+    }
+
+    [Command]
+    public void CmdSetMetropole(VillageKind type, GameObject player, GameObject intersection)
+    {
+        gameState.GetComponent<Game>().setMetropole(type, player, intersection);
     }
 
     [Command]
@@ -564,6 +587,30 @@ public class playerControl : NetworkBehaviour {
         {
             MaritimeWindow.gameObject.SetActive(false);
         }
+    }
+
+    [ClientRpc]
+    public void RpcCloseGoldShop(bool accepted)
+    {
+        if (accepted)
+        {
+            goldShopPanel.gameObject.SetActive(false);
+        }
+    }
+
+    [ClientRpc]
+    public void RpcBeginMetropoleChoice(VillageKind type)
+    {
+        this.improvementPanel.SetActive(false);
+        this.pickMetropolis = true;
+        this.metropolisType = type;
+    }
+
+    [ClientRpc]
+    public void RpcEndMetropoleChoice()
+    {
+        this.pickMetropolis = false;
+        this.metropolisType = VillageKind.City;
     }
 
     [ClientRpc]
