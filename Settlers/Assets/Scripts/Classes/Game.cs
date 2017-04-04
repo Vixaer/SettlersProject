@@ -299,6 +299,27 @@ public class Game : NetworkBehaviour
 
     }
 
+	/**
+	 *  P2P Trade that is in charge of the player to player trade.
+	 *  
+	 *  1. Check if the player is the current player and the player is in the correct game phase
+	 *   1.1 Check if the player has the resource he's offering
+	 *    1.1.1 if no then log a player and call reset input from the player on the panel
+	 *   1.2 Open trade offer screen on other players
+	 */
+	public void P2PTradeOffer(GameObject player, List<int> offer, List<int> wants){
+		Player tradingPlayer = gamePlayers [player];
+		if (checkCorrectPlayer (player) && currentPhase == GamePhase.TurnFirstPhase) {
+			//TODO: Check if the player has enough resource to trade
+			//TODO: Open trade request panel on other players and log the trading player (Waiting for other players etc)
+		} else if (checkCorrectPlayer (player)) {
+			logAPlayer(player, "Please roll dice before performing trade.");
+		} else {
+			logAPlayer(player, "Can't trade! It isn't your turn.");
+		}
+	}
+
+
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;

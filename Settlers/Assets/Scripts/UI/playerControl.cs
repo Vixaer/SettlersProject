@@ -30,7 +30,7 @@ public class playerControl : NetworkBehaviour {
 	private List<int> P2PTrade_ResourcesPlayerWants = null;
 	private List<int> P2PTrade_ResourcesPlayerGives = null;
 	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives;
-	public Text P2PTrade_DebugText;
+	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText;
 
 
     #region SyncVar
@@ -220,20 +220,32 @@ public class playerControl : NetworkBehaviour {
         MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
     }
 
+	/*
+	 * Called when clicked the Green Confirm Button on the P2P trade panel. 
+	 * 
+	 * The order of resource stored in the List is
+	 * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold
+	 * 
+	 * Send Trade Request to server
+	 * 
+	 */
 	public void confirmP2PTradeStatus(){
 		this.P2PTrade_ResourcesPlayerGives = new List<int>();
 		this.P2PTrade_ResourcesPlayerWants = new List<int>();
 		//InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
 		string txt = "";
-		foreach (Transform child in this.P2PTrade_PlayerGives.transform)
-		{
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform){
+			//print (child.name);
 			string input = child.transform.GetComponentInChildren<InputField> ().text;
 			int number = 0;
-			if (int.TryParse(input, out number) && number != 0) {
-				txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+			if (int.TryParse (input, out number) && number != 0) {
+				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+				this.P2PTrade_ResourcesPlayerGives.Add (number);
+			} else {
+				this.P2PTrade_ResourcesPlayerGives.Add (0);
 			}
 		}
-		this.P2PTrade_DebugText.text = txt;
+		//this.P2PTrade_DebugText.text = txt;
 	}
 
     #endregion
@@ -481,6 +493,16 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().SaveGameData(this);
     }
 
+	/**
+	 * Reset the input field of P2P Trade Panel 
+	 */
+	[Command]
+	public void CmdResetP2PTradeInput(){
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform) {
+			child.transform.GetComponent<InputField> ().text = "";
+		}
+	}
+
     [ClientRpc]
     public void RpcGetGameData(byte[] data, int offset)
     {
@@ -643,6 +665,26 @@ public class playerControl : NetworkBehaviour {
         }
         improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
     }
+
+	/**
+	 * @author xingwei
+	 * P2P trade UI text upgrading RPC functions
+	 */
+	[ClientRpc]
+	public void RpcLogP2PTradeDebugText(string txt){
+		P2PTrade_DebugText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeOfferedDescriptionText(string txt){
+		P2PTradeOfferedDescriptionText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeGivingDescriptionText(string txt){
+		P2PTradeGivingDescriptionText.text = txt;
+	}
+
     #endregion
 
     public void testCard()
