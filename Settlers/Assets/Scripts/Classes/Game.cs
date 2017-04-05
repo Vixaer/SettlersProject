@@ -1421,6 +1421,7 @@ public class Game : NetworkBehaviour
                 logAPlayer(player, "You must select a city.");
                 return;
             }
+            city.setVillageType(metropolisType);
             intersection.GetComponent<Intersection>().metropolis = metropolisType;
             gamePlayers[player].AddVictoryPoints(2);
             updatePlayerResourcesUI(player);

@@ -176,7 +176,6 @@ public class Intersection : NetworkBehaviour {
     public void OnMetropole(VillageKind value)
     {
         metropolis = value;
-        ((Village)positionedUnit).setVillageType(value);
         switch (metropolis)
         {
             case VillageKind.PoliticsMetropole:
