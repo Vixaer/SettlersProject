@@ -42,6 +42,7 @@ public class Game : NetworkBehaviour
     public bool isLoaded = false;
 
     private Dictionary<string, Player> tempPlayersByName;
+    private VillageKind metropolisType = VillageKind.City;
 
     #region Initial Setup
     void Start()
@@ -625,7 +626,8 @@ public class Game : NetworkBehaviour
                        
                     }
                 }
-            }   
+            }
+            CheckForLongestRoad();
             updateTurn();
         }     
     }
@@ -776,6 +778,7 @@ public class Game : NetworkBehaviour
             {
                 logAPlayer(player, "This Place is already occupied by something else.");
             }
+            CheckForLongestRoad();
             updateTurn();
         }
     }
@@ -1292,8 +1295,8 @@ public class Game : NetworkBehaviour
                         gameDices.returnCard(k);
                         break;
                     }
-
             }
+            CheckForVictory();
         }
         else
         {
@@ -1305,12 +1308,24 @@ public class Game : NetworkBehaviour
     {
         bool turnCheck = checkCorrectPlayer(player);
         bool hasCity = false;
+        bool hasMetropolis = false;
+        var mapper = new Dictionary<CommodityKind, VillageKind>()
+                {
+                    { CommodityKind.Cloth, VillageKind.TradeMetropole },
+                    { CommodityKind.Coin, VillageKind.PoliticsMetropole },
+                    { CommodityKind.Paper, VillageKind.ScienceMetropole }
+                };
         Player currentUpgrader = gamePlayers[player];
         foreach (OwnableUnit unit in currentUpgrader.ownedUnits)
         {
-            if(unit is Village && ((Village)unit).myKind == VillageKind.City)
+            if (unit is Village && ((Village)unit).myKind == VillageKind.City)
             {
                 hasCity = true;
+                break;
+            }
+            else if (unit is Village && ((Village)unit).myKind == mapper[(CommodityKind)kind])
+            {
+                hasMetropolis = true;
                 break;
             }
         }
@@ -1322,7 +1337,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't improve cities on this phase!");
         }
-        else if (!hasCity)
+        else if (!hasCity && !hasMetropolis)
         {
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
@@ -1343,12 +1358,7 @@ public class Game : NetworkBehaviour
                 currentUpgrader.improveCity((CommodityKind)kind);
                 logAPlayer(player, "You just improved your cities!");
                 player.GetComponent<playerControl>().RpcUpdateSliders(level + 1, kind);
-                var mapper = new Dictionary<CommodityKind, VillageKind>()
-                {
-                    { CommodityKind.Cloth, VillageKind.TradeMetropole },
-                    { CommodityKind.Coin, VillageKind.TradeMetropole },
-                    { CommodityKind.Paper, VillageKind.ScienceMetropole }
-                };
+                updatePlayerResourcesUI(player);
                 // Check if we are now creating a metropolis
                 if (currentUpgrader.cityImprovementLevels[(CommodityKind)kind] >= 4)
                 {
@@ -1374,21 +1384,23 @@ public class Game : NetworkBehaviour
                     if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind])
                     {
                         // You now have the metropolis of this type
-                        if (metropolis != null)
+                        if (metropolis != null && metropolis.GetComponent<Intersection>().positionedUnit.Owner != currentUpgrader)
                         {
                             metropolis.GetComponent<Intersection>().metropolis = VillageKind.City;
                             metropolis.GetComponent<Intersection>().positionedUnit.Owner.AddVictoryPoints(-2);
+                            updatePlayerResourcesUI(playerObjects[metropolis.GetComponent<Intersection>().positionedUnit.Owner]);
                         }
                         // Call the RPC for the new player to set their metropolis
                         logAPlayer(player, "Select a city to upgrade to a metropolis.");
-                        player.GetComponent<playerControl>().RpcBeginMetropoleChoice(mapper[(CommodityKind)kind]);
+                        metropolisType = mapper[(CommodityKind)kind];
+                        player.GetComponent<playerControl>().RpcBeginMetropoleChoice();
                     }
                 }
             }
         }     
     }
 
-    public void setMetropole(VillageKind type, GameObject player, GameObject intersection)
+    public void setMetropole(GameObject player, GameObject intersection)
     {
         var cityUnit = intersection.GetComponent<Intersection>().positionedUnit;
         if (cityUnit != null)
@@ -1409,9 +1421,11 @@ public class Game : NetworkBehaviour
                 logAPlayer(player, "You must select a city.");
                 return;
             }
-            intersection.GetComponent<Intersection>().metropolis = type;
+            intersection.GetComponent<Intersection>().metropolis = metropolisType;
             gamePlayers[player].AddVictoryPoints(2);
+            updatePlayerResourcesUI(player);
             logAPlayer(player, "Your city has become a metropolis!");
+            metropolisType = VillageKind.City;
             player.GetComponent<playerControl>().RpcEndMetropoleChoice();
         }
     }
@@ -2088,7 +2102,11 @@ public class Game : NetworkBehaviour
         {
             if (p.victoryPoints >= 13)
             {
-                // This player wins
+                string message = "Player " + p.name + " has won this game! \n Press the Exit button to quit.";
+                foreach (GameObject pl in gamePlayers.Keys)
+                {
+                    pl.GetComponent<playerControl>().RpcVictoryPanel(message);
+                }
             }
         }
     }
@@ -2126,6 +2144,16 @@ public class Game : NetworkBehaviour
                 logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest road!");
             }
             CheckForVictory();
+        }
+        else
+        {
+            // Check if the longest road was broken up
+            if (longestRoadPlayer != null)
+            {
+                longestRoadPlayer.TakeLongestRoad();
+                updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
+                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest road...");
+            }
         }
     }
 
@@ -2230,12 +2258,12 @@ public class Game : NetworkBehaviour
         while (edgesToVisit.Count > 0)
         {
             var currentEdge = edgesToVisit.Pop();
-            if (maxLength < currentEdge.depth)
-            {
-                maxLength = currentEdge.depth;
-            }
             if (!visitedEdges.Contains(currentEdge.edge))
             {
+                if (maxLength < currentEdge.depth)
+                {
+                    maxLength = currentEdge.depth;
+                }
                 foreach (Intersection i in currentEdge.edge.endPoints)
                 {
                     if (i.positionedUnit == null || i.positionedUnit.Owner == p)
@@ -2339,7 +2367,7 @@ public class Game : NetworkBehaviour
 
         // Ordering issue: assign the robber tile here
         if (robberTile != null) robberTile.GetComponent<TerrainHex>().isRobber = true;
-        if (pirateTile != null) pirateTile.GetComponent<TerrainHex>().isRobber = true;
+        if (pirateTile != null) pirateTile.GetComponent<TerrainHex>().isPirate = true;
     }
 
     #endregion

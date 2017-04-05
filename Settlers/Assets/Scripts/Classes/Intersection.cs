@@ -9,6 +9,7 @@ public class Intersection : NetworkBehaviour {
     public Edges[] paths;
     public Sprite settlement, city, intersection;
     public Sprite[] knightSprites, activeKnightSprites;
+    public Sprite metropolisSprite;
     public bool owned;
     
     public IntersectionUnit positionedUnit { get; private set; }
@@ -179,12 +180,19 @@ public class Intersection : NetworkBehaviour {
         switch (metropolis)
         {
             case VillageKind.PoliticsMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.blue;
                 break;
             case VillageKind.ScienceMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.green;
                 break;
             case VillageKind.TradeMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.yellow;
                 break;
             default:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
                 break;
         }
     }

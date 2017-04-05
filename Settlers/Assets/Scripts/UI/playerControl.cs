@@ -21,10 +21,10 @@ public class playerControl : NetworkBehaviour {
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel;
+                      discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel,
+                      victoryPanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
-    private VillageKind metropolisType = VillageKind.City;
 
     #region SyncVar
     //resource panel values
@@ -230,7 +230,7 @@ public class playerControl : NetworkBehaviour {
             {
                 if (pickMetropolis)
                 {
-                    CmdSetMetropole(metropolisType, gameObject, hit.collider.gameObject);
+                    CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
                 else if (interactKnight)
                 {
@@ -464,9 +464,9 @@ public class playerControl : NetworkBehaviour {
     }
 
     [Command]
-    public void CmdSetMetropole(VillageKind type, GameObject player, GameObject intersection)
+    public void CmdSetMetropole(GameObject player, GameObject intersection)
     {
-        gameState.GetComponent<Game>().setMetropole(type, player, intersection);
+        gameState.GetComponent<Game>().setMetropole(player, intersection);
     }
 
     [Command]
@@ -599,18 +599,16 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcBeginMetropoleChoice(VillageKind type)
+    public void RpcBeginMetropoleChoice()
     {
         this.improvementPanel.SetActive(false);
         this.pickMetropolis = true;
-        this.metropolisType = type;
     }
 
     [ClientRpc]
     public void RpcEndMetropoleChoice()
     {
         this.pickMetropolis = false;
-        this.metropolisType = VillageKind.City;
     }
 
     [ClientRpc]
@@ -671,6 +669,13 @@ public class playerControl : NetworkBehaviour {
         }
         improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
     }
+
+    [ClientRpc]
+    public void RpcVictoryPanel(string message)
+    {
+        this.victoryPanel.SetActive(true);
+        this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
+    }
     #endregion
 
     public void testCard()
@@ -681,5 +686,10 @@ public class playerControl : NetworkBehaviour {
         tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
         //put it in the view
         tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }
