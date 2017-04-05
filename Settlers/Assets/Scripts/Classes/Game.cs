@@ -606,7 +606,7 @@ public class Game : NetworkBehaviour
                         }
                         else
                         {
-                            logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a kngiht before attempting to hire another knight");
+                            logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a knight before attempting to hire another knight");
                         }
                     }
                     else
@@ -632,7 +632,7 @@ public class Game : NetworkBehaviour
                     {
                         if (!currentBuilder.HasKnightResources())
                         {
-                            logAPlayer(player, "You're resources are insufficient for upgrading this Knight.");
+                            logAPlayer(player, "Your resources are insufficient for upgrading this Knight.");
                         }
                         else if (knight.level == KnightLevel.Mighty)
                         {
@@ -864,6 +864,121 @@ public class Game : NetworkBehaviour
         } 
     }
 
+	public bool removeShipCheck (GameObject player, GameObject edge) {
+		bool correctPlayer = checkCorrectPlayer(player);
+		if (!correctPlayer)
+		{
+			logAPlayer(player, "It isn't your turn.");
+			return false;
+		}
+
+		//owned check
+		Edges temp = edge.GetComponent<Edges>();
+		Player temp2 = gamePlayers[player];
+
+		
+		if (temp.isShip == true && !temp.belongsTo.Equals(temp2) ){
+			logAPlayer (player, "This ship does not belong to you!");
+			return false;
+		} else if (temp.isShip == true && temp.belongsTo.Equals(temp2)) {
+			// not connected to 2 ships check
+			bool connectCheck = false;
+			int count = 0;
+			int count2 = 0;
+			foreach (Intersection i in temp.endPoints)
+			{
+				
+				foreach (Edges e in i.paths)
+				{
+					//check to see if owned or else belongs to is obviously null and return null pointer
+					if (e.owned) {
+						if (e.belongsTo.Equals(temp2))
+						{
+							if (!connectCheck) {
+								count++;
+								if (count == 2) {
+									connectCheck = true;
+									break;
+								}
+							} else {
+								count2++;
+								if (count2 == 2)
+									break;
+							}
+								
+						}
+					}
+				}
+			}
+
+			if (count2 > 1) {
+				logAPlayer (player, "Can't move ships connected on both ends to your other pieces!");
+				return false;
+			}
+			//pirate check
+			foreach (TerrainHex a in temp.inBetween) {
+				if (a.isPirate == true) {
+					logAPlayer (player, "Can't move ships that are next to pirate!");
+					return false;
+				}
+			}
+			logAPlayer (player, "Ship Selected!");
+			return true;
+
+		} else {
+			logAPlayer (player, "Please select a ship to move.");
+			return false;
+		}
+
+	}
+
+	public bool placeShipCheck (GameObject player, GameObject edge, GameObject oldEdge) {
+		bool correctPlayer = checkCorrectPlayer(player);
+		Edges temp = edge.GetComponent<Edges>();
+		Edges temp2 = oldEdge.GetComponent<Edges> ();
+		temp2.owned = false;
+		bool canBuild = canBuildConnectedShip(gamePlayers[player], edge);
+		bool onWater = false;
+		bool isOwned = temp.owned;
+
+		foreach(TerrainHex tile in temp.inBetween)
+		{
+			if(tile.myTerrain == TerrainKind.Sea)
+			{
+				onWater = true;
+			}
+		}
+
+		//pirate check
+		foreach (TerrainHex a in temp.inBetween) {
+			if (a.isPirate == true) {
+				logAPlayer (player, "Can't move ships next to pirate!");
+				return false;
+			}
+		}
+		if (!correctPlayer) {
+			logAPlayer (player, "It isn't your turn.");
+			temp2.owned = true;
+			return false;
+		} else if (!onWater) {
+			logAPlayer (player, "You cant build a ship on land.");
+			temp2.owned = true;
+			return false;
+		} else if (isOwned) {
+			logAPlayer (player, "There's already something built here.");
+			temp2.owned = true;
+			return false;
+		} else if (correctPlayer && onWater && !isOwned && canBuild) {
+			edge.GetComponent<Edges> ().BuildShip (gamePlayers [player]);
+			oldEdge.GetComponent<Edges> ().RemoveShip (gamePlayers [player]);
+			logAPlayer (player, "Ship Moved! You cannot move anymore ships this turn.");
+			return true;
+		} else {
+			logAPlayer (player, "Ship is not connected with one of your roads/ships!");
+			temp2.owned = true;
+			return false;
+		}
+	}
     
     //end player turn
     public void endTurn(GameObject player)
@@ -873,7 +988,8 @@ public class Game : NetworkBehaviour
         {
             if(currentPhase != GamePhase.TurnDiceRolled)
             {
-                currentPhase = GamePhase.TurnDiceRolled;
+				player.GetComponent<playerControl> ().movedShipThisTurn = false;
+				currentPhase = GamePhase.TurnDiceRolled;
 
                 if (!currentPlayer.MoveNext())
                 {
@@ -1379,10 +1495,13 @@ public class Game : NetworkBehaviour
                 foreach (Edges e in i.paths)
                 {
                     //check to see if owned or else bleongs to is obviously null and return null pointer
-                    if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
+					Debug.Log(e.belongsTo);
+                    if (e.owned && e.isShip == true)
                     {
-                        check = true;
-                        break;
+						if (e.belongsTo.Equals(player) ){
+							check = true;
+							break;
+						}
                     }
                 }
             }
