@@ -93,11 +93,19 @@ public class playerControl : NetworkBehaviour {
         }
         if (Input.GetButtonDown("Submit"))
         {
-            string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
-            if (!message.Equals("") && message != null)
+            if (nameWindow.activeInHierarchy)
             {
-                ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
-                CmdSendMessage(gameObject, message);
+                getNameToSend();
+            }
+            else
+            {
+                string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
+                if (!message.Equals("") && message != null)
+                {
+                    ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
+                    CmdSendMessage(gameObject, message);
+                }
+                
             }
         }
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -263,7 +271,6 @@ public class playerControl : NetworkBehaviour {
 
     public void getNameToSend()
     {
-        if (!isLocalPlayer) return;
         string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
         if (!playerName.Equals("") && playerName != null)
         {
@@ -645,6 +652,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcDiscardTime(int discardAmount, string ExtraInfo)
     {
+        if (!isLocalPlayer) return;
         discardPanel.SetActive(true);
         //in order of enums for easy for looping later
         discardPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = Wool;
