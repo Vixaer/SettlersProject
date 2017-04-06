@@ -2233,7 +2233,7 @@ public class Game : NetworkBehaviour
                 {
                     foreach (Edges e in i.paths)
                     {
-                        if (connectedSet.Contains(e))
+                        if (connectedSet.Contains(e) && e != temp)
                         {
                             connectedEdges++;
                         }
@@ -2250,15 +2250,15 @@ public class Game : NetworkBehaviour
         {
             endpoint = connectedSet[UnityEngine.Random.Range(0, connectedSet.Count)];
         }
-        // Start the DFS
+        // Start the BFS
         var visitedEdges = new List<Edges>();
-        var edgesToVisit = new Stack<EdgeDFSNode>();
+        var edgesToVisit = new Queue<EdgeDFSNode>();
         var root = new EdgeDFSNode(endpoint, 1);
         int maxLength = 0;
-        edgesToVisit.Push(root);
+        edgesToVisit.Enqueue(root);
         while (edgesToVisit.Count > 0)
         {
-            var currentEdge = edgesToVisit.Pop();
+            var currentEdge = edgesToVisit.Dequeue();
             if (!visitedEdges.Contains(currentEdge.edge))
             {
                 if (maxLength < currentEdge.depth)
@@ -2273,7 +2273,7 @@ public class Game : NetworkBehaviour
                         {
                             if (connectedSet.Contains(e))
                             {
-                                edgesToVisit.Push(new EdgeDFSNode(e, currentEdge.depth + 1));
+                                edgesToVisit.Enqueue(new EdgeDFSNode(e, currentEdge.depth + 1));
                             }
                         }
                     }

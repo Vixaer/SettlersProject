@@ -1,11 +1,13 @@
 Initialize engine version: 5.5.2f1 (3829d7f588f3)
 GfxDevice: creating device client; threaded=1
+Initialize engine version: 5.5.2f1 (3829d7f588f3)
+GfxDevice: creating device client; threaded=1
 Direct3D:
     Version:  Direct3D 11.0 [level 11.0]
     Renderer: NVIDIA GeForce GTX 960M (ID=0x139b)
     Vendor:   NVIDIA
     VRAM:     2018 MB
-    Driver:   20.19.15.4531
+    Driver:   21.20.16.4590
 Begin MonoManager ReloadAssembly
 Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll (this message is harmless)
 Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll into Unity Child Domain
@@ -19,59 +21,136 @@ Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersPro
 Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
 Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
 Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.041 seconds
+- Completed reload, in  0.033 seconds
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\System.dll (this message is harmless)
+desktop: 1920x1080 59Hz; virtual: 3840x1080 at -1920,0
+<RI> Initializing input.
+<RI> Input initialized.
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 960M (ID=0x139b)
+    Vendor:   NVIDIA
+    VRAM:     2018 MB
+    Driver:   21.20.16.4590
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
+- Completed reload, in  0.032 seconds
 Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\SettlersProject\Settlers\Settlers_Data\Managed\System.dll (this message is harmless)
 desktop: 1920x1080 59Hz; virtual: 3840x1080 at -1920,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.586666 ms
+<RI> Initialized touch support.
+UnloadTime: 3.326222 ms
+UnloadTime: 1.808444 ms
 Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 6.024000 ms
-0.5500002,0.8200006
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 3.944888 ms
+UnloadTime: 5.463111 ms
+
+Unloading 14 unused Assets to reduce memory usage. Loaded Objects now: 4911.
+Total: 3.180000 ms (FindLiveObjects: 0.488000 ms CreateObjectMapping: 0.134666 ms MarkObjects: 2.492000 ms  DeleteObjects: 0.062666 ms)
+
+-0.98,-0.03999996
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.5100002,0.8400002
+1.01,-0.03999996
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.5400002,0.8400002
+0.5599995,0.8400002
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-1.02,-0.02999973
+-0.99,-0.02999973
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.5500002,0.8200006
+-0.9900007,0
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.4799995,0.8199997
+0.4499998,-0.9099998
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-1.01,-0.07999992
+0.5,-0.8699999
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.9799995,-0.09000015
+0.4499998,-0.8800001
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-0.4500003,-0.8600001
+-0.5499997,0.7799997
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 
 Unloading 16 unused Assets to reduce memory usage. Loaded Objects now: 6039.
-Total: 4.448444 ms (FindLiveObjects: 0.303555 ms CreateObjectMapping: 0.216444 ms MarkObjects: 3.859555 ms  DeleteObjects: 0.068000 ms)
+Total: 4.225777 ms (FindLiveObjects: 0.412444 ms CreateObjectMapping: 0.344888 ms MarkObjects: 3.391555 ms  DeleteObjects: 0.075111 ms)
+
+0.4499998,-0.9099998
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+0.5600004,0.8400002
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+-0.9899998,0
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+-0.9899998,-0.03000069
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+1.01,-0.03999996
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+-0.5500002,0.7800002
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+0.4499998,-0.8800001
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+0.5,-0.8699989
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+-0.98,-0.03999996
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Pressed left click, casting ray.
  
@@ -85,7 +164,11 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Intersection 75
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Intersection 67
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -93,7 +176,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-HexTile 35
+Edge 86
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -101,7 +184,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Edge 109
+Intersection 43
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -109,7 +192,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Intersection 35
+Edge 53
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -117,7 +200,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Intersection 35
+Intersection 78
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -125,7 +208,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Intersection 84
+Edge 115
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -133,7 +216,7 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-HexTile 37
+Intersection 92
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -157,18 +240,75 @@ Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Science
+Edge 75
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Log: connection {1} has been disconnected by timeout; address {::ffff:192.168.1.4:60519}
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Edge 62
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+HexTile 20
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Edge 52
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Edge 39
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Politics
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Edge 63
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Pressed left click, casting ray.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Intersection 50
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 1518 -> priority: 1 
-Failed to send internal buffer channel:0 bytesToSend:1398
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Send Error: WrongConnection channel:0 bytesToSend:1398
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
+  Thread -> id: 4eb8 -> priority: 1 
+Setting up 1 worker threads for Enlighten.
+  Thread -> id: 540c -> priority: 1 
