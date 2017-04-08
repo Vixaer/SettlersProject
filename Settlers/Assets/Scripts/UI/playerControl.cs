@@ -402,15 +402,14 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-<<<<<<< HEAD
+
                 if (pickMetropolis)
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
-                else if (interactKnight)
-=======
-				if (interactKnight && !moveKnight)
->>>>>>> kevin
+
+				else if (interactKnight && !moveKnight)
+
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
