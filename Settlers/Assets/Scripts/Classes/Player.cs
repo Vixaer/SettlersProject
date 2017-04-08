@@ -26,9 +26,14 @@ public class Player {
     public List<KnightLevel> knightTokens { get; set; }
 
     public string name;
+
+    public bool hasMerchant { get; private set; }
+    public bool hasLongestTradeRoute { get; private set; }
     public Player() {
         myColor = playerCount;
         playerCount++;
+        hasMerchant = false;
+        hasLongestTradeRoute = false;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -50,7 +55,7 @@ public class Player {
             { CommodityKind.Coin, 0 },
             { CommodityKind.Paper, 0 }
         };
-        gold = 0;
+        gold = 20;
         ownedUnits = new List<OwnableUnit>();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
@@ -198,6 +203,30 @@ public class Player {
         //pay and upgrade
         PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
         cityImprovementLevels[kind] += 1;
+    }
+
+    public void GiveLongestTradeRoute()
+    {
+        this.hasLongestTradeRoute = true;
+        this.AddVictoryPoints(2);
+    }
+
+    public void TakeLongestRoad()
+    {
+        this.hasLongestTradeRoute = false;
+        this.AddVictoryPoints(-2);
+    }
+
+    public void GiveMerchant()
+    {
+        this.hasMerchant = true;
+        this.AddVictoryPoints(1);
+    }
+
+    public void TakeMerchant()
+    {
+        this.hasMerchant = false;
+        this.AddVictoryPoints(-1);
     }
     #endregion
 

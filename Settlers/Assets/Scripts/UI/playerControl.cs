@@ -3,7 +3,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using System.IO;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections.Generic;
@@ -23,18 +22,48 @@ public class playerControl : NetworkBehaviour {
 	public GameObject selectedEdge;
 
     public bool interactKnight = false;
+
 	public bool activateKnight = false;
 	public bool upgradeKnight = false;
 	public bool moveKnight = false;
 
+
+    private bool pickMetropolis = false;
+
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    private bool isValidName;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel, improvementPanel, inGameMenuPanel;
+                      discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel,
+                      victoryPanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
+
+// @author xingwei
+	// P2P Trade Resources
+	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+	private int giveBrick = 0;
+	private int giveOre = 0;
+	private int giveWool = 0;
+	private int giveCoin = 0;
+	private int giveWheat = 0;
+	private int giveCloth = 0;
+	private int giveLumber = 0;
+	private int givePaper = 0;
+	private int giveGold = 0;
+	private int wantsBrick = 0;
+	private int wantsOre = 0;
+	private int wantsWool = 0;
+	private int wantsCoin = 0;
+	private int wantsWheat = 0;
+	private int wantsCloth = 0;
+	private int wantsLumber = 0;
+	private int wantsPaper = 0;
+	private int wantsGold = 0;
+
+
+	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives,P2PTradeOfferPanel;
+	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText;
 
     #region SyncVar
     //resource panel values
@@ -66,6 +95,10 @@ public class playerControl : NetworkBehaviour {
     string Yellow;
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
+
+    // valid name
+    [SyncVar(hook = "OnNameValidated")]
+    public bool isValidName;
     #endregion
 
 
@@ -99,16 +132,26 @@ public class playerControl : NetworkBehaviour {
         }
         if (Input.GetButtonDown("Submit"))
         {
-            string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
-            if (!message.Equals("") && message != null)
+            if (nameWindow.activeInHierarchy)
             {
-                ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
-                CmdSendMessage(gameObject, message);
+                getNameToSend();
+            }
+            else
+            {
+                string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
+                if (!message.Equals("") && message != null)
+                {
+                    ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
+                    CmdSendMessage(gameObject, message);
+                }
+                
             }
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
+            // Pre-load game data to the client
+            CmdGetGameData();
         }
     }
 
@@ -246,6 +289,104 @@ public class playerControl : NetworkBehaviour {
 		}
         
     }
+
+	/*
+	 * Called when clicked the Green Confirm Button on the P2P trade panel. 
+	 * 
+	 * The order of resource stored in the List is
+	 * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold
+	 * 
+	 * Send Trade Request to server
+	 * 
+	 */
+	public void confirmP2PTradeStatus(){
+		//InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
+		string txt = "";
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform){
+			//print (child.name);
+			string input = child.transform.GetComponentInChildren<InputField> ().text;
+			int number = 0;
+			if (int.TryParse (input, out number) && number > 0) {
+				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+				assignNumberToVariable(child.name,number,false);
+			} else {
+				assignNumberToVariable(child.name,0,false);
+			}
+		}
+
+		foreach (Transform child in this.P2PTrade_PlayerWants.transform){
+			//print (child.name);
+			string input = child.transform.GetComponentInChildren<InputField> ().text;
+			int number = 0;
+			if (int.TryParse (input, out number) && number != 0) {
+				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+				assignNumberToVariable(child.name,number,true);
+			} else {
+				assignNumberToVariable(child.name,0,true);
+			}
+		}
+
+		gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+	}
+
+	/* Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+	private void assignNumberToVariable(string name, int quantity, bool wants){
+		if (name == "Brick") {
+			if (wants) {
+				this.wantsBrick = quantity;
+			} else {
+				this.giveBrick = quantity;
+			}
+		} else if (name == "Ore") {
+			if (wants) {
+				this.wantsOre = quantity;
+			} else {
+				this.giveOre = quantity;
+			}
+		} else if (name == "Wool") {
+			if (wants) {
+				this.wantsWool = quantity;
+			} else {
+				this.giveWool = quantity;
+			}
+		} else if (name == "Coin") {
+			if (wants) {
+				this.wantsCoin = quantity;
+			} else {
+				this.giveCoin = quantity;
+			}
+		} else if (name == "Wheat") {
+			if (wants) {
+				this.wantsWheat = quantity;
+			} else {
+				this.giveWheat = quantity;
+			}
+		} else if (name == "Cloth") {
+			if (wants) {
+				this.wantsCloth = quantity;
+			} else {
+				this.giveCloth = quantity;
+			}
+		} else if (name == "Lumber") {
+			if (wants) {
+				this.wantsLumber = quantity;
+			} else {
+				this.giveLumber = quantity;
+			}
+		} else if (name == "Paper") {
+			if (wants) {
+				this.wantsPaper = quantity;
+			} else {
+				this.givePaper = quantity;
+			}
+		} else if (name == "Gold") {
+			if (wants) {
+				this.wantsGold = quantity;
+			} else {
+				this.giveGold = quantity;
+			}
+		}
+	}
     #endregion
 
     #region Retrieve Client Info
@@ -258,7 +399,11 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-                if (interactKnight)
+                if (pickMetropolis)
+                {
+                    CmdSetMetropole(gameObject, hit.collider.gameObject);
+                }
+                else if (interactKnight)
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
@@ -292,21 +437,20 @@ public class playerControl : NetworkBehaviour {
 
     public void getNameToSend()
     {
-        if (!isLocalPlayer) return;
         string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
         if (!playerName.Equals("") && playerName != null)
         {
             CmdValidateName(playerName);
             if (!isValidName) return;
-            CmdSendName(playerName);
-            //open the menus
-            resourcesWindow.gameObject.SetActive(true);
-            MenuWindow.gameObject.SetActive(true);
-            DiceWindow.gameObject.SetActive(true);
-            ChatWindow.gameObject.SetActive(true);
-            CardPanel.gameObject.SetActive(true);
-            //closet the window
-            nameWindow.SetActive(false);  
+            //CmdSendName(playerName);
+            ////open the menus
+            //resourcesWindow.gameObject.SetActive(true);
+            //MenuWindow.gameObject.SetActive(true);
+            //DiceWindow.gameObject.SetActive(true);
+            //ChatWindow.gameObject.SetActive(true);
+            //CardPanel.gameObject.SetActive(true);
+            ////closet the window
+            //nameWindow.SetActive(false);  
         }
 
     }
@@ -317,9 +461,8 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().ValidateName(gameObject, name);
     }
 
-    [ClientRpc]
-    public void RpcCheckNameResult(bool result)
-    { 
+    public void validateName(bool result)
+    {
         this.isValidName = result;
     }
     public void getTradeValue()
@@ -330,6 +473,12 @@ public class playerControl : NetworkBehaviour {
         CmdSendNpcTrade(gameObject, toGive, wanted);
     }
     
+    public void GetTradeBuyValue()
+    {
+        var toBuy = goldShopPanel.transform.GetChild(1).GetComponent<Dropdown>().value;
+        CmdBuyWithGold(gameObject, toBuy);
+    }
+
     public void getDiscardValues()
     {
         int[] values = new int[8];
@@ -370,12 +519,12 @@ public class playerControl : NetworkBehaviour {
     public void SaveGame()
     {
         var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
-        if (!string.IsNullOrEmpty(savePath) && Directory.Exists(Path.GetDirectoryName(savePath)))
+        if (!string.IsNullOrEmpty(savePath))
         {
-            CmdGetGameData();
+            //CmdGetGameData();
             if (this.saveGameData != null)
             {
-                File.WriteAllBytes(savePath, this.saveGameData.ToArray());
+                File.WriteAllBytes(Application.persistentDataPath + "/" + savePath + ".dat", this.saveGameData.ToArray());
             }
         }
     }
@@ -476,6 +625,11 @@ public class playerControl : NetworkBehaviour {
 
     }
     [Command]
+    void CmdBuyWithGold(GameObject player, int toBuy)
+    {
+        gameState.GetComponent<Game>().BuyWithGold(player, toBuy);
+    }
+    [Command]
     void CmdSendMessage(GameObject player, string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
@@ -504,6 +658,12 @@ public class playerControl : NetworkBehaviour {
     public void CmdBuildKnight(GameObject intersection)
     {
         gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+    }
+
+    [Command]
+    public void CmdSetMetropole(GameObject player, GameObject intersection)
+    {
+        gameState.GetComponent<Game>().setMetropole(player, intersection);
     }
 
     [Command]
@@ -587,6 +747,10 @@ public class playerControl : NetworkBehaviour {
     {
         DiceWindow.transform.GetChild(1).GetComponent<Text>().text = value;
     }
+    void OnNameValidated(bool value)
+    {
+        this.isValidName = value;
+    }
     #endregion
 
     #region ClientRPC
@@ -623,6 +787,28 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
+    public void RpcCloseGoldShop(bool accepted)
+    {
+        if (accepted)
+        {
+            goldShopPanel.gameObject.SetActive(false);
+        }
+    }
+
+    [ClientRpc]
+    public void RpcBeginMetropoleChoice()
+    {
+        this.improvementPanel.SetActive(false);
+        this.pickMetropolis = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndMetropoleChoice()
+    {
+        this.pickMetropolis = false;
+    }
+
+    [ClientRpc]
     public void RpcUpdateTurn(string value)
     {
         transform.GetChild(8).GetComponent<Text>().text = value;
@@ -656,6 +842,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcDiscardTime(int discardAmount, string ExtraInfo)
     {
+        if (!isLocalPlayer) return;
         discardPanel.SetActive(true);
         //in order of enums for easy for looping later
         discardPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = Wool;
@@ -680,6 +867,101 @@ public class playerControl : NetworkBehaviour {
         }
         improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
     }
+
+    [ClientRpc]
+    public void RpcVictoryPanel(string message)
+    {
+        if (!isLocalPlayer) return;
+        this.victoryPanel.SetActive(true);
+        this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
+    }
+
+    [ClientRpc]
+    public void RpcNameCheck(bool result)
+    {
+        if (!isLocalPlayer) return;
+        if (result)
+        {
+            //open the menus
+            resourcesWindow.gameObject.SetActive(true);
+            MenuWindow.gameObject.SetActive(true);
+            DiceWindow.gameObject.SetActive(true);
+            ChatWindow.gameObject.SetActive(true);
+            CardPanel.gameObject.SetActive(true);
+            //closet the window
+            nameWindow.SetActive(false);
+        }
+        else
+        {
+            nameWindow.transform.GetChild(0).GetComponent<InputField>().text = "";
+        }
+    }
+	
+	/**
+	 * @author xingwei
+	 * P2P trade UI text upgrading RPC functions
+	 */
+	[ClientRpc]
+	public void RpcLogP2PTradeDebugText(string txt, bool red){
+		if (red) {
+			P2PTrade_DebugText.color = Color.red;
+		} else {
+			P2PTrade_DebugText.color = Color.black;
+		}
+		P2PTrade_DebugText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeOfferedDescriptionText(string txt){
+		P2PTradeOfferedDescriptionText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeGivingDescriptionText(string txt){
+		P2PTradeGivingDescriptionText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeOfferPanelActive(bool active){
+		P2PTradeOfferPanel.SetActive (active);
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradePanelActive(bool active){
+		P2PTradePanel.SetActive (active);
+
+
+
+
+
+	}
+
+	/**
+	 * Reset the input field of P2P Trade Panel 
+	 */
+	[ClientRpc]
+	public void RpcResetP2PTradeInput(){
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			child.transform.GetComponent<InputField> ().text = "";
+		}
+
+	}
     #endregion
 
     public void testCard()
@@ -690,5 +972,10 @@ public class playerControl : NetworkBehaviour {
         tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
         //put it in the view
         tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }
