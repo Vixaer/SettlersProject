@@ -1451,10 +1451,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f96e3cb43006a2745a6502167c31602a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  closeButton: {fileID: 114951597399299562}
-  eventDiceRoll: {fileID: 114550830857966538}
-  redDiceRoll: {fileID: 114504865640828736}
-  yellowDiceRoll: {fileID: 114648176492381118}
 --- !u!114 &114099701015290638
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2289,9 +2285,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef7c9a74b086bc469a48750efb7096a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  confirmButton: {fileID: 114528272109739070}
-  cancelButton: {fileID: 114859362149587704}
-  instructionText: {fileID: 114806593271951440}
 --- !u!114 &114540638157748732
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2537,16 +2530,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d762e7c2c5896b445a727788d6faade3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rollDiceButton: {fileID: 114843248271339264}
-  upgradeSettlementButton: {fileID: 114493073509093390}
-  buildSettlementButton: {fileID: 114272468962363472}
-  buildRoadButton: {fileID: 114235491122578312}
-  buildShipButton: {fileID: 114062334731060436}
-  maritimeTradeButton: {fileID: 114595587958212384}
-  endTurnButton: {fileID: 114926940162137394}
-  maritimeTradePanel: {fileID: 114984461534410878}
-  mapSelectorPanel: {fileID: 114531052330142328}
-  diceResultsPanel: {fileID: 114088944864263602}
 --- !u!114 &114634346248831898
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3595,10 +3578,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27b1a3ab6bae7804dbacba2cf9c3e706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedResource: {fileID: 114763249050443640}
-  providedResource: {fileID: 114085298986977792}
-  confirmButton: {fileID: 114560866714946212}
-  cancelButton: {fileID: 114099701015290638}
 --- !u!114 &114996097424109686
 MonoBehaviour:
   m_ObjectHideFlags: 1
