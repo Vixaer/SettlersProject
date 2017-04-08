@@ -765,7 +765,7 @@ public class Game : NetworkBehaviour
         Intersection inter = intersection.GetComponent<Intersection>();
         Player currentBuilder = gamePlayers[player];
         bool correctPlayer = checkCorrectPlayer(player);
-        bool isOwned = intersection.GetComponent<Intersection>().owned;
+        bool isOwned = inter.owned;
         bool canBuild = canBuildKnight(currentBuilder, intersection);
         bool hasKnights = currentBuilder.HasKnights(KnightLevel.Basic);
         bool hasLand = false;
@@ -782,7 +782,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't build when it isn't your turn.");
         }
-        else if (!hasLand)
+		else if (!hasLand && inter.knight == KnightLevel.None)
         {
             logAPlayer(player, "Can't build a Knight in the sea.");
         }
@@ -1103,8 +1103,26 @@ public class Game : NetworkBehaviour
 							}
 								
 						}
+
 					}
 				}
+				if (count == 2 || count2 == 2) {
+					continue;
+				}
+
+				// Check to see if sihp connected to any of player's units
+				if (temp2.ownedUnits.Contains (i.positionedUnit)) {
+					if (!connectCheck) {
+						count = 2;
+						if (count == 2) {
+							connectCheck = true;
+						} 
+
+					} else {
+						count2 = 2;
+					}			
+				}
+				
 			}
 
 			if (count2 > 1) {
