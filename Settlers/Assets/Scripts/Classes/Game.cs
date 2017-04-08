@@ -306,6 +306,128 @@ public class Game : NetworkBehaviour
 
     }
 
+	/**
+	 *  P2P Trade that is in charge of the player to player trade.
+	 *  author xingwei
+	 * 
+	 *  Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold
+	 *  
+	 *  1. Check if the player is the current player and the player is in the correct game phase
+	 *   1.1 Check if the player has the resource he's offering
+	 *    1.1.1 if no then log a player and call reset input from the player on the panel
+	 *   1.2 Open trade offer screen on other players
+	 */
+	public void P2PTradeOffer(GameObject player, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
+		Player tradingPlayer = gamePlayers [player];
+		if (checkCorrectPlayer (player) && currentPhase == GamePhase.TurnFirstPhase) {
+			//TODO: Check if the player has enough resource to trade
+			bool enoughResource = true;
+			if (!tradingPlayer.HasResources (giveBrick, ResourceKind.Brick)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasResources (giveOre, ResourceKind.Ore)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasResources (giveWool, ResourceKind.Wool)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasCommodities (giveCoin, CommodityKind.Coin)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasResources (giveWheat, ResourceKind.Grain)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasCommodities (giveCloth, CommodityKind.Cloth)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasResources (giveLumber, ResourceKind.Lumber)) {
+				enoughResource = false;
+			} else if (!tradingPlayer.HasCommodities (givePaper, CommodityKind.Paper)) {
+				enoughResource = false;
+			} else if (tradingPlayer.gold < giveGold) {
+				enoughResource = false;
+			}
+
+			if (enoughResource == false) {
+				player.GetComponent<playerControl> ().RpcLogP2PTradeDebugText ("You do not have enough Resource ", true);
+				player.GetComponent<playerControl> ().RpcResetP2PTradeInput ();
+				return;
+			}
+
+			player.GetComponent<playerControl> ().RpcLogP2PTradeDebugText ("Waiting for other players... ", false);
+
+			//TODO: Open trade request panel on other players and log the trading player (Waiting for other players etc)
+			foreach (Player p in playerObjects.Keys){
+				print (p.name);
+				print (tradingPlayer.name);
+				if (p.name != tradingPlayer.name) {
+					//TODO: print these offers and takes to other players' panels
+					string offerTxt = "";
+					if (wantsBrick > 0) {
+						offerTxt = offerTxt + "Brick :" + wantsBrick.ToString() + "\n";
+					}
+					if (wantsOre > 0) {
+						offerTxt = offerTxt +  "Ore :" + wantsOre.ToString() + "\n";
+					}
+					if (wantsWool > 0) {
+						offerTxt = offerTxt +  "Wool :" + wantsWool.ToString() + "\n";
+					}
+					if (wantsCoin > 0) {
+						offerTxt = offerTxt +  "Coin :" + wantsCoin.ToString() + "\n";
+					}
+					if (wantsWheat > 0) {
+						offerTxt = offerTxt +  "Wheat :" + wantsWheat.ToString() + "\n";
+					}
+					if (wantsCloth > 0) {
+						offerTxt = offerTxt +  "Cloth :" + wantsCloth.ToString() + "\n";
+					}
+					if (wantsLumber > 0) {
+						offerTxt = offerTxt +  "Lumber :" + wantsLumber.ToString() + "\n";
+					}
+					if (wantsPaper > 0) {
+						offerTxt = offerTxt +  "Paper :" + wantsPaper.ToString() + "\n";
+					}
+					if (wantsGold > 0) {
+						offerTxt = offerTxt +  "Gold :" + wantsGold.ToString() + "\n";
+					}
+					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeGivingDescriptionText (offerTxt);
+
+					string givesTxt = ""; // trading player gives, so other player receives
+					if (giveBrick > 0) {
+						givesTxt = givesTxt + "Brick :" + giveBrick.ToString() + "\n";
+					}
+					if (giveOre > 0) {
+						givesTxt = givesTxt +  "Ore :" + giveOre.ToString() + "\n";
+					}
+					if (giveWool > 0) {
+						givesTxt = givesTxt +  "Wool :" + giveWool.ToString() + "\n";
+					}
+					if (giveCoin > 0) {
+						givesTxt = givesTxt +  "Coin :" + giveCoin.ToString() + "\n";
+					}
+					if (giveWheat > 0) {
+						givesTxt = givesTxt +  "Wheat :" + giveWheat.ToString() + "\n";
+					}
+					if (giveCloth > 0) {
+						givesTxt = givesTxt +  "Cloth :" + giveCloth.ToString() + "\n";
+					}
+					if (giveLumber > 0) {
+						givesTxt = givesTxt +  "Lumber :" + giveLumber.ToString() + "\n";
+					}
+					if (givePaper > 0) {
+						givesTxt = givesTxt +  "Paper :" + givePaper.ToString() + "\n";
+					}
+					if (giveGold > 0) {
+						givesTxt = givesTxt +  "Gold :" + giveGold.ToString() + "\n";
+					}
+					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeOfferedDescriptionText (givesTxt);
+
+					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeOfferPanelActive (true);
+				}
+			}
+
+			player.GetComponent<playerControl> ().P2PTradeOfferPanel.SetActive(false);
+
+		} else if (checkCorrectPlayer (player)) {
+			logAPlayer(player, "Please roll dice before performing trade.");
+		} else {
+			logAPlayer(player, "Can't trade! It isn't your turn.");
+		}
+	}
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;

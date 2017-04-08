@@ -25,6 +25,32 @@ public class playerControl : NetworkBehaviour {
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
+// @author xingwei
+	// P2P Trade Resources
+	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+	private int giveBrick = 0;
+	private int giveOre = 0;
+	private int giveWool = 0;
+	private int giveCoin = 0;
+	private int giveWheat = 0;
+	private int giveCloth = 0;
+	private int giveLumber = 0;
+	private int givePaper = 0;
+	private int giveGold = 0;
+	private int wantsBrick = 0;
+	private int wantsOre = 0;
+	private int wantsWool = 0;
+	private int wantsCoin = 0;
+	private int wantsWheat = 0;
+	private int wantsCloth = 0;
+	private int wantsLumber = 0;
+	private int wantsPaper = 0;
+	private int wantsGold = 0;
+
+
+	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives,P2PTradeOfferPanel;
+	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText;
+
     #region SyncVar
     //resource panel values
     [SyncVar(hook = "OnChangedBrick")]
@@ -225,6 +251,104 @@ public class playerControl : NetworkBehaviour {
         MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
         MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
     }
+
+	/*
+	 * Called when clicked the Green Confirm Button on the P2P trade panel. 
+	 * 
+	 * The order of resource stored in the List is
+	 * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold
+	 * 
+	 * Send Trade Request to server
+	 * 
+	 */
+	public void confirmP2PTradeStatus(){
+		//InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
+		string txt = "";
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform){
+			//print (child.name);
+			string input = child.transform.GetComponentInChildren<InputField> ().text;
+			int number = 0;
+			if (int.TryParse (input, out number) && number > 0) {
+				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+				assignNumberToVariable(child.name,number,false);
+			} else {
+				assignNumberToVariable(child.name,0,false);
+			}
+		}
+
+		foreach (Transform child in this.P2PTrade_PlayerWants.transform){
+			//print (child.name);
+			string input = child.transform.GetComponentInChildren<InputField> ().text;
+			int number = 0;
+			if (int.TryParse (input, out number) && number != 0) {
+				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+				assignNumberToVariable(child.name,number,true);
+			} else {
+				assignNumberToVariable(child.name,0,true);
+			}
+		}
+
+		gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+	}
+
+	/* Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+	private void assignNumberToVariable(string name, int quantity, bool wants){
+		if (name == "Brick") {
+			if (wants) {
+				this.wantsBrick = quantity;
+			} else {
+				this.giveBrick = quantity;
+			}
+		} else if (name == "Ore") {
+			if (wants) {
+				this.wantsOre = quantity;
+			} else {
+				this.giveOre = quantity;
+			}
+		} else if (name == "Wool") {
+			if (wants) {
+				this.wantsWool = quantity;
+			} else {
+				this.giveWool = quantity;
+			}
+		} else if (name == "Coin") {
+			if (wants) {
+				this.wantsCoin = quantity;
+			} else {
+				this.giveCoin = quantity;
+			}
+		} else if (name == "Wheat") {
+			if (wants) {
+				this.wantsWheat = quantity;
+			} else {
+				this.giveWheat = quantity;
+			}
+		} else if (name == "Cloth") {
+			if (wants) {
+				this.wantsCloth = quantity;
+			} else {
+				this.giveCloth = quantity;
+			}
+		} else if (name == "Lumber") {
+			if (wants) {
+				this.wantsLumber = quantity;
+			} else {
+				this.giveLumber = quantity;
+			}
+		} else if (name == "Paper") {
+			if (wants) {
+				this.wantsPaper = quantity;
+			} else {
+				this.givePaper = quantity;
+			}
+		} else if (name == "Gold") {
+			if (wants) {
+				this.wantsGold = quantity;
+			} else {
+				this.giveGold = quantity;
+			}
+		}
+	}
     #endregion
 
     #region Retrieve Client Info
@@ -707,6 +831,72 @@ public class playerControl : NetworkBehaviour {
             nameWindow.transform.GetChild(0).GetComponent<InputField>().text = "";
         }
     }
+	
+	/**
+	 * @author xingwei
+	 * P2P trade UI text upgrading RPC functions
+	 */
+	[ClientRpc]
+	public void RpcLogP2PTradeDebugText(string txt, bool red){
+		if (red) {
+			P2PTrade_DebugText.color = Color.red;
+		} else {
+			P2PTrade_DebugText.color = Color.black;
+		}
+		P2PTrade_DebugText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeOfferedDescriptionText(string txt){
+		P2PTradeOfferedDescriptionText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeGivingDescriptionText(string txt){
+		P2PTradeGivingDescriptionText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradeOfferPanelActive(bool active){
+		P2PTradeOfferPanel.SetActive (active);
+	}
+
+	[ClientRpc]
+	public void RpcSetP2PTradePanelActive(bool active){
+		P2PTradePanel.SetActive (active);
+
+
+
+
+
+	}
+
+	/**
+	 * Reset the input field of P2P Trade Panel 
+	 */
+	[ClientRpc]
+	public void RpcResetP2PTradeInput(){
+		foreach (Transform child in this.P2PTrade_PlayerGives.transform) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			child.transform.GetComponent<InputField> ().text = "";
+		}
+
+	}
     #endregion
 
     public void testCard()
