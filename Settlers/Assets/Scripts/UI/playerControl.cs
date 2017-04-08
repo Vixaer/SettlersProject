@@ -26,6 +26,9 @@ public class playerControl : NetworkBehaviour {
 	public bool activateKnight = false;
 	public bool upgradeKnight = false;
 	public bool moveKnight = false;
+	public bool knightSelected = false;
+	public Color oldKnightColor;
+	public GameObject selectedInter;
 
 
     private bool pickMetropolis = false;
@@ -399,14 +402,22 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
+<<<<<<< HEAD
                 if (pickMetropolis)
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
                 else if (interactKnight)
+=======
+				if (interactKnight && !moveKnight)
+>>>>>>> kevin
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
+				else if (interactKnight && moveKnight)
+				{
+					CmdMoveKnight(gameObject, hit.collider.gameObject, knightSelected);
+				}
                 else
                 {
                     CmdBuildOnIntersection(hit.collider.gameObject);
@@ -585,6 +596,29 @@ public class playerControl : NetworkBehaviour {
 			}
 		}
 	}
+	[Command]
+	void CmdMoveKnight(GameObject player, GameObject inter, bool selected){
+		if (!selected) {
+			bool temp = gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
+			if (temp == true) {
+				knightSelected = true;
+				selectedInter = inter;
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				oldKnightColor = knightColor.color;
+				knightColor.color = new Color32 (121, 121, 240, 240);
+			}
+		} else {
+			bool temp = gameState.GetComponent<Game> ().moveKnightCheck (player, inter, selectedInter);
+			knightSelected = false;
+			if (temp == true) {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = new Color32 (255, 255, 255, 255);
+			} else {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = oldKnightColor;
+			}
+		}
+	}
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
     {
@@ -657,7 +691,7 @@ public class playerControl : NetworkBehaviour {
     [Command]
     public void CmdBuildKnight(GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight);
     }
 
     [Command]

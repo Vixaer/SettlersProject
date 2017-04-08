@@ -13,6 +13,7 @@ public class Intersection : NetworkBehaviour {
     public bool owned;
     
     public IntersectionUnit positionedUnit { get; private set; }
+	public bool knightRemoved = false;
 
     [SyncVar(hook ="OnHarbour")]
     public HarbourKind harbor = HarbourKind.None;
@@ -100,6 +101,7 @@ public class Intersection : NetworkBehaviour {
     {
         positionedUnit = new Knight(player, KnightLevel.Basic);
         player.ownedUnits.Add(positionedUnit);
+		player.ownedKnights.Add ((Knight) positionedUnit);
         owned = true;
         knight = KnightLevel.Basic;
         switch (positionedUnit.Owner.myColor)
@@ -110,11 +112,49 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+
+	public void MoveKnight(Player player, Knight knightToMove){
+		Knight temp = knightToMove;
+		temp.deactivateKnight ();
+		positionedUnit = temp;
+
+		player.ownedUnits.Add(positionedUnit);
+		player.ownedKnights.Add ((Knight) positionedUnit);
+		owned = true;
+		knight = temp.level;
+
+		switch (positionedUnit.Owner.myColor)
+		{
+		case 0: color = Color.red; break;
+		case 1: color = Color.blue; break;
+		case 2: color = Color.green; break;
+		case 3: color = new Color(255, 128, 0); break;
+		}
+	}
+
+	public void RemoveKnight (Player player){
+		owned = false;
+		Knight temp = (Knight)positionedUnit;
+		temp.deactivateKnight ();
+		knightActive = false;
+		knight = KnightLevel.None;
+		knightRemoved = true;
+		player.ownedUnits.Remove (positionedUnit);
+		player.ownedKnights.Remove ((Knight) positionedUnit);
+		positionedUnit = null;
+		color = new Color(255, 255, 255);
+	}
+
+
     #region Sync Hooks
     public void OnOwned(Color value)
     {
-        owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
+		if (knightRemoved) {
+			knightRemoved = false;
+		} else {
+			owned = true;
+		}
     }
    
     public void OnBuild(int value)

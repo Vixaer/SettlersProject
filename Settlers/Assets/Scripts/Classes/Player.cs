@@ -16,6 +16,7 @@ public class Player {
     public int victoryPoints { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
+	public List<Knight> ownedKnights { get; set; }
 
     public List<VillageKind> settlementPool { get; set; }
 
@@ -57,6 +58,7 @@ public class Player {
         };
         gold = 20;
         ownedUnits = new List<OwnableUnit>();
+		ownedKnights = new List<Knight> ();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
         settlementPool = new List<VillageKind>();
