@@ -58,7 +58,13 @@ public class Game : NetworkBehaviour
 
     public void ValidateName(GameObject player, string name)
     {
-        player.transform.GetComponent<playerControl>().isValidName = !isLoaded || tempPlayersByName.ContainsKey(name);
+        var isValidName = !isLoaded || tempPlayersByName.ContainsKey(name);
+        player.transform.GetComponent<playerControl>().isValidName = isValidName;
+        if (isValidName)
+        {
+            setPlayerName(player, name);
+        }
+        player.GetComponent<playerControl>().RpcNameCheck(isValidName);
     }
 
     //setup references for the game

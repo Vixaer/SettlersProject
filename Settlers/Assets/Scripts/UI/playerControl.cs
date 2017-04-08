@@ -3,7 +3,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using System.IO;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections.Generic;
@@ -111,6 +110,8 @@ public class playerControl : NetworkBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
+            // Pre-load game data to the client
+            CmdGetGameData();
         }
     }
 
@@ -276,15 +277,15 @@ public class playerControl : NetworkBehaviour {
         {
             CmdValidateName(playerName);
             if (!isValidName) return;
-            CmdSendName(playerName);
-            //open the menus
-            resourcesWindow.gameObject.SetActive(true);
-            MenuWindow.gameObject.SetActive(true);
-            DiceWindow.gameObject.SetActive(true);
-            ChatWindow.gameObject.SetActive(true);
-            CardPanel.gameObject.SetActive(true);
-            //closet the window
-            nameWindow.SetActive(false);  
+            //CmdSendName(playerName);
+            ////open the menus
+            //resourcesWindow.gameObject.SetActive(true);
+            //MenuWindow.gameObject.SetActive(true);
+            //DiceWindow.gameObject.SetActive(true);
+            //ChatWindow.gameObject.SetActive(true);
+            //CardPanel.gameObject.SetActive(true);
+            ////closet the window
+            //nameWindow.SetActive(false);  
         }
 
     }
@@ -355,7 +356,7 @@ public class playerControl : NetworkBehaviour {
         var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
         if (!string.IsNullOrEmpty(savePath))
         {
-            CmdGetGameData();
+            //CmdGetGameData();
             if (this.saveGameData != null)
             {
                 File.WriteAllBytes(Application.persistentDataPath + "/" + savePath + ".dat", this.saveGameData.ToArray());
@@ -681,8 +682,30 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcVictoryPanel(string message)
     {
+        if (!isLocalPlayer) return;
         this.victoryPanel.SetActive(true);
         this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
+    }
+
+    [ClientRpc]
+    public void RpcNameCheck(bool result)
+    {
+        if (!isLocalPlayer) return;
+        if (result)
+        {
+            //open the menus
+            resourcesWindow.gameObject.SetActive(true);
+            MenuWindow.gameObject.SetActive(true);
+            DiceWindow.gameObject.SetActive(true);
+            ChatWindow.gameObject.SetActive(true);
+            CardPanel.gameObject.SetActive(true);
+            //closet the window
+            nameWindow.SetActive(false);
+        }
+        else
+        {
+            nameWindow.transform.GetChild(0).GetComponent<InputField>().text = "";
+        }
     }
     #endregion
 
