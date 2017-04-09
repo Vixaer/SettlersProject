@@ -47,7 +47,12 @@ public class playerControl : NetworkBehaviour {
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
+<<<<<<< HEAD
+
+	// @author xingwei
+=======
 // @author xingwei
+>>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
 	// P2P Trade Resources
 	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
 	private int giveBrick = 0;
@@ -71,7 +76,9 @@ public class playerControl : NetworkBehaviour {
 
 
 	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives,P2PTradeOfferPanel;
-	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText;
+	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText,P2PTradeOfferFromText;
+
+	private GameObject tradingPlayer;
 
     #region SyncVar
     //resource panel values
@@ -315,6 +322,10 @@ public class playerControl : NetworkBehaviour {
         
     }
 
+	public void OnClickAcceptP2PButton(){
+		CmdAcceptP2PTradeRequest ();
+	}
+
 	/*
 	 * Called when clicked the Green Confirm Button on the P2P trade panel. 
 	 * 
@@ -343,15 +354,16 @@ public class playerControl : NetworkBehaviour {
 			//print (child.name);
 			string input = child.transform.GetComponentInChildren<InputField> ().text;
 			int number = 0;
-			if (int.TryParse (input, out number) && number != 0) {
+			if (int.TryParse (input, out number) && number > 0) {
 				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
 				assignNumberToVariable(child.name,number,true);
 			} else {
 				assignNumberToVariable(child.name,0,true);
 			}
 		}
+		CmdSendP2PTradeRequest (giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
 
-		gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+		//gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
 	}
 
 	/* Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
@@ -452,7 +464,7 @@ public class playerControl : NetworkBehaviour {
             }
 			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true)
             {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
+                CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
@@ -491,6 +503,16 @@ public class playerControl : NetworkBehaviour {
         }
 
     }
+
+	[Command] void CmdAcceptP2PTradeRequest(){
+		gameState.GetComponent<Game> ().playerAcceptedTrade (tradingPlayer, gameObject, this.giveBrick, this.giveOre, this.giveWool, this.giveCoin, this.giveWheat, this.giveCloth, this.giveLumber, this.givePaper, this.giveGold, this.wantsBrick, this.wantsOre, this.wantsWool, this.wantsCoin, this.wantsWheat, this.wantsCloth, this.wantsLumber, this.wantsPaper, this.wantsGold);
+	}
+
+	// Send P2P trade request to Game
+	[Command] 
+	private void CmdSendP2PTradeRequest(int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
+		gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+	}
 
     [Command]
     private void CmdValidateName(string name)
@@ -653,7 +675,7 @@ public class playerControl : NetworkBehaviour {
 
 
     [Command]
-    void CmdBuildOnEdge(GameObject player, GameObject edge)
+    void CmdBuildOnEdge(GameObject player, GameObject edge, bool buildShip)
     {
         if (buildShip)
         {
@@ -988,6 +1010,96 @@ public class playerControl : NetworkBehaviour {
 			P2PTrade_DebugText.color = Color.black;
 		}
 		P2PTrade_DebugText.text = txt;
+	}
+
+	[ClientRpc]
+	public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer,int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
+		if (requestingPlayer.GetInstanceID() == gameObject.GetInstanceID()) {
+			return;
+		}
+		tradingPlayer = requestingPlayer;
+
+		this.giveOre = giveOre;
+		this.giveBrick = giveBrick;
+		this.givePaper = givePaper;
+		this.giveWool = giveWool;
+		this.giveCoin = giveCoin;
+		this.giveWheat = giveWheat;
+		this.giveCloth = giveCloth;
+		this.giveGold = giveGold;
+		this.giveLumber = giveLumber;
+
+		this.wantsOre = wantsOre;
+		this.wantsBrick = wantsBrick;
+		this.wantsPaper = wantsPaper;
+		this.wantsWool = wantsWool;
+		this.wantsCoin = wantsCoin;
+		this.wantsWheat = wantsWheat;
+		this.wantsCloth = wantsCloth;
+		this.wantsGold = wantsGold;
+		this.wantsLumber = wantsLumber;
+
+
+		string offerTxt = "";
+		if (wantsBrick > 0) {
+			offerTxt = offerTxt + "Brick :" + wantsBrick.ToString() + "\n";
+		}
+		if (wantsOre > 0) {
+			offerTxt = offerTxt +  "Ore :" + wantsOre.ToString() + "\n";
+		}
+		if (wantsWool > 0) {
+			offerTxt = offerTxt +  "Wool :" + wantsWool.ToString() + "\n";
+		}
+		if (wantsCoin > 0) {
+			offerTxt = offerTxt +  "Coin :" + wantsCoin.ToString() + "\n";
+		}
+		if (wantsWheat > 0) {
+			offerTxt = offerTxt +  "Wheat :" + wantsWheat.ToString() + "\n";
+		}
+		if (wantsCloth > 0) {
+			offerTxt = offerTxt +  "Cloth :" + wantsCloth.ToString() + "\n";
+		}
+		if (wantsLumber > 0) {
+			offerTxt = offerTxt +  "Lumber :" + wantsLumber.ToString() + "\n";
+		}
+		if (wantsPaper > 0) {
+			offerTxt = offerTxt +  "Paper :" + wantsPaper.ToString() + "\n";
+		}
+		if (wantsGold > 0) {
+			offerTxt = offerTxt +  "Gold :" + wantsGold.ToString() + "\n";
+		}
+		this.P2PTradeGivingDescriptionText.text = offerTxt;
+
+		string givesTxt = ""; // trading player gives, so other player receives
+		if (giveBrick > 0) {
+			givesTxt = givesTxt + "Brick :" + giveBrick.ToString() + "\n";
+		}
+		if (giveOre > 0) {
+			givesTxt = givesTxt +  "Ore :" + giveOre.ToString() + "\n";
+		}
+		if (giveWool > 0) {
+			givesTxt = givesTxt +  "Wool :" + giveWool.ToString() + "\n";
+		}
+		if (giveCoin > 0) {
+			givesTxt = givesTxt +  "Coin :" + giveCoin.ToString() + "\n";
+		}
+		if (giveWheat > 0) {
+			givesTxt = givesTxt +  "Wheat :" + giveWheat.ToString() + "\n";
+		}
+		if (giveCloth > 0) {
+			givesTxt = givesTxt +  "Cloth :" + giveCloth.ToString() + "\n";
+		}
+		if (giveLumber > 0) {
+			givesTxt = givesTxt +  "Lumber :" + giveLumber.ToString() + "\n";
+		}
+		if (givePaper > 0) {
+			givesTxt = givesTxt +  "Paper :" + givePaper.ToString() + "\n";
+		}
+		if (giveGold > 0) {
+			givesTxt = givesTxt +  "Gold :" + giveGold.ToString() + "\n";
+		}
+		this.P2PTradeOfferedDescriptionText.text = givesTxt;
+		this.P2PTradeOfferPanel.SetActive (true);
 	}
 
 	[ClientRpc]
