@@ -13,9 +13,26 @@ public class playerControl : NetworkBehaviour {
     private bool resourcesShown = true;
     private bool rollsShown = true;
     private bool cardsShown = true;
+
     public bool buildShip = false;
+	public bool moveShip = false;
+	public bool shipSelected = false;
+	public bool movedShipThisTurn = false;
+	public Color oldEdgeColor;
+	public GameObject selectedEdge;
+
     public bool interactKnight = false;
+
+	public bool activateKnight = false;
+	public bool upgradeKnight = false;
+	public bool moveKnight = false;
+	public bool knightSelected = false;
+	public Color oldKnightColor;
+	public GameObject selectedInter;
+
+
     private bool pickMetropolis = false;
+
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
@@ -228,15 +245,26 @@ public class playerControl : NetworkBehaviour {
     public void setToBuildRoads()
     {
         buildShip = false;
+		moveShip = false;
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
     }
 
     public void setToBuildShips()
     {
-        buildShip = true;
-        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+		
+		if (buildShip == false) {
+			buildShip = true;
+			moveShip = false;
+			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
+			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
+		} else if (buildShip == true && moveShip == false) {
+			buildShip = false;
+			moveShip = true;
+			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
+			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240); //button becomes blue
+		} 
+   
     }
     public void setToInteractWithSettlements()
     {
@@ -248,8 +276,21 @@ public class playerControl : NetworkBehaviour {
     public void setToInteractWithKnights()
     {
         interactKnight = true;
-        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+		MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+		if (!activateKnight && !upgradeKnight) {
+			activateKnight = true;
+			moveKnight = false;
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
+		} else if (!moveKnight && !upgradeKnight) {
+			upgradeKnight = true;
+			activateKnight = false;
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240);
+		} else {
+			upgradeKnight = false;
+			moveKnight = true;
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 240, 121);
+		}
+        
     }
 
 	/*
@@ -361,21 +402,28 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
+
                 if (pickMetropolis)
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
-                else if (interactKnight)
+
+				else if (interactKnight && !moveKnight)
+
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
+				else if (interactKnight && moveKnight)
+				{
+					CmdMoveKnight(gameObject, hit.collider.gameObject, knightSelected);
+				}
                 else
                 {
                     CmdBuildOnIntersection(hit.collider.gameObject);
                 }
                 
             }
-            if (hit.collider.gameObject.CompareTag("Edge"))
+			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true)
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject);
             }
@@ -391,6 +439,9 @@ public class playerControl : NetworkBehaviour {
                 }
                 
             }
+			if (hit.collider.gameObject.CompareTag ("Edge") && moveShip == true && movedShipThisTurn == false) {
+				CmdMoveShip (gameObject, hit.collider.gameObject, shipSelected);
+			}
         }
     }
 
@@ -520,6 +571,53 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
+	[Command]
+	void CmdMoveShip(GameObject player, GameObject edge, bool selected){
+		if (!selected) {
+			bool temp = gameState.GetComponent<Game> ().removeShipCheck (player, edge);
+			if (temp == true) {
+				shipSelected = true;
+				selectedEdge = edge;
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				oldEdgeColor = shipColor.color;
+				shipColor.color = new Color32 (121, 121, 240, 240);
+			}
+		} else {
+			bool temp = gameState.GetComponent<Game> ().placeShipCheck (player, edge, selectedEdge);
+			shipSelected = false;
+			if (temp == true) {
+				movedShipThisTurn = true;
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				shipColor.color = new Color32 (255, 255, 255, 255);
+			} else {
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				shipColor.color = oldEdgeColor;
+			}
+		}
+	}
+	[Command]
+	void CmdMoveKnight(GameObject player, GameObject inter, bool selected){
+		if (!selected) {
+			bool temp = gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
+			if (temp == true) {
+				knightSelected = true;
+				selectedInter = inter;
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				oldKnightColor = knightColor.color;
+				knightColor.color = new Color32 (121, 121, 240, 240);
+			}
+		} else {
+			bool temp = gameState.GetComponent<Game> ().moveKnightCheck (player, inter, selectedInter);
+			knightSelected = false;
+			if (temp == true) {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = new Color32 (255, 255, 255, 255);
+			} else {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = oldKnightColor;
+			}
+		}
+	}
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
     {
@@ -592,7 +690,7 @@ public class playerControl : NetworkBehaviour {
     [Command]
     public void CmdBuildKnight(GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight);
     }
 
     [Command]
