@@ -446,6 +446,11 @@ public class Player {
         p.victoryPoints = data.victoryPoints;
         p.ownedHarbour = data.ownedHarbour;
         p.cardsInHand = data.cardsInHand;
+        p.hasMerchant = data.hasMerchant;
+        p.hasLongestTradeRoute = data.hasLongestTradeRoute;
+        p.settlementPool = data.settlementPool;
+        p.citiesPool = data.citiesPool;
+        p.knightTokens = data.knightTokens;
         foreach (OwnableUnitData o in data.ownedUnits)
         {
             if (o is VillageData)
@@ -474,7 +479,11 @@ public class PlayerData
     public List<HarbourKind> ownedHarbour { get; set; }
     public List<ProgressCardKind> cardsInHand { get; set; }
     public string name { get; set; }
-
+    public bool hasMerchant { get; set; }
+    public bool hasLongestTradeRoute { get; set; }
+    public List<VillageKind> settlementPool { get; set; }
+    public List<VillageKind> citiesPool { get; set; }
+    public List<KnightLevel> knightTokens { get; set; }
     public PlayerData(Player source)
     {
         this.name = source.name;
@@ -486,6 +495,11 @@ public class PlayerData
         this.victoryPoints = source.victoryPoints;
         this.ownedHarbour = source.ownedHarbour;
         this.cardsInHand = source.cardsInHand;
+        this.hasMerchant = source.hasMerchant;
+        this.hasLongestTradeRoute = source.hasLongestTradeRoute;
+        this.settlementPool = source.settlementPool;
+        this.citiesPool = source.citiesPool;
+        this.knightTokens = source.knightTokens;
         this.ownedUnits = source.ownedUnits.Select<OwnableUnit, OwnableUnitData>(u =>
         {
             if (u is Village)
