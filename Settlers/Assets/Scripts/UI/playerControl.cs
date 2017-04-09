@@ -648,7 +648,7 @@ public class playerControl : NetworkBehaviour {
 	[Command]
 	void CmdForceMoveKnight(GameObject player, GameObject inter)
 	{
-		gameState.GetComponent<Game> ().forceMoveKnight (player, inter, selectedKnight, oldInter);
+		gameState.GetComponent<Game> ().forceMoveKnight (player, inter);
 	}
 
 
@@ -876,11 +876,9 @@ public class playerControl : NetworkBehaviour {
     }
 
 	[ClientRpc]
-	public void RpcBeginKnightMove(Knight k, Intersection i)
+	public void RpcBeginKnightMove()
 	{
 		this.forceMoveKnight = true;
-		selectedKnight = k;
-		oldInter = i;
 	}
 
 	[ClientRpc]

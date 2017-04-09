@@ -1383,8 +1383,10 @@ public class Game : NetworkBehaviour
 						
 						if (opponentKnightCheck (temp)) {
 							logAPlayer (opponentGameObject, "Your knight has been displaced and you must move it!");
+							opponent.storedKnight = opKnight;
+							opponent.storedInter = temp;
 							temp2.RemoveKnight (opponent, false);
-							player.GetComponent<playerControl> ().RpcBeginKnightMove (opKnight, temp);
+							opponentGameObject.GetComponent<playerControl> ().RpcBeginKnightMove ();
 						} else {
 							logAPlayer (opponentGameObject, "Your knight has been removed from the board!");
 							temp2.RemoveKnight (opponent, true);
@@ -1408,7 +1410,7 @@ public class Game : NetworkBehaviour
 						if (opponentKnightCheck (temp)) {
 							logAPlayer (opponentGameObject, "Your knight has been displaced and you must move it!");
 							temp2.RemoveKnight (opponent, false);
-							player.GetComponent<playerControl> ().RpcBeginKnightMove (opKnight, temp);
+							opponentGameObject.GetComponent<playerControl> ().RpcBeginKnightMove ();
 						} else {
 							logAPlayer (opponentGameObject, "Your knight has been removed from the board!");
 							temp2.RemoveKnight (opponent, true);
@@ -1484,10 +1486,13 @@ public class Game : NetworkBehaviour
 		return connectCheck;
 	}
 
-	public void forceMoveKnight(GameObject player, GameObject inter, Knight k, Intersection oldInter)
+	public void forceMoveKnight(GameObject player, GameObject inter)
 	{
 
-		Player p = k.Owner;
+
+		Player p = gamePlayers [player];
+		Knight k = p.storedKnight;
+		Intersection oldInter = p.storedInter;
 
 		Intersection temp = inter.GetComponent<Intersection> ();
 

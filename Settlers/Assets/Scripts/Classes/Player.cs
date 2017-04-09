@@ -34,6 +34,10 @@ public class Player {
 
 	public int availableWalls  { get; set; }
 
+	//temp variables for forced knight moves
+	public Knight storedKnight;
+	public Intersection storedInter;
+
     public Player() {
         myColor = playerCount;
         playerCount++;
@@ -165,7 +169,7 @@ public class Player {
     {
         knightTokens.Add(level);
     }
-
+		
     #endregion
 
     #region GameActions
