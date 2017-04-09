@@ -299,6 +299,10 @@ public class Game : NetworkBehaviour
 
     }
 
+	public void P2PTradeAccept(GameObject player){
+	
+	}
+
 	/**
 	 *  P2P Trade that is in charge of the player to player trade.
 	 *  author xingwei
@@ -349,77 +353,96 @@ public class Game : NetworkBehaviour
 				print (tradingPlayer.name);
 				if (p.name != tradingPlayer.name) {
 					//TODO: print these offers and takes to other players' panels
-					string offerTxt = "";
-					if (wantsBrick > 0) {
-						offerTxt = offerTxt + "Brick :" + wantsBrick.ToString() + "\n";
-					}
-					if (wantsOre > 0) {
-						offerTxt = offerTxt +  "Ore :" + wantsOre.ToString() + "\n";
-					}
-					if (wantsWool > 0) {
-						offerTxt = offerTxt +  "Wool :" + wantsWool.ToString() + "\n";
-					}
-					if (wantsCoin > 0) {
-						offerTxt = offerTxt +  "Coin :" + wantsCoin.ToString() + "\n";
-					}
-					if (wantsWheat > 0) {
-						offerTxt = offerTxt +  "Wheat :" + wantsWheat.ToString() + "\n";
-					}
-					if (wantsCloth > 0) {
-						offerTxt = offerTxt +  "Cloth :" + wantsCloth.ToString() + "\n";
-					}
-					if (wantsLumber > 0) {
-						offerTxt = offerTxt +  "Lumber :" + wantsLumber.ToString() + "\n";
-					}
-					if (wantsPaper > 0) {
-						offerTxt = offerTxt +  "Paper :" + wantsPaper.ToString() + "\n";
-					}
-					if (wantsGold > 0) {
-						offerTxt = offerTxt +  "Gold :" + wantsGold.ToString() + "\n";
-					}
-					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeGivingDescriptionText (offerTxt);
-
-					string givesTxt = ""; // trading player gives, so other player receives
-					if (giveBrick > 0) {
-						givesTxt = givesTxt + "Brick :" + giveBrick.ToString() + "\n";
-					}
-					if (giveOre > 0) {
-						givesTxt = givesTxt +  "Ore :" + giveOre.ToString() + "\n";
-					}
-					if (giveWool > 0) {
-						givesTxt = givesTxt +  "Wool :" + giveWool.ToString() + "\n";
-					}
-					if (giveCoin > 0) {
-						givesTxt = givesTxt +  "Coin :" + giveCoin.ToString() + "\n";
-					}
-					if (giveWheat > 0) {
-						givesTxt = givesTxt +  "Wheat :" + giveWheat.ToString() + "\n";
-					}
-					if (giveCloth > 0) {
-						givesTxt = givesTxt +  "Cloth :" + giveCloth.ToString() + "\n";
-					}
-					if (giveLumber > 0) {
-						givesTxt = givesTxt +  "Lumber :" + giveLumber.ToString() + "\n";
-					}
-					if (givePaper > 0) {
-						givesTxt = givesTxt +  "Paper :" + givePaper.ToString() + "\n";
-					}
-					if (giveGold > 0) {
-						givesTxt = givesTxt +  "Gold :" + giveGold.ToString() + "\n";
-					}
-					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeOfferedDescriptionText (givesTxt);
-
-					playerObjects [p].GetComponent<playerControl> ().RpcSetP2PTradeOfferPanelActive (true);
+					playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player,giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
 				}
 			}
-
-			player.GetComponent<playerControl> ().P2PTradeOfferPanel.SetActive(false);
-
 		} else if (checkCorrectPlayer (player)) {
 			logAPlayer(player, "Please roll dice before performing trade.");
 		} else {
 			logAPlayer(player, "Can't trade! It isn't your turn.");
 		}
+	}
+
+	public void playerAcceptedTrade(GameObject fromPlayer, GameObject toPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
+		Player fPlayer = gamePlayers [fromPlayer];
+		Player tPlayer = gamePlayers [toPlayer];
+
+		bool enoughResource = true;
+		if (!tPlayer.HasResources (wantsBrick, ResourceKind.Brick)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasResources (wantsOre, ResourceKind.Ore)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasResources (wantsWool, ResourceKind.Wool)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasCommodities (wantsCoin, CommodityKind.Coin)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasResources (wantsWheat, ResourceKind.Grain)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasCommodities (wantsCloth, CommodityKind.Cloth)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasResources (wantsLumber, ResourceKind.Lumber)) {
+			enoughResource = false;
+		} else if (!tPlayer.HasCommodities (wantsPaper, CommodityKind.Paper)) {
+			enoughResource = false;
+		} else if (tPlayer.gold < wantsGold) {
+			enoughResource = false;
+		}
+
+		if (enoughResource == false) {
+			toPlayer.GetComponent<playerControl> ().RpcSetP2PTradeOfferPanelActive (false);
+			logAPlayer (toPlayer, "Sorry, you do not have enough resource to trade into.");
+			return;
+		}
+
+		foreach (GameObject p in gamePlayers.Keys) {
+			p.GetComponent<playerControl> ().RpcSetP2PTradeOfferPanelActive (false);
+			p.GetComponent<playerControl> ().RpcSetP2PTradePanelActive (false);
+		}
+
+
+		gamePlayers [fromPlayer].AddResources (wantsWheat, ResourceKind.Grain);
+		gamePlayers [fromPlayer].AddResources (wantsOre, ResourceKind.Ore);
+		gamePlayers [fromPlayer].AddResources (wantsLumber, ResourceKind.Lumber);
+		gamePlayers [fromPlayer].AddResources (wantsBrick, ResourceKind.Brick);
+		gamePlayers [fromPlayer].AddResources (wantsWool, ResourceKind.Wool);
+		gamePlayers [fromPlayer].AddCommodities (wantsPaper, CommodityKind.Paper);
+		gamePlayers [fromPlayer].AddCommodities (wantsCoin, CommodityKind.Coin);
+		gamePlayers [fromPlayer].AddCommodities (wantsCloth, CommodityKind.Cloth);
+		gamePlayers [fromPlayer].AddGold (wantsGold);
+
+		gamePlayers [fromPlayer].PayResources (giveWheat, ResourceKind.Grain);
+		gamePlayers [fromPlayer].PayResources (giveOre, ResourceKind.Ore);
+		gamePlayers [fromPlayer].PayResources (giveLumber, ResourceKind.Lumber);
+		gamePlayers [fromPlayer].PayResources (giveBrick, ResourceKind.Brick);
+		gamePlayers [fromPlayer].PayResources (giveWool, ResourceKind.Wool);
+		gamePlayers [fromPlayer].PayCommoditys (givePaper, CommodityKind.Paper);
+		gamePlayers [fromPlayer].PayCommoditys (giveCoin, CommodityKind.Coin);
+		gamePlayers [fromPlayer].PayCommoditys (giveCloth, CommodityKind.Cloth);
+		gamePlayers [fromPlayer].AddGold(-giveGold);
+
+		gamePlayers [toPlayer].AddResources (giveWheat, ResourceKind.Grain);
+		gamePlayers [toPlayer].AddResources (giveOre, ResourceKind.Ore);
+		gamePlayers [toPlayer].AddResources (giveLumber, ResourceKind.Lumber);
+		gamePlayers [toPlayer].AddResources (giveBrick, ResourceKind.Brick);
+		gamePlayers [toPlayer].AddResources (giveWool, ResourceKind.Wool);
+		gamePlayers [toPlayer].AddCommodities (givePaper, CommodityKind.Paper);
+		gamePlayers [toPlayer].AddCommodities (giveCoin, CommodityKind.Coin);
+		gamePlayers [toPlayer].AddCommodities (giveCloth, CommodityKind.Cloth);
+		gamePlayers [toPlayer].AddGold (giveGold);
+
+		gamePlayers [toPlayer].PayResources (wantsWheat, ResourceKind.Grain);
+		gamePlayers [toPlayer].PayResources (wantsOre, ResourceKind.Ore);
+		gamePlayers [toPlayer].PayResources (wantsLumber, ResourceKind.Lumber);
+		gamePlayers [toPlayer].PayResources (wantsBrick, ResourceKind.Brick);
+		gamePlayers [toPlayer].PayResources (wantsWool, ResourceKind.Wool);
+		gamePlayers [toPlayer].PayCommoditys (wantsPaper, CommodityKind.Paper);
+		gamePlayers [toPlayer].PayCommoditys (wantsCoin, CommodityKind.Coin);
+		gamePlayers [toPlayer].PayCommoditys (wantsCloth, CommodityKind.Cloth);
+		gamePlayers [toPlayer].AddGold(-wantsGold);
+
+
+		updatePlayerResourcesUI (toPlayer);
+		updatePlayerResourcesUI (fromPlayer);
 	}
 
 
