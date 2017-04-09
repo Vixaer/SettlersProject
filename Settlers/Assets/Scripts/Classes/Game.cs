@@ -1555,6 +1555,7 @@ public class Game : NetworkBehaviour
             updatePlayerResourcesUI(player);
             logAPlayer(player, "Your city has become a metropolis!");
             metropolisType = VillageKind.City;
+            CheckForVictory();
             player.GetComponent<playerControl>().RpcEndMetropoleChoice();
         }
     }
