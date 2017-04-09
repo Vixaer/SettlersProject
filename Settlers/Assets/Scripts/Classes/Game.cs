@@ -369,7 +369,6 @@ public class Game : NetworkBehaviour
 			logAPlayer(player, "Can't trade! It isn't your turn.");
 		}
 	}
-<<<<<<< HEAD
 
 	public void playerAcceptedTrade(GameObject fromPlayer, GameObject toPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
 		Player fPlayer = gamePlayers [fromPlayer];
@@ -454,8 +453,6 @@ public class Game : NetworkBehaviour
 	}
 
 
-=======
->>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;

@@ -47,12 +47,10 @@ public class playerControl : NetworkBehaviour {
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
-<<<<<<< HEAD
 
 	// @author xingwei
-=======
-// @author xingwei
->>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
+
+
 	// P2P Trade Resources
 	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
 	private int giveBrick = 0;
