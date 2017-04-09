@@ -9,9 +9,12 @@ public class Intersection : NetworkBehaviour {
     public Edges[] paths;
     public Sprite settlement, city, intersection;
     public Sprite[] knightSprites, activeKnightSprites;
+    public Sprite metropolisSprite;
+	public Sprite cityWallSprite;
     public bool owned;
     
     public IntersectionUnit positionedUnit { get; private set; }
+	public bool knightRemoved = false;
 
     [SyncVar(hook ="OnHarbour")]
     public HarbourKind harbor = HarbourKind.None;
@@ -23,11 +26,15 @@ public class Intersection : NetworkBehaviour {
     Color color;
     [SyncVar(hook = "OnBuild")]
     int type = 0;
+    [SyncVar(hook = "OnMetropole")]
+    public VillageKind metropolis = VillageKind.City;
 
     
 	// Use this for initialization
 	void Awake () {
         positionedUnit = null;
+		cityWallSprite = (Sprite)Resources.Load<Sprite> ("CityWall");
+		intersection = (Sprite)Resources.Load<Sprite>  ("intersection");
 	}
 
     public Color getColor()
@@ -59,8 +66,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        //remove one from the pool
-        player.RemoveSettlement();
     }
     public void BuildCity(Player player)
     {
@@ -81,7 +86,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        player.RemoveCity();
     }
     public void UpgradeSettlement(Player player)
     {
@@ -94,8 +98,6 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
-        player.RemoveCity();
-        player.AddSettlement();
     }
     #endregion
     public void BuildKnight(Player player)
@@ -112,12 +114,69 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+
+	public void MoveKnight(Player player, Knight knightToMove){
+		Knight temp = knightToMove;
+		temp.deactivateKnight ();
+		positionedUnit = temp;
+
+		player.ownedUnits.Add(positionedUnit);
+		owned = true;
+		knight = temp.level;
+
+		switch (positionedUnit.Owner.myColor)
+		{
+		case 0: color = Color.red; break;
+		case 1: color = Color.blue; break;
+		case 2: color = Color.green; break;
+		case 3: color = new Color(255, 128, 0); break;
+		}
+	}
+
+	public void RemoveKnight (Player player, bool destroy){
+		owned = false;
+		Knight temp = (Knight)positionedUnit;
+		temp.deactivateKnight ();
+		knightActive = false;
+		knight = KnightLevel.None;
+		knightRemoved = true;
+		player.ownedUnits.Remove (positionedUnit);
+		positionedUnit = null;
+
+		if (destroy)
+			player.AddKnight (temp.level);
+		
+		color = new Color(255, 255, 255);
+		transform.GetComponent<SpriteRenderer>().sprite = intersection;
+	}
+
+	public void BuildWall(Player player) {
+		type = 3;
+		player.availableWalls--;
+		switch (positionedUnit.Owner.myColor)
+		{
+			case 0: color = Color.red; break;
+			case 1: color = Color.blue; break;
+			case 2: color = Color.green; break;
+			case 3: color = new Color(255, 128, 0); break;
+		}
+
+	}
     #region Sync Hooks
     public void OnOwned(Color value)
     {
-        owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
+		if (knightRemoved) {
+			knightRemoved = false;
+		} else {
+			owned = true;
+		}
     }
+
+	public void OnWall(bool value){
+		
+		transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
+	}
    
     public void OnBuild(int value)
     {
@@ -130,6 +189,12 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
+		else if( value == 3)
+		{
+			Debug.Log ("hey");
+			transform.GetComponent<SpriteRenderer> ().sprite = cityWallSprite;
+		} 
+
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
     }
 
@@ -174,6 +239,33 @@ public class Intersection : NetworkBehaviour {
                 transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
         }
     }
+
+    public void OnMetropole(VillageKind value)
+    {
+        metropolis = value;
+
+			switch (metropolis) {
+			case VillageKind.PoliticsMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.blue;
+				break;
+			case VillageKind.ScienceMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.green;
+				break;
+			case VillageKind.TradeMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.yellow;
+				break;
+			default:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = null;
+				break;
+			}
+
+	
+
+	
+    }
     #endregion
 
     #region Loading
@@ -207,6 +299,7 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
+        metropolis = data.metropolis;
     }
 
     private void LoadKnight(Knight k)
@@ -238,6 +331,7 @@ public class IntersectionData
     public KnightLevel knight { get; set; }
     public bool knightActive { get; set; }
     public int type { get; set; }
+    public VillageKind metropolis { get; set; }
     
     public IntersectionData(Intersection source)
     {
@@ -248,6 +342,7 @@ public class IntersectionData
         this.knight = source.knight;
         this.knightActive = source.knightActive;
         this.type = source.getType();
+        this.metropolis = source.metropolis;
         this.positionedUnit = source.positionedUnit == null ? 
             Guid.Empty : 
             source.positionedUnit.id;

@@ -42,6 +42,7 @@ public class Game : NetworkBehaviour
     public bool isLoaded = false;
 
     private Dictionary<string, Player> tempPlayersByName;
+    private VillageKind metropolisType = VillageKind.City;
 
     #region Initial Setup
     void Start()
@@ -57,7 +58,13 @@ public class Game : NetworkBehaviour
 
     public void ValidateName(GameObject player, string name)
     {
-        player.transform.GetComponent<playerControl>().RpcCheckNameResult(!isLoaded || tempPlayersByName.ContainsKey(name));
+        var isValidName = !isLoaded || tempPlayersByName.ContainsKey(name);
+        player.transform.GetComponent<playerControl>().isValidName = isValidName;
+        if (isValidName)
+        {
+            setPlayerName(player, name);
+        }
+        player.GetComponent<playerControl>().RpcNameCheck(isValidName);
     }
 
     //setup references for the game
@@ -185,7 +192,7 @@ public class Game : NetworkBehaviour
         while (remaining)
         {
             GameObject player = (GameObject)keys.Current;
-            string playerTurn = playerTurn = ((Player)(currentPlayer.Current)).name;
+            string playerTurn = ((Player)(currentPlayer.Current)).name;
             switch (currentPhase)
             {
                 case GamePhase.TurnDiceRolled: playerTurn += " Roll Dice"; break;
@@ -362,6 +369,7 @@ public class Game : NetworkBehaviour
 			logAPlayer(player, "Can't trade! It isn't your turn.");
 		}
 	}
+<<<<<<< HEAD
 
 	public void playerAcceptedTrade(GameObject fromPlayer, GameObject toPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
 		Player fPlayer = gamePlayers [fromPlayer];
@@ -446,12 +454,15 @@ public class Game : NetworkBehaviour
 	}
 
 
+=======
+>>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
     public void NpcTrade(GameObject player, int offer, int wants)
     {
         bool check = false;
         Player tradingPlayer = gamePlayers[player];
         bool hasSpecial = false;
         bool hasGeneric = false;
+        bool hasTradingHouse = false;
         string log = "";
 
         if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase)
@@ -507,6 +518,10 @@ public class Game : NetworkBehaviour
             {
                 hasGeneric = true;
             }
+            if (tradingPlayer.cityImprovementLevels[CommodityKind.Cloth] >= 3)
+            {
+                hasTradingHouse = true;
+            }
             //offering resrouce wants  a resource
             if (offer < 5 && wants < 5)
             {
@@ -515,22 +530,27 @@ public class Game : NetworkBehaviour
                 {
                     tradingPlayer.PayResources(2, (ResourceKind)offer);
                     log += "Has traded 2 ";
+                    check = true;
                 }
                 //generic
                 else if (hasGeneric && tradingPlayer.HasResources(3, (ResourceKind)offer))
                 {
                     tradingPlayer.PayResources(3, (ResourceKind)offer);
                     log += "Has traded 3 ";
+                    check = true;
                 }
                 //shitty
                 else if (tradingPlayer.HasResources(4, (ResourceKind)offer))
                 {
                     tradingPlayer.PayResources(4, (ResourceKind)offer);
                     log += "Has traded 4 ";
+                    check = true;
                 }  
-                tradingPlayer.AddResources(1, (ResourceKind)wants);
-                log += ((ResourceKind)offer).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
-                check = true;
+                if (check)
+                {
+                    tradingPlayer.AddResources(1, (ResourceKind)wants);
+                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
+                }
             }
             //offering resources wants a commodity
             else if (offer < 5 && wants >= 5)
@@ -540,28 +560,39 @@ public class Game : NetworkBehaviour
                 {
                     tradingPlayer.PayResources(2, (ResourceKind)offer);
                     log += "Has traded 2 ";
+                    check = true;
                 }
                 //generic
                 else if (hasGeneric && tradingPlayer.HasResources(3, (ResourceKind)offer))
                 {
                     tradingPlayer.PayResources(3, (ResourceKind)offer);
                     log += "Has traded 3 ";
+                    check = true;
                 }
                 //shitty
                 else if (tradingPlayer.HasResources(4, (ResourceKind)offer))
                 {
                     tradingPlayer.PayResources(4, (ResourceKind)offer);
                     log += "Has traded 4 ";
+                    check = true;
                 }
-                gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
-                log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
-                check = true;
-
+                if (check)
+                {
+                    gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
+                    log += ((ResourceKind)offer).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
+                }
             }
             //offering commodity wants resource
             else if (offer >= 5 && wants < 5)
             {
-                if (gamePlayers[player].HasCommodities(4, (CommodityKind)(offer - 5)))
+                if (hasTradingHouse && gamePlayers[player].HasCommodities(2, (CommodityKind)(offer - 5)))
+                {
+                    gamePlayers[player].PayCommoditys(2, (CommodityKind)(offer - 5));
+                    gamePlayers[player].AddResources(1, (ResourceKind)wants);
+                    log += "Has traded 2 " + ((CommodityKind)offer - 5).ToString() + " for 1 " + ((ResourceKind)wants).ToString();
+                    check = true;
+                }
+                else if (gamePlayers[player].HasCommodities(4, (CommodityKind)(offer - 5)))
                 {
 
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
@@ -573,14 +604,22 @@ public class Game : NetworkBehaviour
             //offering commodity wants commodity
             else if (offer >= 5 && wants >= 5)
             {
-                if (gamePlayers[player].HasCommodities(4, (CommodityKind)(offer - 5)))
+                if (hasTradingHouse && gamePlayers[player].HasCommodities(2, (CommodityKind)(offer - 5)))
+                {
+                    gamePlayers[player].PayCommoditys(2, (CommodityKind)(offer - 5));
+                    gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
+                    log += "Has Traded 2 " + ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
+                    check = true;
+                }
+                else if (gamePlayers[player].HasCommodities(4, (CommodityKind)(offer - 5)))
                 {
                     gamePlayers[player].PayCommoditys(4, (CommodityKind)(offer - 5));
                     gamePlayers[player].AddCommodities(1, (CommodityKind)wants - 5);
                     log += "Has Traded 4 " + ((CommodityKind)offer - 5).ToString() + " for 1 " + ((CommodityKind)wants - 5).ToString();
                     check = true;
                 }
-            }        //update his ui
+            }      
+            //update his ui
             updatePlayerResourcesUI(player);
             player.GetComponent<playerControl>().RpcCloseTrade(check);
             // log
@@ -593,6 +632,31 @@ public class Game : NetworkBehaviour
         else
         {
             logAPlayer(player, "Can't trade! It isn't your turn.");
+        }
+
+    }
+
+    public void BuyWithGold(GameObject player, int wants)
+    {
+        Player tradingPlayer = gamePlayers[player];
+        string log = "";
+
+        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase && tradingPlayer.gold >= 2)
+        {
+            tradingPlayer.AddGold(-2);
+            tradingPlayer.AddResources(1, (ResourceKind)wants);
+            updatePlayerResourcesUI(player);
+            player.GetComponent<playerControl>().RpcCloseGoldShop(true);
+            // log
+            chatOnServer(player, log);
+        }
+        else if (checkCorrectPlayer(player))
+        {
+            logAPlayer(player, "Please roll dice before performing purchase.");
+        }
+        else
+        {
+            logAPlayer(player, "Can't buy! It isn't your turn.");
         }
 
     }
@@ -635,19 +699,27 @@ public class Game : NetworkBehaviour
             if (currentPhase == GamePhase.SetupRoundOne && !waitingForRoad && canBuild)
             {
                 inter.BuildSettlement(currentBuilder);
-
+                //remove one from the pool
+                currentBuilder.RemoveSettlement();
+                // Add the victory points
+                currentBuilder.AddVictoryPoints(1);
+                updatePlayerResourcesUI(player);
                 waitingForRoad = true;
             }
             //second setup spawns City
             else if (currentPhase == GamePhase.SetupRoundTwo && !waitingForRoad && canBuild)
             {
-                    inter.BuildCity(currentBuilder);
-                    foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
-                    {
-                        payCitySpawn(currentBuilder, hex);
-                    }
-                    updatePlayerResourcesUI(player);
-                    waitingForRoad = true;
+                inter.BuildCity(currentBuilder);
+                // remove one from the pool
+                currentBuilder.RemoveCity();
+                // Add the victory points
+                currentBuilder.AddVictoryPoints(2);
+                foreach (TerrainHex hex in intersection.GetComponent<Intersection>().linked)
+                {
+                    payCitySpawn(currentBuilder, hex);
+                }
+                updatePlayerResourcesUI(player);
+                waitingForRoad = true;
             }
             else if (currentPhase == GamePhase.TurnFirstPhase)
             {
@@ -658,8 +730,13 @@ public class Game : NetworkBehaviour
                     {
                         currentBuilder.PaySettlementResources();
                         inter.BuildSettlement(currentBuilder);
+                        //remove one from the pool
+                        currentBuilder.RemoveSettlement();
+                        // Add the victory points
+                        currentBuilder.AddVictoryPoints(1);
                         //update his UI to let him know he lost the resources;
                         updatePlayerResourcesUI(player);
+                        CheckForVictory();
                     }
                     else
                     {
@@ -679,9 +756,11 @@ public class Game : NetworkBehaviour
                         {
                             medCard = true;
                         }
+
+
                         if (!currentBuilder.HasCityUpgradeResources(medCard))
                         {
-                            logAPlayer(player, "You're resources are insufficient for upgrading to a city.");
+                            logAPlayer(player, "Your resources are insufficient for upgrading to a city.");
                         }
                         else if (!currentBuilder.HasCities())
                         {
@@ -691,25 +770,65 @@ public class Game : NetworkBehaviour
                         {
                             currentBuilder.payCityResources(medCard);
                             inter.UpgradeSettlement(currentBuilder);
+                            currentBuilder.RemoveCity();
+                            currentBuilder.AddSettlement();
+                            // Add the victory points
+                            currentBuilder.AddVictoryPoints(1);
                             CardsInPlay.Remove(ProgressCardKind.MedicineCard);
                             //update his UI to let him know he lost the resources;
+
                             updatePlayerResourcesUI(player);
                             logAPlayer(player, "You upgraded your settlement into a city!");
-                        }
+                            CheckForVictory();
+                        } 
+
                        
                     }
+					else if ( village != null && (village.myKind == VillageKind.City || village.myKind == VillageKind.TradeMetropole || village.myKind == VillageKind.PoliticsMetropole || village.myKind == VillageKind.ScienceMetropole))
+					{
+						bool engCard = false;
+						if (CardsInPlay.Contains (ProgressCardKind.EngineerCard)) {
+							engCard = true;
+						} 
+
+						if (!currentBuilder.HasWallResources(engCard))
+						{
+							logAPlayer(player, "Your resources are insufficient for building a city wall.");
+						}
+						else if (!currentBuilder.HasWalls())
+						{
+							logAPlayer(player, "You've reached the city walls cap (3).");
+						}
+
+						else if (inter.getType() == 3)
+						{
+							logAPlayer(player, "There is already a city wall here.");
+						}
+
+						else if (currentBuilder.HasWallResources (engCard) && currentBuilder.HasWalls ()) 
+						{
+							currentBuilder.payWallResources (engCard);
+							inter.BuildWall (currentBuilder);
+
+							CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+							updatePlayerResourcesUI(player);
+							logAPlayer(player, "You built a city wall!");
+						}
+					}
+
                 }
-            }   
+            }
+            CheckForLongestRoad();
             updateTurn();
         }     
     }
 
-    public void buildKnightOnIntersection(GameObject player, GameObject intersection)
+	public void buildKnightOnIntersection(GameObject player, GameObject intersection, bool upgrade, bool build)
     {
         Intersection inter = intersection.GetComponent<Intersection>();
         Player currentBuilder = gamePlayers[player];
         bool correctPlayer = checkCorrectPlayer(player);
-        bool isOwned = intersection.GetComponent<Intersection>().owned;
+        bool isOwned = inter.owned;
         bool canBuild = canBuildKnight(currentBuilder, intersection);
         bool hasKnights = currentBuilder.HasKnights(KnightLevel.Basic);
         bool hasLand = false;
@@ -726,128 +845,133 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't build when it isn't your turn.");
         }
-        else if (!hasLand)
-        {
-            logAPlayer(player, "Can't build a Knight in the sea.");
-        }
-        else if (!canBuild)
-        {
-            logAPlayer(player, "You need to be connected to your road structure.");
-        }
+
+		if (build) {
+			if (!hasLand && inter.knight == KnightLevel.None) {
+				logAPlayer (player, "Can't build a Knight in the sea.");
+			} else if (!canBuild) {
+				logAPlayer (player, "You need to be connected to your road structure.");
+			} else {
+				//if nothing is build hire a knight
+				if (!isOwned) {
+					if (currentPhase == GamePhase.TurnFirstPhase) {
+						if (currentBuilder.HasKnightResources ()) {
+							if (currentBuilder.HasKnights (KnightLevel.Basic)) {
+								currentBuilder.PayKnightResources ();
+								inter.BuildKnight (currentBuilder);
+								currentBuilder.RemoveKnight (KnightLevel.Basic);
+								//update his UI to let him know he lost the resources;
+								logAPlayer (player, "You built a knight!");
+								updatePlayerResourcesUI (player);
+							} else {
+								logAPlayer (player, "You've reached the 3 basic Knight cap, try upgrading a knight before attempting to hire another knight");
+							}
+						} else {
+							logAPlayer (player, "You need 1 wool and 1 ore to hire a basic knight.");
+						}
+
+					} else {
+						logAPlayer (player, "You can't hire knights on this phase.");
+					}
+				} else {
+					logAPlayer (player, "This place is already occupied by something else.");
+				}
+			}
+
+		} else if (upgrade) {
+			
+			if (isOwned && inter.positionedUnit.Owner.Equals (currentBuilder)) {
+				if (currentPhase == GamePhase.TurnFirstPhase) {
+					// Check that it actually is a knight
+					var knight = inter.positionedUnit as Knight;
+					// Upgrading knight
+
+					if (knight != null) {
+						if (!currentBuilder.HasKnightResources ()) {
+							logAPlayer (player, "Your resources are insufficient for upgrading this Knight.");
+						} else if (knight.level == KnightLevel.Mighty) {
+							logAPlayer (player, "Can't upgrade further he's already the mightiest.");
+						} else if (knight.level == KnightLevel.Basic) {
+							if (currentBuilder.HasKnights (KnightLevel.Strong)) {
+								currentBuilder.PayKnightResources ();
+								knight.upgradeKnight ();
+								inter.knight = KnightLevel.Strong;
+								currentBuilder.AddKnight (KnightLevel.Basic);
+								currentBuilder.RemoveKnight (KnightLevel.Strong);
+								updatePlayerResourcesUI (player);
+							} else {
+								logAPlayer (player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
+							}
+
+
+						} else if (knight.level == KnightLevel.Strong) {
+							if (currentBuilder.cityImprovementLevels [CommodityKind.Coin] < 3) {
+								logAPlayer (player, "You need a fortress to create mighty knights.");
+							} else if (currentBuilder.HasKnights (KnightLevel.Mighty)) {
+								currentBuilder.PayKnightResources ();
+								knight.upgradeKnight ();
+								inter.knight = KnightLevel.Mighty;
+								currentBuilder.AddKnight (KnightLevel.Strong);
+								currentBuilder.RemoveKnight (KnightLevel.Mighty);
+								updatePlayerResourcesUI (player);
+							} else {
+								logAPlayer (player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
+							}
+						}
+
+					}
+					else
+					{
+						logAPlayer(player, "You must select a knight!");
+					}
+				}
+				else
+				{
+					logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+				}
+			}
+		}
         else
         {
-            //if nothing is build hire a knight
-            if (!isOwned)
-            {
-                if (currentPhase == GamePhase.TurnFirstPhase)
-                {
-                    if (currentBuilder.HasKnightResources())
-                    {
-                        if (currentBuilder.HasKnights(KnightLevel.Basic))
-                        {
-                            currentBuilder.PayKnightResources();
-                            inter.BuildKnight(currentBuilder);
-                            currentBuilder.RemoveKnight(KnightLevel.Basic);
-                            //update his UI to let him know he lost the resources;
-                            updatePlayerResourcesUI(player);
-                        }
-                        else
-                        {
-                            logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a kngiht before attempting to hire another knight");
-                        }
-                    }
-                    else
-                    {
-                        logAPlayer(player, "You need 1 wool and 1 ore to hire a basic knight.");
-                    }
 
-                }
-                else
-                {
-                    logAPlayer(player, "You can't hire knights on this phase.");
-                }
-            }
-            //check for activation or upgrading
-            else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
+            //check for activation
+            if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
             {
                 if (currentPhase == GamePhase.TurnFirstPhase)
                 {
                     // Check that it actually is a knight
                     var knight = inter.positionedUnit as Knight;
-                    // Upgrading knight
-                    if (knight != null && knight.isKnightActive())
-                    {
-                        if (!currentBuilder.HasKnightResources())
-                        {
-                            logAPlayer(player, "You're resources are insufficient for upgrading this Knight.");
-                        }
-                        else if (knight.level == KnightLevel.Mighty)
-                        {
-                            logAPlayer(player, "Can't upgrade further he's already the mightiest.");
-                        }
-                        else if (knight.level == KnightLevel.Basic)
-                        {
-                            if (currentBuilder.HasKnights(KnightLevel.Strong))
-                            {
-                                currentBuilder.PayKnightResources();
-                                knight.upgradeKnight();
-                                inter.knight = KnightLevel.Strong;
-                                currentBuilder.AddKnight(KnightLevel.Basic);
-                                currentBuilder.RemoveKnight(KnightLevel.Strong);
-                                updatePlayerResourcesUI(player);
-                            }
-                            else
-                            {
-                                logAPlayer(player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
-                            }
-                            
-                        }
-                        else if (knight.level == KnightLevel.Strong)
-                        {
-                            if (currentBuilder.HasKnights(KnightLevel.Mighty))
-                            {
-                                currentBuilder.PayKnightResources();
-                                knight.upgradeKnight();
-                                inter.knight = KnightLevel.Mighty;
-                                currentBuilder.AddKnight(KnightLevel.Strong);
-                                currentBuilder.RemoveKnight(KnightLevel.Mighty);
-                                updatePlayerResourcesUI(player);
-                            }
-                            else
-                            {
-                                logAPlayer(player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
-                            }
-                        }
-                    }
-                    //activation
-                    else if (knight != null && !knight.isKnightActive())
-                    {
-                        if (!currentBuilder.HasKnightActivatingResources())
-                        {
-                            logAPlayer(player, "You're resources are insufficient to activate this Knight.");
-                        }
-                        else
-                        {
-                            currentBuilder.PayKnightActivationResources();
-                            knight.activateKnight();
-                            inter.knightActive = true;
-                            updatePlayerResourcesUI(player);
-                            logAPlayer(player, "You have activated this knight.");
-                        }
-                    }
+
+					if (knight != null && !knight.isKnightActive ()) {
+						if (!currentBuilder.HasKnightActivatingResources ()) {
+							logAPlayer (player, "You're resources are insufficient to activate this Knight.");
+						} else {
+							currentBuilder.PayKnightActivationResources ();
+							knight.activateKnight ();
+							inter.knightActive = true;
+							updatePlayerResourcesUI (player);
+							knight.setFirstTurn (false);
+							logAPlayer (player, "You have activated this knight.");
+						}
+					} else if (knight != null && knight.isKnightActive ()) {
+						logAPlayer (player, "You have already activated this knight!");
+					}
+					else
+					{
+						logAPlayer(player, "You must select a knight!");
+					}
                 }
-                else
-                {
-                    logAPlayer(player, "You can't upgrade or activate knights in this phase.");
-                }
+				else
+				{
+					logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+				}
 
             }
-            else
-            {
-                logAPlayer(player, "This Place is already occupied by something else.");
-            }
-            updateTurn();
+
+
         }
+		CheckForLongestRoad();
+		updateTurn();
     }
     //buildRoad ran on server from playerCOntrol class with authority
     //runs the build Road on the Edge selected by the player
@@ -921,11 +1045,11 @@ public class Game : NetworkBehaviour
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasRoadResources())
             {
-                gamePlayers[player].PayShipResources();
+                gamePlayers[player].PayRoadResources();
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
-                //update his UI to let him know he lost the resources;
-                updatePlayerResourcesUI(player);
             }
+            CheckForLongestRoad();
+            updatePlayerResourcesUI(player);
             updateTurn();
         }
     }
@@ -995,22 +1119,454 @@ public class Game : NetworkBehaviour
             //check to see if the road card was built
             else if (currentPhase == GamePhase.TurnFirstPhase && CardsInPlay.Contains(ProgressCardKind.RoadBuildingCard))
             {
-                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
-                logAPlayer(player, "You built a free ship because of the Road Building Card.");
+                logAPlayer(player, "You built a free ship because of the Road Building Card."); 
             }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
             {
-                    gamePlayers[player].PayShipResources();
-                    edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
-                    //update his UI to let him know he lost the resources;
-                    updatePlayerResourcesUI(player);
+                gamePlayers[player].PayShipResources();
+                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                //update his UI to let him know he lost the resources;
             }
+            CheckForLongestRoad();
+            updatePlayerResourcesUI(player);
             updateTurn();
         } 
     }
 
+	public bool removeShipCheck (GameObject player, GameObject edge) {
+		bool correctPlayer = checkCorrectPlayer(player);
+		if (!correctPlayer)
+		{
+			logAPlayer(player, "It isn't your turn.");
+			return false;
+		}
+
+		//owned check
+		Edges temp = edge.GetComponent<Edges>();
+		Player temp2 = gamePlayers[player];
+
+		
+		if (temp.isShip == true && !temp.belongsTo.Equals(temp2) ){
+			logAPlayer (player, "This ship does not belong to you!");
+			return false;
+		} else if (temp.isShip == true && temp.belongsTo.Equals(temp2)) {
+			// not connected to 2 ships/units check
+			bool connectCheck = false;
+			int count = 0;
+			int count2 = 0;
+			foreach (Intersection i in temp.endPoints)
+			{
+				
+				foreach (Edges e in i.paths)
+				{
+					//check to see if owned or else belongs to is obviously null and return null pointer
+					if (e.owned) {
+						if (e.belongsTo.Equals(temp2))
+						{
+							if (!connectCheck) {
+								count++;
+								if (count == 2) {
+									connectCheck = true;
+									break;
+								}
+							} else {
+								count2++;
+								if (count2 == 2)
+									break;
+							}
+								
+						}
+
+					}
+				}
+				if (count == 2 || count2 == 2) {
+					continue;
+				}
+
+				// Check to see if ship connected to any of player's units
+				if (temp2.ownedUnits.Contains (i.positionedUnit)) {
+					if (!connectCheck) {
+						count = 2;
+						if (count == 2) {
+							connectCheck = true;
+						} 
+
+					} else {
+						count2 = 2;
+					}			
+				}
+				
+			}
+
+			if (count2 > 1) {
+				logAPlayer (player, "Can't move ships connected on both ends to your other pieces!");
+				return false;
+			}
+			//pirate check
+			foreach (TerrainHex a in temp.inBetween) {
+				if (a.isPirate == true) {
+					logAPlayer (player, "Can't move ships that are next to pirate!");
+					return false;
+				}
+			}
+			logAPlayer (player, "Ship Selected!");
+			return true;
+
+		} else {
+			logAPlayer (player, "Please select a ship to move.");
+			return false;
+		}
+
+		CheckForLongestRoad();
+		updatePlayerResourcesUI(player);
+	}
+
+	public bool placeShipCheck (GameObject player, GameObject edge, GameObject oldEdge) {
+		bool correctPlayer = checkCorrectPlayer(player);
+		Edges temp = edge.GetComponent<Edges>();
+		Edges temp2 = oldEdge.GetComponent<Edges> ();
+		temp2.owned = false;
+		bool canBuild = canBuildConnectedShip(gamePlayers[player], edge);
+		bool onWater = false;
+		bool isOwned = temp.owned;
+
+		foreach(TerrainHex tile in temp.inBetween)
+		{
+			if(tile.myTerrain == TerrainKind.Sea)
+			{
+				onWater = true;
+			}
+		}
+
+		//pirate check
+		foreach (TerrainHex a in temp.inBetween) {
+			if (a.isPirate == true) {
+				logAPlayer (player, "Can't move ships next to pirate!");
+				return false;
+			}
+		}
+		if (!correctPlayer) {
+			logAPlayer (player, "It isn't your turn.");
+			temp2.owned = true;
+			return false;
+		} else if (!onWater) {
+			logAPlayer (player, "You cant build a ship on land.");
+			temp2.owned = true;
+			return false;
+		} else if (isOwned) {
+			logAPlayer (player, "There's already something built here.");
+			temp2.owned = true;
+			return false;
+		} else if (correctPlayer && onWater && !isOwned && canBuild) {
+			edge.GetComponent<Edges> ().BuildShip (gamePlayers [player]);
+			oldEdge.GetComponent<Edges> ().RemoveShip (gamePlayers [player]);
+			logAPlayer (player, "Ship Moved! You cannot move anymore ships this turn.");
+			return true;
+		} else {
+			logAPlayer (player, "Ship is not connected with one of your roads/ships!");
+			temp2.owned = true;
+			return false;
+		}
+	}
+
+	public bool selectKnightCheck (GameObject player, GameObject inter) {
+
+		bool correctPlayer = checkCorrectPlayer(player);
+		if (!correctPlayer)
+		{
+			logAPlayer(player, "It isn't your turn.");
+			return false;
+		}
+
+
+		Intersection temp = inter.GetComponent<Intersection>();
+		Player temp2 = gamePlayers[player];
+
+		//Make sure you have selected one of your knights
+
+		if (temp.knight != KnightLevel.None) {
+			IntersectionUnit playerKnight = temp.positionedUnit;
+			if (temp2.ownedUnits.Contains (playerKnight)) {
+
+				Knight k = (Knight) temp.positionedUnit;
+
+				//Make sure knight is activated
+				if (temp.knightActive == false) {
+					logAPlayer (player, "Can't move unactivated knights!");
+					return false;
+				}  
+
+				//Make sure knight was not activated on the same turn
+				else if (!k.isFirstTurn()){
+					logAPlayer (player, "Can't move knights that were just activated!");
+					return false;
+				}
+				else {
+					logAPlayer (player, "Knight selected!");
+					return true;
+				}
+
+			} else {
+				logAPlayer (player, "This knight does not belong to you!");
+				return false;
+			}
+			
+		} 
+	
+		return false;
+
+				
+	}
+
+	//to Do: make player move their displaced knight, fix disappearing intersections after knight moves
+	public bool moveKnightCheck (GameObject player, GameObject inter, GameObject oldInter) {
+		bool correctPlayer = checkCorrectPlayer (player);
+		if (!correctPlayer) {
+			logAPlayer (player, "It isn't your turn.");
+			return false;
+		}
+		Intersection temp = inter.GetComponent<Intersection> ();
+		Intersection temp2 = oldInter.GetComponent<Intersection> ();
+		Player temp3 = gamePlayers [player];
+
+		//Check to see if oldinter and the new inter are connected by roads by BFS
+
+		Queue<Intersection> openSet = new Queue<Intersection> ();
+		HashSet<Intersection> closedSet = new HashSet<Intersection> ();
+		openSet.Enqueue (temp2);
+
+		bool connectCheck = false;
+		while (openSet.Count > 0) {
+			Intersection currentInter = openSet.Dequeue ();
+			closedSet.Add (currentInter);
+
+			foreach (Edges e in currentInter.paths) {
+				if (e.belongsTo == null) {
+					continue;
+				}
+				else if (!e.belongsTo.Equals(temp3)){
+					continue;
+				}
+				foreach(Intersection i in e.endPoints) {
+					if (!i.Equals (currentInter)) {
+						if (i.Equals (temp)) {
+							connectCheck = true;
+							break;
+						} 
+						//Add intersection to open set if it hasn't been explored and hasn't been owned or hasn't been explored and but player owns it
+						else if (!closedSet.Contains (i) && (!i.owned || (i.owned && temp3.ownedUnits.Contains(i.positionedUnit)))) {
+							openSet.Enqueue (i); 
+						}
+
+					}
+				}
+			}
+			if (connectCheck)
+				break;
+		}
+
+		if (!connectCheck) {
+			logAPlayer (player, "Can't move your knight here!");
+			return false;
+		}
+
+		//Check to see if no cities or higher lvl knights at new intersection
+
+	
+		//If there is a city/settlement at the new place
+		if (temp.owned && temp.knight == KnightLevel.None) {
+			logAPlayer (player, "Can't move your knight here!");
+			return false;
+		} 
+
+		//If there is a knight at the new place
+		else if (temp.owned && temp.knight != KnightLevel.None) {
+			//TODO: knight displacement
+			if (!temp.positionedUnit.Owner.Equals (temp3)) {
+				//Check to see if knight can be displaced
+
+				Player opponent = temp.positionedUnit.Owner;
+				Knight opKnight = (Knight)temp.positionedUnit;
+
+				GameObject opponentGameObject = null;
+
+				foreach (KeyValuePair<GameObject, Player> entry in gamePlayers) {
+					if (entry.Value.Equals(opponent)){
+						opponentGameObject = entry.Key;
+						break;
+					}
+				}
+
+				if (temp2.knight == KnightLevel.Basic) {
+				
+					logAPlayer (player, "Your knight is not strong enough to displace that knight!");
+					return false;	
+
+				} else if (temp2.knight == KnightLevel.Strong) {
+					if (temp.knight == KnightLevel.Basic) {
+
+						
+						if (opponentKnightCheck (temp)) {
+							logAPlayer (opponentGameObject, "Your knight has been displaced and you must move it!");
+							opponent.storedKnight = opKnight;
+							opponent.storedInter = temp;
+							temp2.RemoveKnight (opponent, false);
+							opponentGameObject.GetComponent<playerControl> ().RpcBeginKnightMove ();
+						} else {
+							logAPlayer (opponentGameObject, "Your knight has been removed from the board!");
+							temp2.RemoveKnight (opponent, true);
+						}
+
+
+						Knight temp4 = (Knight)temp2.positionedUnit;
+						temp2.RemoveKnight (temp3, false);
+						temp.MoveKnight (temp3, temp4);
+						logAPlayer (player, "Knight moved!");
+
+						return true;
+
+					} else {
+						logAPlayer (player, "Your knight is not strong enough to displace that knight!");
+						return false;	
+					}
+				} else {
+					if (temp.knight == KnightLevel.Basic || temp.knight == KnightLevel.Strong) {
+
+						if (opponentKnightCheck (temp)) {
+							logAPlayer (opponentGameObject, "Your knight has been displaced and you must move it!");
+							temp2.RemoveKnight (opponent, false);
+							opponentGameObject.GetComponent<playerControl> ().RpcBeginKnightMove ();
+						} else {
+							logAPlayer (opponentGameObject, "Your knight has been removed from the board!");
+							temp2.RemoveKnight (opponent, true);
+						}
+
+						Knight temp4 = (Knight)temp2.positionedUnit;
+						temp2.RemoveKnight (temp3, false);
+						temp.MoveKnight (temp3, temp4);
+						logAPlayer (player, "Knight moved!");
+						return true;
+
+					} else {
+						logAPlayer (player, "Your knight is not strong enough to displace that knight!");
+						return false;	
+					}
+				}
+			} else {
+				logAPlayer (player, "You can't displace your own knights!");
+				return false;	
+			}
+		}
+		//if there is nothing there 
+		else {
+			Knight temp4 = (Knight) temp2.positionedUnit;
+			temp2.RemoveKnight (temp3, false);
+			temp.MoveKnight (temp3, temp4);
+			logAPlayer (player, "Knight moved!");
+			CheckForLongestRoad();
+			return true;
+		}
+			
+	}
+
+	//Check to see if knight forced to move has anyplace to go
+	public bool opponentKnightCheck (Intersection inter){
+
+		Player opponent = inter.positionedUnit.Owner;
+
+		Queue<Intersection> openSet = new Queue<Intersection> ();
+		HashSet<Intersection> closedSet = new HashSet<Intersection> ();
+		openSet.Enqueue (inter);
+
+		bool connectCheck = false;
+		while (openSet.Count > 0) {
+			Intersection currentInter = openSet.Dequeue ();
+			closedSet.Add (currentInter);
+
+			foreach (Edges e in currentInter.paths) {
+				if (e.belongsTo == null) {
+					continue;
+				}
+				else if (!e.belongsTo.Equals(opponent)){
+					continue;
+				}
+				foreach(Intersection i in e.endPoints) {
+					if (!i.Equals (currentInter)) {
+						//empty space has been found!
+						if (!i.owned) {
+							connectCheck = true;
+							break;
+						} 
+						//Add intersection to open set if intersection is occupied by a friendly unit and it hasn't been explored yet
+						else if (!closedSet.Contains (i) && opponent.ownedUnits.Contains (i.positionedUnit)) {
+							openSet.Enqueue (i); 
+						}
+					}
+					
+				}
+			}
+			if (connectCheck)
+				break;
+		}
+		return connectCheck;
+	}
+
+	public void forceMoveKnight(GameObject player, GameObject inter)
+	{
+
+
+		Player p = gamePlayers [player];
+		Knight k = p.storedKnight;
+		Intersection oldInter = p.storedInter;
+
+		Intersection temp = inter.GetComponent<Intersection> ();
+
+		Queue<Intersection> openSet = new Queue<Intersection> ();
+		HashSet<Intersection> closedSet = new HashSet<Intersection> ();
+		openSet.Enqueue (oldInter);
+
+		bool connectCheck = false;
+		while (openSet.Count > 0) {
+			Intersection currentInter = openSet.Dequeue ();
+			closedSet.Add (currentInter);
+
+			foreach (Edges e in currentInter.paths) {
+				if (e.belongsTo == null) {
+					continue;
+				}
+				else if (!e.belongsTo.Equals(p)){
+					continue;
+				}
+				foreach(Intersection i in e.endPoints) {
+					if (!i.Equals (currentInter)) {
+						if (i.Equals (temp)) {
+							connectCheck = true;
+							break;
+						} 
+						//Add intersection to open set if it hasn't been explored and hasn't been owned or hasn't been explored and but player owns it
+						else if (!closedSet.Contains (i) && (!i.owned || (i.owned && p.ownedUnits.Contains(i.positionedUnit)))) {
+							openSet.Enqueue (i); 
+						}
+
+					}
+				}
+			}
+			if (connectCheck)
+				break;
+		}
+
+		if (!connectCheck) {
+			logAPlayer (player, "Sadly, not a valid place to move your knight.");	
+		} else {
+			temp.MoveKnight (p, k);
+			logAPlayer (player, "Knight moved!");
+			CheckForLongestRoad();
+			player.GetComponent<playerControl> ().RpcEndKnightMove ();
+		}
+	}
     
     //end player turn
     public void endTurn(GameObject player)
@@ -1020,7 +1576,16 @@ public class Game : NetworkBehaviour
         {
             if(currentPhase != GamePhase.TurnDiceRolled)
             {
-                currentPhase = GamePhase.TurnDiceRolled;
+				player.GetComponent<playerControl> ().movedShipThisTurn = false;
+
+				//Reset all knights' firstturn variables that are false since they were activated this turn
+				Player temp = gamePlayers[player];
+				foreach (IntersectionUnit k in temp.ownedUnits.Where(u => u is Knight)) {
+					Knight knight = (Knight) k;
+					knight.setFirstTurn (true);
+				}
+
+				currentPhase = GamePhase.TurnDiceRolled;
 
                 if (!currentPlayer.MoveNext())
                 {
@@ -1217,7 +1782,7 @@ public class Game : NetworkBehaviour
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
-                        logAPlayer(player, "The Irrigation card has given you : " + sum + " ore.");
+                        logAPlayer(player, "The Mining card has given you : " + sum + " ore.");
                         break;
                     }
                 case ProgressCardKind.PrinterCard:
@@ -1329,6 +1894,17 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        // See if someone owned the merchant before
+                        var merchantPlayer = gamePlayers.Values.FirstOrDefault(p => p.hasMerchant);
+                        if (merchantPlayer != null)
+                        {
+                            merchantPlayer.TakeMerchant();
+                            updatePlayerResourcesUI(playerObjects[merchantPlayer]);
+                        }
+                        cardPlayer.GiveMerchant();
+                        updatePlayerResourcesUI(player);
+                        CheckForVictory();
+                        // TODO: place the merchant where you want it.
                         break;
                     }
                 case ProgressCardKind.MerchantFleetCard:
@@ -1350,8 +1926,8 @@ public class Game : NetworkBehaviour
                         gameDices.returnCard(k);
                         break;
                     }
-
             }
+            CheckForVictory();
         }
         else
         {
@@ -1363,12 +1939,24 @@ public class Game : NetworkBehaviour
     {
         bool turnCheck = checkCorrectPlayer(player);
         bool hasCity = false;
+        bool hasMetropolis = false;
+        var mapper = new Dictionary<CommodityKind, VillageKind>()
+                {
+                    { CommodityKind.Cloth, VillageKind.TradeMetropole },
+                    { CommodityKind.Coin, VillageKind.PoliticsMetropole },
+                    { CommodityKind.Paper, VillageKind.ScienceMetropole }
+                };
         Player currentUpgrader = gamePlayers[player];
         foreach (OwnableUnit unit in currentUpgrader.ownedUnits)
         {
-            if(unit is Village && ((Village)unit).myKind == VillageKind.City)
+            if (unit is Village && ((Village)unit).myKind == VillageKind.City)
             {
                 hasCity = true;
+                break;
+            }
+            else if (unit is Village && ((Village)unit).myKind == mapper[(CommodityKind)kind])
+            {
+                hasMetropolis = true;
                 break;
             }
         }
@@ -1380,7 +1968,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't improve cities on this phase!");
         }
-        else if (!hasCity)
+        else if (!hasCity && !hasMetropolis)
         {
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
@@ -1402,9 +1990,77 @@ public class Game : NetworkBehaviour
                 logAPlayer(player, "You just improved your cities!");
                 player.GetComponent<playerControl>().RpcUpdateSliders(level + 1, kind);
                 updatePlayerResourcesUI(player);
+                // Check if we are now creating a metropolis
+                if (currentUpgrader.cityImprovementLevels[(CommodityKind)kind] >= 4)
+                {
+                    GameObject metropolis;
+                    switch (kind)
+                    {
+                        case (int)CommodityKind.Cloth:
+                            metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.TradeMetropole);
+                            break;
+
+                        case (int)CommodityKind.Coin:
+                            metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.PoliticsMetropole);
+                            break;
+
+                        case (int)CommodityKind.Paper:
+                            metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.ScienceMetropole);
+                            break;
+
+                        default:
+                            updatePlayerResourcesUI(player);
+                            return;
+                    }
+                    if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind])
+                    {
+                        // You now have the metropolis of this type
+                        if (metropolis != null && metropolis.GetComponent<Intersection>().positionedUnit.Owner != currentUpgrader)
+                        {
+                            metropolis.GetComponent<Intersection>().metropolis = VillageKind.City;
+                            metropolis.GetComponent<Intersection>().positionedUnit.Owner.AddVictoryPoints(-2);
+                            updatePlayerResourcesUI(playerObjects[metropolis.GetComponent<Intersection>().positionedUnit.Owner]);
+                        }
+                        // Call the RPC for the new player to set their metropolis
+                        logAPlayer(player, "Select a city to upgrade to a metropolis.");
+                        metropolisType = mapper[(CommodityKind)kind];
+                        player.GetComponent<playerControl>().RpcBeginMetropoleChoice();
+                    }
+                }
             }
+        }     
+    }
+
+    public void setMetropole(GameObject player, GameObject intersection)
+    {
+        var cityUnit = intersection.GetComponent<Intersection>().positionedUnit;
+        if (cityUnit != null)
+        {
+            var city = cityUnit as Village;
+            if (city == null)
+            {
+                logAPlayer(player, "You must select a village.");
+                return;
+            }
+            else if (city.Owner != gamePlayers[player])
+            {
+                logAPlayer(player, "You must select a city that you own.");
+                return;
+            }
+            else if (city.myKind != VillageKind.City)
+            {
+                logAPlayer(player, "You must select a city.");
+                return;
+            }
+            city.setVillageType(metropolisType);
+            intersection.GetComponent<Intersection>().metropolis = metropolisType;
+            gamePlayers[player].AddVictoryPoints(2);
+            updatePlayerResourcesUI(player);
+            logAPlayer(player, "Your city has become a metropolis!");
+            metropolisType = VillageKind.City;
+            CheckForVictory();
+            player.GetComponent<playerControl>().RpcEndMetropoleChoice();
         }
-        
     }
 
     public void MoveBarbs()
@@ -1526,10 +2182,13 @@ public class Game : NetworkBehaviour
                 foreach (Edges e in i.paths)
                 {
                     //check to see if owned or else bleongs to is obviously null and return null pointer
-                    if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
+					Debug.Log(e.belongsTo);
+                    if (e.owned && e.isShip == true)
                     {
-                        check = true;
-                        break;
+						if (e.belongsTo.Equals(player) ){
+							check = true;
+							break;
+						}
                     }
                 }
             }
@@ -1831,7 +2490,7 @@ public class Game : NetworkBehaviour
             while (values.MoveNext())
             {
                 Player tempPlayer = (Player)values.Current;
-                if(tempPlayer.SumResources() > 7)
+			if(tempPlayer.SumResources() > (7 + 2*(3 - tempPlayer.availableWalls)))
                 {
                     int toDiscard = (int)(tempPlayer.SumResources() / 2.0);
                     playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard,"");
@@ -2070,6 +2729,210 @@ public class Game : NetworkBehaviour
     }
     #endregion
 
+    // Victory point checks
+    #region Victory points
+    
+    private void CheckForVictory()
+    {
+        foreach (Player p in gamePlayers.Values)
+        {
+            if (p.victoryPoints >= 13)
+            {
+                string message = "Player " + p.name + " has won this game! \n Press the Exit button to quit.";
+                foreach (GameObject pl in gamePlayers.Keys)
+                {
+                    pl.GetComponent<playerControl>().RpcVictoryPanel(message);
+                }
+            }
+        }
+    }
+
+    private void CheckForLongestRoad()
+    {
+        // Check each player for a potential longest road
+        var longestRoadLength = 4;
+        var longestRoadPlayer = gamePlayers.Values.FirstOrDefault(p => p.hasLongestTradeRoute);
+        Player newLongestRoadPlayer = null;
+        foreach (Player p in gamePlayers.Values)
+        {
+            var longestRoadLengthP = GetPlayerLongestRoad(p);
+            if (longestRoadLengthP > longestRoadLength)
+            {
+                longestRoadLength = longestRoadLengthP;
+                newLongestRoadPlayer = p;
+            }
+        }
+        if (newLongestRoadPlayer != null)
+        {
+            if (longestRoadPlayer != null && longestRoadPlayer != newLongestRoadPlayer)
+            {
+                longestRoadPlayer.TakeLongestRoad();
+                updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
+                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest road...");
+                newLongestRoadPlayer.GiveLongestTradeRoute();
+                updatePlayerResourcesUI(playerObjects[newLongestRoadPlayer]);
+                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest road!");
+            }
+            else if (longestRoadPlayer == null)
+            {
+                newLongestRoadPlayer.GiveLongestTradeRoute();
+                updatePlayerResourcesUI(playerObjects[newLongestRoadPlayer]);
+                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest road!");
+            }
+            CheckForVictory();
+        }
+        else
+        {
+            // Check if the longest road was broken up
+            if (longestRoadPlayer != null)
+            {
+                longestRoadPlayer.TakeLongestRoad();
+                updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
+                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest road...");
+            }
+        }
+    }
+
+    private int GetPlayerLongestRoad(Player p)
+    {
+        var edgeSets = new List<List<Edges>>();
+        // First, we break edges into connected sets
+        while (true)
+        {
+            var edgesToVisit = new Stack<Edges>();
+            var visitedEdges = new List<Edges>();
+            var temp = edges.FirstOrDefault(e => e.GetComponent<Edges>().belongsTo == p && !edgeSets.Any(l => l.Contains(e.GetComponent<Edges>())));
+            if (temp == null)
+                break;
+            var startingEdge = temp.GetComponent<Edges>();
+            foreach (Intersection endpoint in startingEdge.endPoints)
+            {
+                if (endpoint.positionedUnit == null || endpoint.positionedUnit.Owner == p)
+                {
+                    foreach (Edges e in endpoint.paths)
+                    {
+                        if (e.belongsTo == p)
+                        {
+                            edgesToVisit.Push(e);
+                        }
+                    }
+                }
+            }
+            visitedEdges.Add(startingEdge);
+            while (edgesToVisit.Count > 0)
+            {
+                var currentEdge = edgesToVisit.Pop();
+                if (!visitedEdges.Contains(currentEdge))
+                {
+                    foreach (Intersection endpoint in currentEdge.endPoints)
+                    {
+                        if (endpoint.positionedUnit == null || endpoint.positionedUnit.Owner == p)
+                        {
+                            foreach (Edges e in endpoint.paths)
+                            {
+                                if (e.belongsTo == p)
+                                {
+                                    edgesToVisit.Push(e);
+                                }
+                            }
+                        }
+                    }
+                    visitedEdges.Add(currentEdge);
+                }
+            }
+            edgeSets.Add(visitedEdges);
+        }
+        // Then we do DFS on each set to find the longest connected set
+        var lengthLR = 0;
+        foreach (List<Edges> edgeSet in edgeSets)
+        {
+            var l = ConnectedRoadSegmentLength(edgeSet, p);
+            if (lengthLR < l)
+            {
+                lengthLR = l;
+            }
+        }
+        return lengthLR;
+    }
+
+    private int ConnectedRoadSegmentLength(List<Edges> connectedSet, Player p)
+    {
+        // Find an endpoint
+        Edges endpoint = null;
+        foreach(Edges temp in connectedSet)
+        {
+            int connectedEdges = 0;
+            foreach (Intersection i in temp.endPoints)
+            {
+                if (i.positionedUnit == null || i.positionedUnit.Owner == p)
+                {
+                    foreach (Edges e in i.paths)
+                    {
+                        if (connectedSet.Contains(e) && e != temp)
+                        {
+                            connectedEdges++;
+                        }
+                    }
+                }  
+            }
+            if (connectedEdges == 1)
+            {
+                endpoint = temp;
+                break;
+            }
+        }
+        if (endpoint == null)
+        {
+            endpoint = connectedSet[UnityEngine.Random.Range(0, connectedSet.Count)];
+        }
+        // Start the BFS
+        var visitedEdges = new List<Edges>();
+        var edgesToVisit = new Queue<EdgeDFSNode>();
+        var root = new EdgeDFSNode(endpoint, 1);
+        int maxLength = 0;
+        edgesToVisit.Enqueue(root);
+        while (edgesToVisit.Count > 0)
+        {
+            var currentEdge = edgesToVisit.Dequeue();
+            if (!visitedEdges.Contains(currentEdge.edge))
+            {
+                if (maxLength < currentEdge.depth)
+                {
+                    maxLength = currentEdge.depth;
+                }
+                foreach (Intersection i in currentEdge.edge.endPoints)
+                {
+                    if (i.positionedUnit == null || i.positionedUnit.Owner == p)
+                    {
+                        foreach (Edges e in i.paths)
+                        {
+                            if (connectedSet.Contains(e))
+                            {
+                                edgesToVisit.Enqueue(new EdgeDFSNode(e, currentEdge.depth + 1));
+                            }
+                        }
+                    }
+                }
+                visitedEdges.Add(currentEdge.edge);
+            }
+        }
+        return maxLength;
+    }
+
+
+    private class EdgeDFSNode
+    {
+        public Edges edge { get; private set; }
+        public int depth { get; private set; }
+
+        public EdgeDFSNode(Edges e, int d)
+        {
+            this.edge = e;
+            this.depth = d;
+        }
+    }
+
+    #endregion
     #region Save/Load
     public void SaveGameData(playerControl client)
     {
@@ -2140,6 +3003,7 @@ public class Game : NetworkBehaviour
 
         // Ordering issue: assign the robber tile here
         if (robberTile != null) robberTile.GetComponent<TerrainHex>().isRobber = true;
+        if (pirateTile != null) pirateTile.GetComponent<TerrainHex>().isPirate = true;
     }
 
     #endregion

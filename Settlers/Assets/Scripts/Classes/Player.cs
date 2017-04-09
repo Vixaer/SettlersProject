@@ -17,6 +17,8 @@ public class Player {
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
 
+	public int numberofCityWalls{ get; set;}
+
     public List<VillageKind> settlementPool { get; set; }
 
     public List<VillageKind> citiesPool { get; set; }
@@ -26,9 +28,22 @@ public class Player {
     public List<KnightLevel> knightTokens { get; set; }
 
     public string name;
+
+    public bool hasMerchant { get; private set; }
+    public bool hasLongestTradeRoute { get; private set; }
+
+	public int availableWalls  { get; set; }
+
+	//temp variables for forced knight moves
+	public Knight storedKnight;
+	public Intersection storedInter;
+
     public Player() {
         myColor = playerCount;
         playerCount++;
+        hasMerchant = false;
+        hasLongestTradeRoute = false;
+		availableWalls = 3;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -50,7 +65,7 @@ public class Player {
             { CommodityKind.Coin, 0 },
             { CommodityKind.Paper, 0 }
         };
-        gold = 0;
+        gold = 20;
         ownedUnits = new List<OwnableUnit>();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
@@ -154,7 +169,7 @@ public class Player {
     {
         knightTokens.Add(level);
     }
-
+		
     #endregion
 
     #region GameActions
@@ -198,6 +213,38 @@ public class Player {
         //pay and upgrade
         PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
         cityImprovementLevels[kind] += 1;
+    }
+
+	public void payWallResources(bool playedEngPC)
+	{
+		if (!playedEngPC)
+		{	
+			PayResources(2, ResourceKind.Brick);
+		}
+	}
+
+    public void GiveLongestTradeRoute()
+    {
+        this.hasLongestTradeRoute = true;
+        this.AddVictoryPoints(2);
+    }
+
+    public void TakeLongestRoad()
+    {
+        this.hasLongestTradeRoute = false;
+        this.AddVictoryPoints(-2);
+    }
+
+    public void GiveMerchant()
+    {
+        this.hasMerchant = true;
+        this.AddVictoryPoints(1);
+    }
+
+    public void TakeMerchant()
+    {
+        this.hasMerchant = false;
+        this.AddVictoryPoints(-1);
     }
     #endregion
 
@@ -276,6 +323,13 @@ public class Player {
     {
         return this.HasResources(1, ResourceKind.Grain);
     }
+
+	public bool HasWallResources(bool playedEngCard) {
+		if (!playedEngCard) {
+			return this.HasResources (2, ResourceKind.Brick);
+		}
+		return true;
+	}
 
     public int GetCityImprovementLevel(CommodityKind kind)
     {
@@ -368,6 +422,15 @@ public class Player {
         return false;
     }
 
+	public bool HasWalls()
+	{
+		if (availableWalls > 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
     public bool HasKnights(KnightLevel level)
     {
         return knightTokens.Contains(level);
@@ -387,6 +450,11 @@ public class Player {
         p.victoryPoints = data.victoryPoints;
         p.ownedHarbour = data.ownedHarbour;
         p.cardsInHand = data.cardsInHand;
+        p.hasMerchant = data.hasMerchant;
+        p.hasLongestTradeRoute = data.hasLongestTradeRoute;
+        p.settlementPool = data.settlementPool;
+        p.citiesPool = data.citiesPool;
+        p.knightTokens = data.knightTokens;
         foreach (OwnableUnitData o in data.ownedUnits)
         {
             if (o is VillageData)
@@ -415,7 +483,11 @@ public class PlayerData
     public List<HarbourKind> ownedHarbour { get; set; }
     public List<ProgressCardKind> cardsInHand { get; set; }
     public string name { get; set; }
-
+    public bool hasMerchant { get; set; }
+    public bool hasLongestTradeRoute { get; set; }
+    public List<VillageKind> settlementPool { get; set; }
+    public List<VillageKind> citiesPool { get; set; }
+    public List<KnightLevel> knightTokens { get; set; }
     public PlayerData(Player source)
     {
         this.name = source.name;
@@ -427,6 +499,11 @@ public class PlayerData
         this.victoryPoints = source.victoryPoints;
         this.ownedHarbour = source.ownedHarbour;
         this.cardsInHand = source.cardsInHand;
+        this.hasMerchant = source.hasMerchant;
+        this.hasLongestTradeRoute = source.hasLongestTradeRoute;
+        this.settlementPool = source.settlementPool;
+        this.citiesPool = source.citiesPool;
+        this.knightTokens = source.knightTokens;
         this.ownedUnits = source.ownedUnits.Select<OwnableUnit, OwnableUnitData>(u =>
         {
             if (u is Village)

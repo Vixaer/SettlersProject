@@ -16,6 +16,7 @@ public class Edges : NetworkBehaviour {
     public TerrainHex[] inBetween;
     public Sprite[] harborSprites;
     public Sprite shipSprite, roadSprite;
+	public bool shipRemoved = false;
 
     [SyncVar(hook = "OnHarbor")]
     public HarbourKind harbor = HarbourKind.None;
@@ -55,10 +56,22 @@ public class Edges : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+
+	public void RemoveShip (Player player){
+		belongsTo = null;
+		owned = false;
+		isShip = false;
+		shipRemoved = true;
+		color = new Color(255, 255, 255);
+	}
     public void OnOwned(Color value)
     {
         gameObject.GetComponent<SpriteRenderer>().color = value;
-        owned = true;
+		if (shipRemoved) {
+			shipRemoved = false;
+		} else {
+        	owned = true;
+		}
     }
 
     public void OnShip(bool value)

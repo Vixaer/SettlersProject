@@ -81,10 +81,12 @@ MonoBehaviour:
   intersection: {fileID: 0}
   knightSprites: []
   activeKnightSprites: []
+  metropolisSprite: {fileID: 0}
   owned: 0
   harbor: 6
   knight: 3
   knightActive: 0
+  metropolis: 1
 --- !u!114 &114728377173678374
 MonoBehaviour:
   m_ObjectHideFlags: 1

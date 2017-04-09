@@ -3,7 +3,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using System.IO;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections.Generic;
@@ -14,19 +13,46 @@ public class playerControl : NetworkBehaviour {
     private bool resourcesShown = true;
     private bool rollsShown = true;
     private bool cardsShown = true;
+
     public bool buildShip = false;
+	public bool moveShip = false;
+	public bool shipSelected = false;
+	public bool movedShipThisTurn = false;
+	public Color oldEdgeColor;
+	public GameObject selectedEdge;
+
     public bool interactKnight = false;
+
+	public bool activateKnight = false;
+	public bool upgradeKnight = false;
+	public bool moveKnight = false;
+	public bool buildKnight = false;
+
+	public bool knightSelected = false;
+	public Color oldKnightColor;
+	public GameObject selectedInter;
+
+	private bool forceMoveKnight = false;
+	private Knight selectedKnight;
+	private Intersection oldInter;
+
+    private bool pickMetropolis = false;
+
     private GameObject gameState;
     private bool isSeletionOpen = false;
-    private bool isValidName;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
-                      discardPanel, improvementPanel, inGameMenuPanel;
+                      discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel,
+                      victoryPanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
+<<<<<<< HEAD
 
 	// @author xingwei
+=======
+// @author xingwei
+>>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
 	// P2P Trade Resources
 	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
 	private int giveBrick = 0;
@@ -53,7 +79,6 @@ public class playerControl : NetworkBehaviour {
 	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText,P2PTradeOfferFromText;
 
 	private GameObject tradingPlayer;
-
 
     #region SyncVar
     //resource panel values
@@ -85,6 +110,10 @@ public class playerControl : NetworkBehaviour {
     string Yellow;
     [SyncVar(hook = "OnChangedEvent")]
     string Event;
+
+    // valid name
+    [SyncVar(hook = "OnNameValidated")]
+    public bool isValidName;
     #endregion
 
 
@@ -118,16 +147,26 @@ public class playerControl : NetworkBehaviour {
         }
         if (Input.GetButtonDown("Submit"))
         {
-            string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
-            if (!message.Equals("") && message != null)
+            if (nameWindow.activeInHierarchy)
             {
-                ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
-                CmdSendMessage(gameObject, message);
+                getNameToSend();
+            }
+            else
+            {
+                string message = ChatWindow.transform.GetChild(1).GetChild(2).GetComponent<Text>().text;
+                if (!message.Equals("") && message != null)
+                {
+                    ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
+                    CmdSendMessage(gameObject, message);
+                }
+                
             }
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
+            // Pre-load game data to the client
+            CmdGetGameData();
         }
     }
 
@@ -218,15 +257,26 @@ public class playerControl : NetworkBehaviour {
     public void setToBuildRoads()
     {
         buildShip = false;
+		moveShip = false;
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
     }
 
     public void setToBuildShips()
     {
-        buildShip = true;
-        MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-        MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+		
+		if (buildShip == false) {
+			buildShip = true;
+			moveShip = false;
+			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
+			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
+		} else if (buildShip == true && moveShip == false) {
+			buildShip = false;
+			moveShip = true;
+			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
+			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240); //button becomes blue
+		} 
+   
     }
     public void setToInteractWithSettlements()
     {
@@ -238,8 +288,38 @@ public class playerControl : NetworkBehaviour {
     public void setToInteractWithKnights()
     {
         interactKnight = true;
-        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-        MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+		MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+		if (!buildKnight && !activateKnight && !upgradeKnight ) {
+			buildKnight = true;
+			activateKnight = false;
+			moveKnight = false;
+			upgradeKnight = false;
+
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 121, 121);
+
+		} else if (!activateKnight && !upgradeKnight & !moveKnight){
+			buildKnight = false;
+			activateKnight = true;
+			upgradeKnight = false;
+			moveKnight = false;
+
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
+		}
+		else if (!upgradeKnight && !moveKnight && !buildKnight) {
+			buildKnight = false;
+			activateKnight = false;
+			upgradeKnight = true;
+			moveKnight = false;
+
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240);
+		} else {
+			buildKnight = false;
+			activateKnight = false;
+			upgradeKnight = false;
+			moveKnight = true;
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 240, 121);
+		}
+        
     }
 
 	public void OnClickAcceptP2PButton(){
@@ -344,7 +424,6 @@ public class playerControl : NetworkBehaviour {
 			}
 		}
 	}
-
     #endregion
 
     #region Retrieve Client Info
@@ -357,19 +436,35 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-                if (interactKnight)
+
+                if (pickMetropolis)
+                {
+                    CmdSetMetropole(gameObject, hit.collider.gameObject);
+                }
+
+				else if (forceMoveKnight) 
+				{
+					CmdForceMoveKnight(gameObject, hit.collider.gameObject);
+				}
+
+				else if (interactKnight && !moveKnight)
+
                 {
                     CmdBuildKnight(hit.collider.gameObject);
                 }
+				else if (interactKnight && moveKnight)
+				{
+					CmdMoveKnight(gameObject, hit.collider.gameObject, knightSelected);
+				}
                 else
                 {
                     CmdBuildOnIntersection(hit.collider.gameObject);
                 }
                 
             }
-            if (hit.collider.gameObject.CompareTag("Edge"))
+			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true)
             {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
+                CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
@@ -383,26 +478,28 @@ public class playerControl : NetworkBehaviour {
                 }
                 
             }
+			if (hit.collider.gameObject.CompareTag ("Edge") && moveShip == true && movedShipThisTurn == false) {
+				CmdMoveShip (gameObject, hit.collider.gameObject, shipSelected);
+			}
         }
     }
 
     public void getNameToSend()
     {
-        if (!isLocalPlayer) return;
         string playerName = nameWindow.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
         if (!playerName.Equals("") && playerName != null)
         {
             CmdValidateName(playerName);
             if (!isValidName) return;
-            CmdSendName(playerName);
-            //open the menus
-            resourcesWindow.gameObject.SetActive(true);
-            MenuWindow.gameObject.SetActive(true);
-            DiceWindow.gameObject.SetActive(true);
-            ChatWindow.gameObject.SetActive(true);
-            CardPanel.gameObject.SetActive(true);
-            //closet the window
-            nameWindow.SetActive(false);  
+            //CmdSendName(playerName);
+            ////open the menus
+            //resourcesWindow.gameObject.SetActive(true);
+            //MenuWindow.gameObject.SetActive(true);
+            //DiceWindow.gameObject.SetActive(true);
+            //ChatWindow.gameObject.SetActive(true);
+            //CardPanel.gameObject.SetActive(true);
+            ////closet the window
+            //nameWindow.SetActive(false);  
         }
 
     }
@@ -423,9 +520,8 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().ValidateName(gameObject, name);
     }
 
-    [ClientRpc]
-    public void RpcCheckNameResult(bool result)
-    { 
+    public void validateName(bool result)
+    {
         this.isValidName = result;
     }
     public void getTradeValue()
@@ -436,6 +532,12 @@ public class playerControl : NetworkBehaviour {
         CmdSendNpcTrade(gameObject, toGive, wanted);
     }
     
+    public void GetTradeBuyValue()
+    {
+        var toBuy = goldShopPanel.transform.GetChild(1).GetComponent<Dropdown>().value;
+        CmdBuyWithGold(gameObject, toBuy);
+    }
+
     public void getDiscardValues()
     {
         int[] values = new int[8];
@@ -476,12 +578,12 @@ public class playerControl : NetworkBehaviour {
     public void SaveGame()
     {
         var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
-        if (!string.IsNullOrEmpty(savePath) && Directory.Exists(Path.GetDirectoryName(savePath)))
+        if (!string.IsNullOrEmpty(savePath))
         {
-            CmdGetGameData();
+            //CmdGetGameData();
             if (this.saveGameData != null)
             {
-                File.WriteAllBytes(savePath, this.saveGameData.ToArray());
+                File.WriteAllBytes(Application.persistentDataPath + "/" + savePath + ".dat", this.saveGameData.ToArray());
             }
         }
     }
@@ -518,8 +620,62 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
+	[Command]
+	void CmdMoveShip(GameObject player, GameObject edge, bool selected){
+		if (!selected) {
+			bool temp = gameState.GetComponent<Game> ().removeShipCheck (player, edge);
+			if (temp == true) {
+				shipSelected = true;
+				selectedEdge = edge;
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				oldEdgeColor = shipColor.color;
+				shipColor.color = new Color32 (121, 121, 240, 240);
+			}
+		} else {
+			bool temp = gameState.GetComponent<Game> ().placeShipCheck (player, edge, selectedEdge);
+			shipSelected = false;
+			if (temp == true) {
+				movedShipThisTurn = true;
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				shipColor.color = new Color32 (255, 255, 255, 255);
+			} else {
+				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
+				shipColor.color = oldEdgeColor;
+			}
+		}
+	}
+	[Command]
+	void CmdMoveKnight(GameObject player, GameObject inter, bool selected){
+		if (!selected) {
+			bool temp = gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
+			if (temp == true) {
+				knightSelected = true;
+				selectedInter = inter;
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				oldKnightColor = knightColor.color;
+				knightColor.color = new Color32 (121, 121, 240, 240);
+			}
+		} else {
+			bool temp = gameState.GetComponent<Game> ().moveKnightCheck (player, inter, selectedInter);
+			knightSelected = false;
+			if (temp == true) {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = new Color32 (255, 255, 255, 255);
+			} else {
+				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
+				knightColor.color = oldKnightColor;
+			}
+		}
+	}
+	[Command]
+	void CmdForceMoveKnight(GameObject player, GameObject inter)
+	{
+		gameState.GetComponent<Game> ().forceMoveKnight (player, inter);
+	}
+
+
     [Command]
-    void CmdBuildOnEdge(GameObject player, GameObject edge)
+    void CmdBuildOnEdge(GameObject player, GameObject edge, bool buildShip)
     {
         if (buildShip)
         {
@@ -558,6 +714,11 @@ public class playerControl : NetworkBehaviour {
 
     }
     [Command]
+    void CmdBuyWithGold(GameObject player, int toBuy)
+    {
+        gameState.GetComponent<Game>().BuyWithGold(player, toBuy);
+    }
+    [Command]
     void CmdSendMessage(GameObject player, string message)
     {
         gameState.GetComponent<Game>().chatOnServer(player, message);
@@ -585,7 +746,13 @@ public class playerControl : NetworkBehaviour {
     [Command]
     public void CmdBuildKnight(GameObject intersection)
     {
-        gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection);
+		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight, buildKnight);
+    }
+
+    [Command]
+    public void CmdSetMetropole(GameObject player, GameObject intersection)
+    {
+        gameState.GetComponent<Game>().setMetropole(player, intersection);
     }
 
     [Command]
@@ -669,6 +836,10 @@ public class playerControl : NetworkBehaviour {
     {
         DiceWindow.transform.GetChild(1).GetComponent<Text>().text = value;
     }
+    void OnNameValidated(bool value)
+    {
+        this.isValidName = value;
+    }
     #endregion
 
     #region ClientRPC
@@ -705,6 +876,40 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
+    public void RpcCloseGoldShop(bool accepted)
+    {
+        if (accepted)
+        {
+            goldShopPanel.gameObject.SetActive(false);
+        }
+    }
+
+    [ClientRpc]
+    public void RpcBeginMetropoleChoice()
+    {
+        this.improvementPanel.SetActive(false);
+        this.pickMetropolis = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndMetropoleChoice()
+    {
+        this.pickMetropolis = false;
+    }
+
+	[ClientRpc]
+	public void RpcBeginKnightMove()
+	{
+		this.forceMoveKnight = true;
+	}
+
+	[ClientRpc]
+	public void RpcEndKnightMove()
+	{
+		this.forceMoveKnight = false;
+	}
+
+    [ClientRpc]
     public void RpcUpdateTurn(string value)
     {
         transform.GetChild(8).GetComponent<Text>().text = value;
@@ -738,6 +943,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcDiscardTime(int discardAmount, string ExtraInfo)
     {
+        if (!isLocalPlayer) return;
         discardPanel.SetActive(true);
         //in order of enums for easy for looping later
         discardPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = Wool;
@@ -763,6 +969,35 @@ public class playerControl : NetworkBehaviour {
         improvementPanel.transform.GetChild(kind).GetChild(0).GetComponent<Slider>().value = level;
     }
 
+    [ClientRpc]
+    public void RpcVictoryPanel(string message)
+    {
+        if (!isLocalPlayer) return;
+        this.victoryPanel.SetActive(true);
+        this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
+    }
+
+    [ClientRpc]
+    public void RpcNameCheck(bool result)
+    {
+        if (!isLocalPlayer) return;
+        if (result)
+        {
+            //open the menus
+            resourcesWindow.gameObject.SetActive(true);
+            MenuWindow.gameObject.SetActive(true);
+            DiceWindow.gameObject.SetActive(true);
+            ChatWindow.gameObject.SetActive(true);
+            CardPanel.gameObject.SetActive(true);
+            //closet the window
+            nameWindow.SetActive(false);
+        }
+        else
+        {
+            nameWindow.transform.GetChild(0).GetComponent<InputField>().text = "";
+        }
+    }
+	
 	/**
 	 * @author xingwei
 	 * P2P trade UI text upgrading RPC functions
@@ -885,6 +1120,11 @@ public class playerControl : NetworkBehaviour {
 	[ClientRpc]
 	public void RpcSetP2PTradePanelActive(bool active){
 		P2PTradePanel.SetActive (active);
+
+
+
+
+
 	}
 
 	/**
@@ -893,8 +1133,25 @@ public class playerControl : NetworkBehaviour {
 	[ClientRpc]
 	public void RpcResetP2PTradeInput(){
 		foreach (Transform child in this.P2PTrade_PlayerGives.transform) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			child.transform.GetComponent<InputField> ().text = "";
 		}
+
 	}
     #endregion
 
@@ -906,5 +1163,10 @@ public class playerControl : NetworkBehaviour {
         tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
         //put it in the view
         tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }

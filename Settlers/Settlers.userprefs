@@ -1,13 +1,28 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Classes/Game.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Classes\Game.cs">
     <Files>
+<<<<<<< HEAD
       <File FileName="Assets/Scripts/UI/playerControl.cs" Line="243" Column="2" />
       <File FileName="Assets/Scripts/Classes/Game.cs" Line="399" Column="26" />
+=======
+      <File FileName="Assets\Scripts\Classes\Edges.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\CardControl.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\DiceController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\Knight.cs" Line="82" Column="19" />
+      <File FileName="Assets\Scripts\UI\playerControl.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\Game.cs" Line="266" Column="69" />
+      <File FileName="Assets\Scripts\Classes\Player.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\Intersection.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\IntersectionUnit.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Classes\OwnableUnit.cs" Line="1" Column="1" />
+>>>>>>> 93cff0d1f44e132abc0c3e210b130b3d51b03ae9
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint enabled="false" file="D:\Unity\demo\Settlers\Assets\Scripts\UI\playerControl.cs" line="405" column="4" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
