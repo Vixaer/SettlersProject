@@ -16,7 +16,8 @@ public class Player {
     public int victoryPoints { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
-	public List<Knight> ownedKnights { get; set; }
+
+	public int numberofCityWalls{ get; set;}
 
     public List<VillageKind> settlementPool { get; set; }
 
@@ -30,11 +31,15 @@ public class Player {
 
     public bool hasMerchant { get; private set; }
     public bool hasLongestTradeRoute { get; private set; }
+
+	public int availableWalls  { get; set; }
+
     public Player() {
         myColor = playerCount;
         playerCount++;
         hasMerchant = false;
         hasLongestTradeRoute = false;
+		availableWalls = 3;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -58,7 +63,6 @@ public class Player {
         };
         gold = 20;
         ownedUnits = new List<OwnableUnit>();
-		ownedKnights = new List<Knight> ();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
         settlementPool = new List<VillageKind>();
@@ -207,6 +211,14 @@ public class Player {
         cityImprovementLevels[kind] += 1;
     }
 
+	public void payWallResources(bool playedEngPC)
+	{
+		if (!playedEngPC)
+		{	
+			PayResources(2, ResourceKind.Brick);
+		}
+	}
+
     public void GiveLongestTradeRoute()
     {
         this.hasLongestTradeRoute = true;
@@ -308,6 +320,13 @@ public class Player {
         return this.HasResources(1, ResourceKind.Grain);
     }
 
+	public bool HasWallResources(bool playedEngCard) {
+		if (!playedEngCard) {
+			return this.HasResources (2, ResourceKind.Brick);
+		}
+		return true;
+	}
+
     public int GetCityImprovementLevel(CommodityKind kind)
     {
         return cityImprovementLevels[kind];
@@ -398,6 +417,15 @@ public class Player {
         }
         return false;
     }
+
+	public bool HasWalls()
+	{
+		if (availableWalls > 0)
+		{
+			return true;
+		}
+		return false;
+	}
 
     public bool HasKnights(KnightLevel level)
     {

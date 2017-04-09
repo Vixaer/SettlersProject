@@ -10,6 +10,7 @@ public class Intersection : NetworkBehaviour {
     public Sprite settlement, city, intersection;
     public Sprite[] knightSprites, activeKnightSprites;
     public Sprite metropolisSprite;
+	public Sprite cityWallSprite;
     public bool owned;
     
     public IntersectionUnit positionedUnit { get; private set; }
@@ -32,6 +33,8 @@ public class Intersection : NetworkBehaviour {
 	// Use this for initialization
 	void Awake () {
         positionedUnit = null;
+		cityWallSprite = (Sprite)Resources.Load<Sprite> ("CityWall");
+		intersection = (Sprite)Resources.Load<Sprite>  ("intersection");
 	}
 
     public Color getColor()
@@ -101,7 +104,6 @@ public class Intersection : NetworkBehaviour {
     {
         positionedUnit = new Knight(player, KnightLevel.Basic);
         player.ownedUnits.Add(positionedUnit);
-		player.ownedKnights.Add ((Knight) positionedUnit);
         owned = true;
         knight = KnightLevel.Basic;
         switch (positionedUnit.Owner.myColor)
@@ -119,7 +121,6 @@ public class Intersection : NetworkBehaviour {
 		positionedUnit = temp;
 
 		player.ownedUnits.Add(positionedUnit);
-		player.ownedKnights.Add ((Knight) positionedUnit);
 		owned = true;
 		knight = temp.level;
 
@@ -132,7 +133,7 @@ public class Intersection : NetworkBehaviour {
 		}
 	}
 
-	public void RemoveKnight (Player player){
+	public void RemoveKnight (Player player, bool destroy){
 		owned = false;
 		Knight temp = (Knight)positionedUnit;
 		temp.deactivateKnight ();
@@ -140,12 +141,27 @@ public class Intersection : NetworkBehaviour {
 		knight = KnightLevel.None;
 		knightRemoved = true;
 		player.ownedUnits.Remove (positionedUnit);
-		player.ownedKnights.Remove ((Knight) positionedUnit);
 		positionedUnit = null;
+
+		if (destroy)
+			player.AddKnight (temp.level);
+		
 		color = new Color(255, 255, 255);
+		transform.GetComponent<SpriteRenderer>().sprite = intersection;
 	}
 
+	public void BuildWall(Player player) {
+		type = 3;
+		player.availableWalls--;
+		switch (positionedUnit.Owner.myColor)
+		{
+			case 0: color = Color.red; break;
+			case 1: color = Color.blue; break;
+			case 2: color = Color.green; break;
+			case 3: color = new Color(255, 128, 0); break;
+		}
 
+	}
     #region Sync Hooks
     public void OnOwned(Color value)
     {
@@ -156,6 +172,11 @@ public class Intersection : NetworkBehaviour {
 			owned = true;
 		}
     }
+
+	public void OnWall(bool value){
+		
+		transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
+	}
    
     public void OnBuild(int value)
     {
@@ -168,6 +189,12 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
+		else if( value == 3)
+		{
+			Debug.Log ("hey");
+			transform.GetComponent<SpriteRenderer> ().sprite = cityWallSprite;
+		} 
+
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
     }
 
@@ -216,24 +243,28 @@ public class Intersection : NetworkBehaviour {
     public void OnMetropole(VillageKind value)
     {
         metropolis = value;
-        switch (metropolis)
-        {
-            case VillageKind.PoliticsMetropole:
-                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
-                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.blue;
-                break;
-            case VillageKind.ScienceMetropole:
-                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
-                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.green;
-                break;
-            case VillageKind.TradeMetropole:
-                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
-                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.yellow;
-                break;
-            default:
-                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
-                break;
-        }
+
+			switch (metropolis) {
+			case VillageKind.PoliticsMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.blue;
+				break;
+			case VillageKind.ScienceMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.green;
+				break;
+			case VillageKind.TradeMetropole:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.yellow;
+				break;
+			default:
+				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = null;
+				break;
+			}
+
+	
+
+	
     }
     #endregion
 

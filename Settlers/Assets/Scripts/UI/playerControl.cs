@@ -26,10 +26,15 @@ public class playerControl : NetworkBehaviour {
 	public bool activateKnight = false;
 	public bool upgradeKnight = false;
 	public bool moveKnight = false;
+	public bool buildKnight = false;
+
 	public bool knightSelected = false;
 	public Color oldKnightColor;
 	public GameObject selectedInter;
 
+	private bool forceMoveKnight = false;
+	private Knight selectedKnight;
+	private Intersection oldInter;
 
     private bool pickMetropolis = false;
 
@@ -277,15 +282,32 @@ public class playerControl : NetworkBehaviour {
     {
         interactKnight = true;
 		MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-		if (!activateKnight && !upgradeKnight) {
-			activateKnight = true;
-			moveKnight = false;
-			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
-		} else if (!moveKnight && !upgradeKnight) {
-			upgradeKnight = true;
+		if (!buildKnight && !activateKnight && !upgradeKnight ) {
+			buildKnight = true;
 			activateKnight = false;
+			moveKnight = false;
+			upgradeKnight = false;
+
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 121, 121);
+
+		} else if (!activateKnight && !upgradeKnight & !moveKnight){
+			buildKnight = false;
+			activateKnight = true;
+			upgradeKnight = false;
+			moveKnight = false;
+
+			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
+		}
+		else if (!upgradeKnight && !moveKnight && !buildKnight) {
+			buildKnight = false;
+			activateKnight = false;
+			upgradeKnight = true;
+			moveKnight = false;
+
 			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240);
 		} else {
+			buildKnight = false;
+			activateKnight = false;
 			upgradeKnight = false;
 			moveKnight = true;
 			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 240, 121);
@@ -407,6 +429,11 @@ public class playerControl : NetworkBehaviour {
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
+
+				else if (forceMoveKnight) 
+				{
+					CmdForceMoveKnight(gameObject, hit.collider.gameObject);
+				}
 
 				else if (interactKnight && !moveKnight)
 
@@ -618,6 +645,13 @@ public class playerControl : NetworkBehaviour {
 			}
 		}
 	}
+	[Command]
+	void CmdForceMoveKnight(GameObject player, GameObject inter)
+	{
+		gameState.GetComponent<Game> ().forceMoveKnight (player, inter, selectedKnight, oldInter);
+	}
+
+
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge)
     {
@@ -690,7 +724,7 @@ public class playerControl : NetworkBehaviour {
     [Command]
     public void CmdBuildKnight(GameObject intersection)
     {
-		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight);
+		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight, buildKnight);
     }
 
     [Command]
@@ -840,6 +874,20 @@ public class playerControl : NetworkBehaviour {
     {
         this.pickMetropolis = false;
     }
+
+	[ClientRpc]
+	public void RpcBeginKnightMove(Knight k, Intersection i)
+	{
+		this.forceMoveKnight = true;
+		selectedKnight = k;
+		oldInter = i;
+	}
+
+	[ClientRpc]
+	public void RpcEndKnightMove()
+	{
+		this.forceMoveKnight = false;
+	}
 
     [ClientRpc]
     public void RpcUpdateTurn(string value)
