@@ -797,6 +797,7 @@ public class Game : NetworkBehaviour
 
 	public void buildKnightOnIntersection(GameObject player, GameObject intersection, bool upgrade, bool build)
     {
+		Debug.Log ("gegegegege");
         Intersection inter = intersection.GetComponent<Intersection>();
         Player currentBuilder = gamePlayers[player];
         bool correctPlayer = checkCorrectPlayer(player);
@@ -1105,7 +1106,8 @@ public class Game : NetworkBehaviour
             CheckForLongestRoad();
             updatePlayerResourcesUI(player);
             updateTurn();
-        } 
+        }
+		updateTurn();
     }
 
 	public bool removeShipCheck (GameObject player, GameObject edge) {
@@ -1194,6 +1196,7 @@ public class Game : NetworkBehaviour
 
 		CheckForLongestRoad();
 		updatePlayerResourcesUI(player);
+
 	}
 
 	public bool placeShipCheck (GameObject player, GameObject edge, GameObject oldEdge) {
