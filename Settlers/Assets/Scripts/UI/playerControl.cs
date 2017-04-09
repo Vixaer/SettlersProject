@@ -377,7 +377,7 @@ public class playerControl : NetworkBehaviour {
             }
             if (hit.collider.gameObject.CompareTag("Edge"))
             {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
+                CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
@@ -521,7 +521,7 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
     [Command]
-    void CmdBuildOnEdge(GameObject player, GameObject edge)
+    void CmdBuildOnEdge(GameObject player, GameObject edge, bool buildShip)
     {
         if (buildShip)
         {
