@@ -452,7 +452,7 @@ public class playerControl : NetworkBehaviour {
             }
 			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true)
             {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject);
+                CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
@@ -653,7 +653,7 @@ public class playerControl : NetworkBehaviour {
 
 
     [Command]
-    void CmdBuildOnEdge(GameObject player, GameObject edge)
+    void CmdBuildOnEdge(GameObject player, GameObject edge, bool buildShip)
     {
         if (buildShip)
         {
