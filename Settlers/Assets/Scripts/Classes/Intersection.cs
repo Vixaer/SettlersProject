@@ -9,6 +9,7 @@ public class Intersection : NetworkBehaviour {
     public Edges[] paths;
     public Sprite settlement, city, intersection;
     public Sprite[] knightSprites, activeKnightSprites;
+    public Sprite metropolisSprite;
     public bool owned;
     
     public IntersectionUnit positionedUnit { get; private set; }
@@ -23,6 +24,10 @@ public class Intersection : NetworkBehaviour {
     Color color;
     [SyncVar(hook = "OnBuild")]
     int type = 0;
+    [SyncVar(hook = "OnMetropole")]
+    public VillageKind metropolis = VillageKind.City;
+    [SyncVar(hook = "OnFishing")]
+    public bool isFishingInter = false;
 
     
 	// Use this for initialization
@@ -59,8 +64,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        //remove one from the pool
-        player.RemoveSettlement();
     }
     public void BuildCity(Player player)
     {
@@ -81,7 +84,6 @@ public class Intersection : NetworkBehaviour {
         {
             player.ownedHarbour.Add(harbor);
         }
-        player.RemoveCity();
     }
     public void UpgradeSettlement(Player player)
     {
@@ -94,8 +96,6 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
-        player.RemoveCity();
-        player.AddSettlement();
     }
     #endregion
     public void BuildKnight(Player player)
@@ -174,12 +174,40 @@ public class Intersection : NetworkBehaviour {
                 transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
         }
     }
+
+    public void OnMetropole(VillageKind value)
+    {
+        metropolis = value;
+        switch (metropolis)
+        {
+            case VillageKind.PoliticsMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.blue;
+                break;
+            case VillageKind.ScienceMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.green;
+                break;
+            case VillageKind.TradeMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.yellow;
+                break;
+            default:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+                break;
+        }
+    }
+    public void OnFishing(bool value)
+    {
+        isFishingInter = value;
+    }
     #endregion
 
     #region Loading
     public void Load(IntersectionData data, IntersectionUnit u)
     {
         this.harbor = data.harbourKind;
+        this.isFishingInter = data.isFishing;
         if (u != null)
         {
             if (u is Village)
@@ -207,6 +235,7 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
+        metropolis = data.metropolis;
     }
 
     private void LoadKnight(Knight k)
@@ -238,6 +267,8 @@ public class IntersectionData
     public KnightLevel knight { get; set; }
     public bool knightActive { get; set; }
     public int type { get; set; }
+    public VillageKind metropolis { get; set; }
+    public bool isFishing { get; set; }
     
     public IntersectionData(Intersection source)
     {
@@ -248,10 +279,12 @@ public class IntersectionData
         this.knight = source.knight;
         this.knightActive = source.knightActive;
         this.type = source.getType();
+        this.metropolis = source.metropolis;
         this.positionedUnit = source.positionedUnit == null ? 
             Guid.Empty : 
             source.positionedUnit.id;
         this.harbourKind = source.harbor;
+        this.isFishing = source.isFishingInter;
 
         this.linkedHexes = new string[source.linked.Length];
         for (int i = 0; i < source.linked.Length; i++)

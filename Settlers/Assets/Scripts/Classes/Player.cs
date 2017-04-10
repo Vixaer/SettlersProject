@@ -14,6 +14,7 @@ public class Player {
     
     public int gold { get; private set; }
     public int victoryPoints { get; private set; }
+    public int fishTokens { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
     public List<HarbourKind> ownedHarbour { get; set;}
 
@@ -26,9 +27,15 @@ public class Player {
     public List<KnightLevel> knightTokens { get; set; }
 
     public string name;
+
+    public bool hasMerchant { get; private set; }
+    public bool hasLongestTradeRoute { get; private set; }
+
     public Player() {
         myColor = playerCount;
         playerCount++;
+        hasMerchant = false;
+        hasLongestTradeRoute = false;
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -50,7 +57,8 @@ public class Player {
             { CommodityKind.Coin, 0 },
             { CommodityKind.Paper, 0 }
         };
-        gold = 0;
+        gold = 20;
+        fishTokens = 20;
         ownedUnits = new List<OwnableUnit>();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
@@ -92,6 +100,14 @@ public class Player {
     public void AddVictoryPoints(int value)
     {
         victoryPoints += value;
+    }
+    public void AddFishTokens(int value)
+    {
+        fishTokens += value;
+    }
+    public void PayFishTokens(int value)
+    {
+        fishTokens -= value;
     }
 
     public void PayResources(int quantity, ResourceKind resourceKind)
@@ -198,6 +214,30 @@ public class Player {
         //pay and upgrade
         PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
         cityImprovementLevels[kind] += 1;
+    }
+
+    public void GiveLongestTradeRoute()
+    {
+        this.hasLongestTradeRoute = true;
+        this.AddVictoryPoints(2);
+    }
+
+    public void TakeLongestRoad()
+    {
+        this.hasLongestTradeRoute = false;
+        this.AddVictoryPoints(-2);
+    }
+
+    public void GiveMerchant()
+    {
+        this.hasMerchant = true;
+        this.AddVictoryPoints(1);
+    }
+
+    public void TakeMerchant()
+    {
+        this.hasMerchant = false;
+        this.AddVictoryPoints(-1);
     }
     #endregion
 
@@ -387,6 +427,7 @@ public class Player {
         p.victoryPoints = data.victoryPoints;
         p.ownedHarbour = data.ownedHarbour;
         p.cardsInHand = data.cardsInHand;
+        p.fishTokens = data.fishTokens;
         foreach (OwnableUnitData o in data.ownedUnits)
         {
             if (o is VillageData)
@@ -416,6 +457,8 @@ public class PlayerData
     public List<ProgressCardKind> cardsInHand { get; set; }
     public string name { get; set; }
 
+    public int fishTokens { get; private set; }
+
     public PlayerData(Player source)
     {
         this.name = source.name;
@@ -427,6 +470,7 @@ public class PlayerData
         this.victoryPoints = source.victoryPoints;
         this.ownedHarbour = source.ownedHarbour;
         this.cardsInHand = source.cardsInHand;
+        this.fishTokens = source.fishTokens;
         this.ownedUnits = source.ownedUnits.Select<OwnableUnit, OwnableUnitData>(u =>
         {
             if (u is Village)

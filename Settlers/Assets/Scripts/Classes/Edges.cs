@@ -87,8 +87,6 @@ public class Edges : NetworkBehaviour {
             {
                 x = transform.localPosition.x - inBetween[0].transform.localPosition.x;
                 y = transform.localPosition.y - inBetween[0].transform.localPosition.y;
-
-
             }
             else
             {
@@ -101,7 +99,6 @@ public class Edges : NetworkBehaviour {
                     }
                 }
             }
-            Debug.Log(x + "," + y);
             //flip checks according to position of the sea tile or the outside of the land
             if (x > 0 && (y > -0.2 && y < 0.2))
             {
