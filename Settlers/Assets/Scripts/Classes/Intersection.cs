@@ -116,14 +116,21 @@ public class Intersection : NetworkBehaviour {
         }
     }
 
-	public void MoveKnight(Player player, Knight knightToMove){
-		Knight temp = knightToMove;
-		temp.deactivateKnight ();
+	public void MoveKnight(Player player, Knight knightToMove, bool forced){
+        movedKnight = true;
+        Knight temp = knightToMove;
 		positionedUnit = temp;
 		owned = true;
 		knight = temp.level;
-        movedKnight = true;
-
+        if (!forced)
+        {
+           temp.deactivateKnight();
+        }
+        else
+        {
+            knightActive = knightToMove.isKnightActive();
+        }
+        
 		switch (positionedUnit.Owner.myColor)
 		{
 		case 0: color = Color.red; break;
@@ -136,7 +143,7 @@ public class Intersection : NetworkBehaviour {
     public void RemoveKnight(Player player, bool destroy) {
         owned = false;
         Knight temp = (Knight)positionedUnit;
-        temp.deactivateKnight();
+        // temp.deactivateKnight();
         knightActive = false;
         knight = KnightLevel.None;  
         knightRemoved = true;

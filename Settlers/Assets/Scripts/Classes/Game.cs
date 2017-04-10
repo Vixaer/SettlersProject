@@ -204,7 +204,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
                 case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
-                case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += "Force Knight Move"; break;
+                case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -1456,7 +1456,7 @@ public class Game : NetworkBehaviour
                         if (temp.knight == KnightLevel.Basic)
                         {
 
-                            if (opponentKnightCheck(temp))
+                            if (opponentKnightCheck(temp, knightToMove))
                             {
                                 logAPlayer(opponentGameObject, "Your knight has been displaced and you must move it!");
                                 opponent.storedKnight = opKnight;
@@ -1477,7 +1477,8 @@ public class Game : NetworkBehaviour
 
                             Knight temp4 = (Knight)knightToMove.positionedUnit;
                             knightToMove.RemoveKnight(temp3, false);
-                            temp.MoveKnight(temp3, temp4);
+                            temp.MoveKnight(temp3, temp4, false);
+                            player.GetComponent<playerControl>().RpcEndKnightMove();
                             logAPlayer(player, "Knight moved!");
                             CheckForLongestRoad();
 
@@ -1492,7 +1493,7 @@ public class Game : NetworkBehaviour
                         if (temp.knight == KnightLevel.Basic || temp.knight == KnightLevel.Strong)
                         {
 
-                            if (opponentKnightCheck(temp))
+                            if (opponentKnightCheck(temp, knightToMove))
                             {
                                 logAPlayer(opponentGameObject, "Your knight has been displaced and you must move it!");
                                 opponent.storedKnight = opKnight;
@@ -1512,7 +1513,7 @@ public class Game : NetworkBehaviour
 
                             Knight temp4 = (Knight)knightToMove.positionedUnit;
                             knightToMove.RemoveKnight(temp3, false);
-                            temp.MoveKnight(temp3, temp4);
+                            temp.MoveKnight(temp3, temp4, false);
                             logAPlayer(player, "Knight moved!");
                             player.GetComponent<playerControl>().RpcEndKnightMove();
                             CheckForLongestRoad();
@@ -1535,7 +1536,7 @@ public class Game : NetworkBehaviour
             else {
                 Knight temp4 = (Knight)knightToMove.positionedUnit;
                 knightToMove.RemoveKnight(temp3, false);
-                temp.MoveKnight(temp3, temp4);
+                temp.MoveKnight(temp3, temp4, false);
                 logAPlayer(player, "Knight moved!");
                 player.GetComponent<playerControl>().RpcEndKnightMove();
                 CheckForLongestRoad();
@@ -1544,7 +1545,7 @@ public class Game : NetworkBehaviour
 	}
 
 	//Check to see if knight forced to move has anyplace to go
-	public bool opponentKnightCheck (Intersection inter){
+	public bool opponentKnightCheck (Intersection inter, Intersection oldinter){
 
 		Player opponent = inter.positionedUnit.Owner;
 
@@ -1566,8 +1567,9 @@ public class Game : NetworkBehaviour
 				}
 				foreach(Intersection i in e.endPoints) {
 					if (!i.Equals (currentInter)) {
+
 						//empty space has been found!
-						if (!i.owned) {
+						if (!i.owned || i.Equals(oldinter) ){
 							connectCheck = true;
 							break;
 						} 
@@ -1647,7 +1649,7 @@ public class Game : NetworkBehaviour
                 logAPlayer(player, "Sadly, not a valid place to move your knight.");
             }
             else {
-                temp.MoveKnight(p, k);
+                temp.MoveKnight(p, k, true);
                 logAPlayer(player, "Knight moved!");
                 CheckForLongestRoad();
                 currentPhase = tempPhase;
@@ -1700,7 +1702,7 @@ public class Game : NetworkBehaviour
             }
             
         }
-        else
+        else if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnRobberPirate)
         {
             logAPlayer(player, "Move the robber before ending your turn.");
         }
