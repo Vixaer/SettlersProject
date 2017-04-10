@@ -19,7 +19,6 @@ public class playerControl : NetworkBehaviour {
 	public bool shipSelected = false;
 	public bool movedShipThisTurn = false;
 	public Color oldEdgeColor;
-	public GameObject selectedEdge;
 
     public bool interactKnight = false;
 
@@ -33,8 +32,6 @@ public class playerControl : NetworkBehaviour {
 	public GameObject selectedInter;
 
 	private bool forceMoveKnight = false;
-	private Knight selectedKnight;
-	private Intersection oldInter;
 
     private bool pickMetropolis = false;
 
@@ -448,7 +445,7 @@ public class playerControl : NetworkBehaviour {
 				else if (interactKnight && !moveKnight)
 
                 {
-                    CmdBuildKnight(hit.collider.gameObject);
+                    CmdBuildKnight(gameObject, hit.collider.gameObject, buildKnight, upgradeKnight);
                 }
 				else if (interactKnight && moveKnight)
 				{
@@ -460,11 +457,11 @@ public class playerControl : NetworkBehaviour {
                 }
                 
             }
-			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true)
+			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true && !forceMoveKnight)
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
-            if (hit.collider.gameObject.CompareTag("TerrainHex"))
+            if (hit.collider.gameObject.CompareTag("TerrainHex") && !forceMoveKnight)
             {
                 if(hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
                 {
@@ -476,7 +473,7 @@ public class playerControl : NetworkBehaviour {
                 }
                 
             }
-			if (hit.collider.gameObject.CompareTag ("Edge") && moveShip == true && movedShipThisTurn == false) {
+			if (hit.collider.gameObject.CompareTag ("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight) {
 				CmdMoveShip (gameObject, hit.collider.gameObject, shipSelected);
 			}
         }
@@ -621,50 +618,23 @@ public class playerControl : NetworkBehaviour {
 	[Command]
 	void CmdMoveShip(GameObject player, GameObject edge, bool selected){
 		if (!selected) {
-			bool temp = gameState.GetComponent<Game> ().removeShipCheck (player, edge);
-			if (temp == true) {
-				shipSelected = true;
-				selectedEdge = edge;
-				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
-				oldEdgeColor = shipColor.color;
-				shipColor.color = new Color32 (121, 121, 240, 240);
-			}
+            gameState.GetComponent<Game> ().removeShipCheck (player, edge);
 		} else {
-			bool temp = gameState.GetComponent<Game> ().placeShipCheck (player, edge, selectedEdge);
-			shipSelected = false;
-			if (temp == true) {
-				movedShipThisTurn = true;
-				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
-				shipColor.color = new Color32 (255, 255, 255, 255);
-			} else {
-				SpriteRenderer shipColor = selectedEdge.GetComponent<SpriteRenderer> ();
-				shipColor.color = oldEdgeColor;
-			}
+			 gameState.GetComponent<Game> ().placeShipCheck (player, edge);
 		}
 	}
 	[Command]
 	void CmdMoveKnight(GameObject player, GameObject inter, bool selected){
 		if (!selected) {
-			bool temp = gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
-			if (temp == true) {
-				knightSelected = true;
-				selectedInter = inter;
-				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
-				oldKnightColor = knightColor.color;
-				knightColor.color = new Color32 (121, 121, 240, 240);
-			}
+		    gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
 		} else {
-			bool temp = gameState.GetComponent<Game> ().moveKnightCheck (player, inter, selectedInter);
-			knightSelected = false;
-			if (temp == true) {
-				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
-				knightColor.color = new Color32 (255, 255, 255, 255);
-			} else {
-				SpriteRenderer knightColor = selectedInter.GetComponent<SpriteRenderer> ();
-				knightColor.color = oldKnightColor;
-			}
+			gameState.GetComponent<Game> ().moveKnightCheck (player, inter);
 		}
 	}
+
+
+
+    //??
 	[Command]
 	void CmdForceMoveKnight(GameObject player, GameObject inter)
 	{
@@ -742,9 +712,11 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().playCard(gameObject,k);
     }
     [Command]
-    public void CmdBuildKnight(GameObject intersection)
+    void CmdBuildKnight(GameObject player, GameObject intersection, bool build, bool upgrade)
     {
-		gameState.GetComponent<Game>().buildKnightOnIntersection(gameObject, intersection, upgradeKnight, buildKnight);
+
+            gameState.GetComponent<Game>().buildKnightOnIntersection(player, intersection, build, upgrade);      
+       
     }
 
     [Command]
@@ -883,6 +855,29 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
+    public void RpcBeginShipMove()
+    {
+        this.shipSelected = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndShipMove(bool success)
+    {
+        this.shipSelected = false;
+        if (success)
+        {
+            this.movedShipThisTurn = true;
+        }
+    }
+    
+    [ClientRpc]
+    public void RpcCanMoveShipAgain()
+    {
+        this.movedShipThisTurn = false;
+        this.shipSelected = false;
+    }
+
+    [ClientRpc]
     public void RpcBeginMetropoleChoice()
     {
         this.improvementPanel.SetActive(false);
@@ -895,14 +890,26 @@ public class playerControl : NetworkBehaviour {
         this.pickMetropolis = false;
     }
 
-	[ClientRpc]
-	public void RpcBeginKnightMove()
+    [ClientRpc]
+    public void RpcBeginKnightMove()
+    {
+        this.knightSelected = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndKnightMove()
+    {
+        this.knightSelected = false;
+    }
+
+    [ClientRpc]
+	public void RpcBeginForcedKnightMove()
 	{
 		this.forceMoveKnight = true;
 	}
 
 	[ClientRpc]
-	public void RpcEndKnightMove()
+	public void RpcEndForcedKnightMove()
 	{
 		this.forceMoveKnight = false;
 	}

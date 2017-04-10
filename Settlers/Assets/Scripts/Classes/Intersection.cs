@@ -28,6 +28,7 @@ public class Intersection : NetworkBehaviour {
     int type = 0;
     [SyncVar(hook = "OnMetropole")]
     public VillageKind metropolis = VillageKind.City;
+    public bool movedKnight = false;
 
     
 	// Use this for initialization
@@ -119,10 +120,9 @@ public class Intersection : NetworkBehaviour {
 		Knight temp = knightToMove;
 		temp.deactivateKnight ();
 		positionedUnit = temp;
-
-		player.ownedUnits.Add(positionedUnit);
 		owned = true;
 		knight = temp.level;
+        movedKnight = true;
 
 		switch (positionedUnit.Owner.myColor)
 		{
@@ -133,24 +133,44 @@ public class Intersection : NetworkBehaviour {
 		}
 	}
 
-	public void RemoveKnight (Player player, bool destroy){
-		owned = false;
-		Knight temp = (Knight)positionedUnit;
-		temp.deactivateKnight ();
-		knightActive = false;
-		knight = KnightLevel.None;
-		knightRemoved = true;
-		player.ownedUnits.Remove (positionedUnit);
-		positionedUnit = null;
+    public void RemoveKnight(Player player, bool destroy) {
+        owned = false;
+        Knight temp = (Knight)positionedUnit;
+        temp.deactivateKnight();
+        knightActive = false;
+        knight = KnightLevel.None;  
+        knightRemoved = true;
 
-		if (destroy)
-			player.AddKnight (temp.level);
+        positionedUnit = null;
+
+        if (destroy)
+        {
+            player.AddKnight(temp.level);
+            player.ownedUnits.Remove(positionedUnit);
+        }
+
+        color = new Color(255, 255, 255);
 		
-		color = new Color(255, 255, 255);
-		transform.GetComponent<SpriteRenderer>().sprite = intersection;
 	}
 
-	public void BuildWall(Player player) {
+    public void SelectKnight()
+    {
+        color = new Color32(121, 121, 240, 240);
+    }
+
+    public void DeselectKnight()
+    {
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    
+    }
+
+    public void BuildWall(Player player) {
 		type = 3;
 		player.availableWalls--;
 		switch (positionedUnit.Owner.myColor)
@@ -205,20 +225,22 @@ public class Intersection : NetworkBehaviour {
     public void OnKnight(KnightLevel value)
     {
         knight = value;
-        if (knight == KnightLevel.Basic)
+        if (knight == KnightLevel.Basic || movedKnight)
         {
+            movedKnight = false;
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
             transform.GetComponent<CircleCollider2D>().radius = 0.6f;
         }
-        else if (knightActive)
-        {
-            transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
-        }
+        
         else if (knight == KnightLevel.None)
         {
             transform.GetComponent<SpriteRenderer>().sprite = intersection;
             transform.GetComponent<SpriteRenderer>().color = Color.white;
             transform.GetComponent<CircleCollider2D>().radius = 0.2f;
+        }
+        else if (knightActive)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
         }
         else if (!knightActive)
         {

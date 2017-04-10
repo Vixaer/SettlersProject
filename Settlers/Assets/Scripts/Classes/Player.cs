@@ -37,6 +37,11 @@ public class Player {
 	//temp variables for forced knight moves
 	public Knight storedKnight;
 	public Intersection storedInter;
+    public bool hasToMoveKnight = false;
+
+    //temp variable for ship/knight move
+    public Edges selectedShip;
+    public Intersection selectedKnight;
 
     public Player() {
         myColor = playerCount;
