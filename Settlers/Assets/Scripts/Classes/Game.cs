@@ -1157,7 +1157,7 @@ public class Game : NetworkBehaviour
     {
         //TO-DO
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
+        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player) && firstBarbAttack)
         {
             if (tile.GetComponent<TerrainHex>().isPirate == true)
             {
