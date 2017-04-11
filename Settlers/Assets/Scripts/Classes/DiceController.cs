@@ -162,6 +162,78 @@ public class DiceController
             tradePool.Add(k);
         }
     }
+    public bool hasCardInDeck(ProgressCardKind k)
+    {
+        bool check = false;
+        if ((int)k < 9 && sciencePool.Contains(k))
+        {
+            check = true;
+        }
+        else if ((int)k < 19 && politicsPool.Contains(k))
+        {
+            check = true;
+        }
+        else if (tradePool.Contains(k))
+        {
+            check = true;
+        }
+        return check;
+    }
+
+    public ProgressCardKind getCard(ProgressCardKind k)
+    {
+        ProgressCardKind card = ProgressCardKind.NoCard;
+        if ((int)k < 9)
+        {
+            card = k; 
+            sciencePool.Remove(k);
+        }
+        else if ((int)k < 19 && politicsPool.Contains(k))
+        {
+            card = k;
+            politicsPool.Remove(k);
+        }
+        else if (tradePool.Contains(k))
+        {
+            card = k;
+            tradePool.Remove(k);
+        }
+        return card;
+    }
+
+    public string[] returnPoliticDeck()
+    {
+        string[] deck = new string[politicsPool.Count];
+        int i = 0;
+        foreach(object o in politicsPool)
+        {
+            deck[i] = o.ToString();
+            i++;
+        }
+        return deck;
+    }
+    public string[] returnScienceDeck()
+    {
+        string[] deck = new string[sciencePool.Count];
+        int i = 0;
+        foreach (object o in sciencePool)
+        {
+            deck[i] = o.ToString();
+            i++;
+        }
+        return deck;
+    }
+    public string[] returnTradeDeck()
+    {
+        string[] deck = new string[tradePool.Count];
+        int i = 0;
+        foreach (object o in tradePool)
+        {
+            deck[i] = o.ToString();
+            i++;
+        }
+        return deck;
+    }
     #endregion
 
     public ProgressCardKind rollCard(EventKind k)

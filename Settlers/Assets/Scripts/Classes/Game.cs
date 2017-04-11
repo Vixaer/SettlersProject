@@ -398,6 +398,10 @@ public class Game : NetworkBehaviour
         }
         player.GetComponent<playerControl>().RpcSetupStealInterface(names);
     }
+    public void initiateCardChoice(GameObject player)
+    {
+        player.GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
+    }
     #endregion
 
     #region Game Actions
@@ -786,16 +790,30 @@ public class Game : NetworkBehaviour
 
     }
 
-    public void BuyWithGold(GameObject player, int wants)
+    public void BuyFromBank(GameObject player, int wants, bool currency)
     {
         Player tradingPlayer = gamePlayers[player];
-
-        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase && tradingPlayer.gold >= 2)
+        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase)
         {
-            tradingPlayer.AddGold(-2);
-            tradingPlayer.AddResources(1, (ResourceKind)wants);
-            updatePlayerResourcesUI(player);
-            player.GetComponent<playerControl>().RpcCloseGoldShop(true);
+            if (currency && tradingPlayer.gold>=2)
+            {
+                tradingPlayer.AddGold(-2);
+                tradingPlayer.AddResources(1, (ResourceKind)wants);
+                updatePlayerResourcesUI(player);
+                player.GetComponent<playerControl>().RpcCloseGoldShop(true);
+                // log
+                chatOnServer(player, tradingPlayer.name + " baught 1 " + (ResourceKind)wants + " from the bank for 2 gold.");
+            }
+            else
+            {
+                tradingPlayer.PayFishTokens(4);
+                tradingPlayer.AddResources(1, (ResourceKind)wants);
+                updatePlayerResourcesUI(player);
+                player.GetComponent<playerControl>().RpcCloseGoldShop(true);
+                // log
+                chatOnServer(player, tradingPlayer.name + " You baught 1 " + (ResourceKind)wants + " from the bank for 4 fishes.");
+            }
+
         }
         else if (checkCorrectPlayer(player))
         {
@@ -1228,6 +1246,12 @@ public class Game : NetworkBehaviour
                 gamePlayers[player].PayRoadResources();
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
+            {
+                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                gamePlayers[player].hasFreeRoad = false;
+                logAPlayer(player, "The workers give you this road because of your fish donation.");
+            }
             CheckForLongestRoad();
             updatePlayerResourcesUI(player);
             updateTurn();
@@ -1309,6 +1333,12 @@ public class Game : NetworkBehaviour
                 gamePlayers[player].PayShipResources();
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 //update his UI to let him know he lost the resources;
+            }
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
+            {
+                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                gamePlayers[player].hasFreeRoad = false;
+                logAPlayer(player, "The workers give you this ship because of your fish donation.");
             }
             CheckForLongestRoad();
             updatePlayerResourcesUI(player);
@@ -2560,6 +2590,33 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Wait your turn.");
         }
     }
+    public void CardChoice(GameObject player,string cardName)
+    {
+        ProgressCardKind card = (ProgressCardKind) Enum.Parse(typeof(ProgressCardKind), cardName);
+        if((card == ProgressCardKind.PrinterCard || card == ProgressCardKind.ConstitutionCard) && gameDices.hasCardInDeck(card))
+        {
+            ProgressCardKind myCard = gameDices.getCard(card);
+            playCard(player, myCard);
+            logAPlayer(player,"You played " + myCard + " Automatically +1 VP.");
+            player.GetComponent<playerControl>().RpcEndCardChoiceInterface();
+            gamePlayers[player].PayFishTokens(7);
+            updatePlayerResourcesUI(player);
+        }
+        else if (gameDices.hasCardInDeck(card))
+        {
+            ProgressCardKind myCard = gameDices.getCard(card);
+            player.GetComponent<playerControl>().RpcAddProgressCard(myCard);
+            player.GetComponent<playerControl>().RpcEndCardChoiceInterface();
+            logAPlayer(player, "You got your " + myCard + ".");
+            gamePlayers[player].PayFishTokens(7);
+            updatePlayerResourcesUI(player);
+        }
+        else
+        {
+            initiateCardChoice(player);
+        }
+
+    }
     public void MoveBarbs()
     {
         barbPosition = (barbPosition + 1) % 8;
@@ -3022,6 +3079,13 @@ public class Game : NetworkBehaviour
         }
     }
 
+    //stupid bypass function cuz of server issues
+    public void freeRoad(GameObject player)
+    {
+        ((Player)gamePlayers[player]).hasFreeRoad = true;
+        ((Player)gamePlayers[player]).PayFishTokens(5);
+        updatePlayerResourcesUI(player);
+    }
     public void discardResources(GameObject player, int[] values)
     {
         Player discardingPlayer = gamePlayers[player];

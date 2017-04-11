@@ -35,6 +35,8 @@ public class Player {
 
     public bool hasBoot = false;
 
+    public bool hasFreeRoad = false;
+
     public int availableWalls { get; set; }
 
     //temp variables for forced knight moves

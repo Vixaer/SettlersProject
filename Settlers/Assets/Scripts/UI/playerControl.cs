@@ -18,6 +18,8 @@ public class playerControl : NetworkBehaviour {
     public bool shipSelected = false;
     public bool movedShipThisTurn = false;						  
     public Color oldEdgeColor;
+
+    public bool buyWithGold = true;
 	
 	
     public bool interactKnight = false;
@@ -39,7 +41,7 @@ public class playerControl : NetworkBehaviour {
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
                       discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel,
-                      victoryPanel, fishPanel, stealPanel;
+                      victoryPanel, fishPanel, stealPanel, cardChoicePanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
@@ -608,7 +610,7 @@ public class playerControl : NetworkBehaviour {
     public void GetTradeBuyValue()
     {
         var toBuy = goldShopPanel.transform.GetChild(1).GetComponent<Dropdown>().value;
-        CmdBuyWithGold(gameObject, toBuy);
+        CmdBuyFromBank(gameObject, toBuy, buyWithGold);
     }
 
     public void getDiscardValues()
@@ -682,7 +684,9 @@ public class playerControl : NetworkBehaviour {
                 {
                     if (fishTokens > 3)
                     {
-
+                        goldShopPanel.SetActive(true);
+                        goldShopPanel.transform.GetChild(3).gameObject.SetActive(false);
+                        buyWithGold = false;
                     }
                     break;
                 }
@@ -690,7 +694,7 @@ public class playerControl : NetworkBehaviour {
                 {
                     if (fishTokens > 4)
                     {
-
+                        CmdGetFreeRoad(gameObject);
                     }
                     break;
                 }
@@ -698,7 +702,7 @@ public class playerControl : NetworkBehaviour {
                 {
                     if (fishTokens > 6)
                     {
-
+                        CmdInitiateCardChoice(gameObject);
                     }
                     break;
                 }
@@ -713,6 +717,29 @@ public class playerControl : NetworkBehaviour {
         string name = stealPanel.transform.GetChild(0).GetComponent<Dropdown>().options[player].text;
         Debug.Log(name);
         CmdStealPlayer(gameObject, name);
+    }
+
+    public void getCardChoice(GameObject buttonPressed)
+    {
+        string text = buttonPressed.transform.GetChild(0).GetComponent<Text>().text;
+        int temp = -1;
+        string cardName = "";
+        if (text.Equals("Politics"))
+        {
+            temp = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value;
+            cardName = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+        }
+        else if (text.Equals("Trade"))
+        {
+            temp = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value;
+            cardName = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+        }
+        else if (text.Equals("Science"))
+        {
+            temp = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value;
+            cardName = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+        }
+        CmdGetCardChoice(gameObject, cardName);
     }
 
     public void SaveGame()
@@ -784,10 +811,6 @@ public class playerControl : NetworkBehaviour {
             gameState.GetComponent<Game>().moveKnightCheck(player, inter);
         }
     }
-
-
-
-    //??
     [Command]
     void CmdForceMoveKnight(GameObject player, GameObject inter)
     {
@@ -806,6 +829,11 @@ public class playerControl : NetworkBehaviour {
             gameState.GetComponent<Game>().buildRoad(player, edge);
         }
 
+    }
+    [Command]
+    void CmdGetFreeRoad(GameObject player)
+    {
+        gameState.GetComponent<Game>().freeRoad(player);
     }
     [Command]
     void CmdRollDice(GameObject player)
@@ -834,9 +862,9 @@ public class playerControl : NetworkBehaviour {
 
     }
     [Command]
-    void CmdBuyWithGold(GameObject player, int toBuy)
+    void CmdBuyFromBank(GameObject player, int toBuy,bool currency)
     {
-        gameState.GetComponent<Game>().BuyWithGold(player, toBuy);
+        gameState.GetComponent<Game>().BuyFromBank(player, toBuy, currency);
     }
     [Command]
     void CmdSendMessage(GameObject player, string message)
@@ -899,7 +927,16 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().stealPlayer(gameObject, name);
     }
-	
+	[Command]
+    public void CmdInitiateCardChoice(GameObject player)
+    {
+        gameState.GetComponent<Game>().initiateCardChoice(gameObject);
+    }
+    [Command]
+    public void CmdGetCardChoice(GameObject player,string cardName)
+    {
+        gameState.GetComponent<Game>().CardChoice(gameObject, cardName);
+    }
 	[Command]
     public void CmdSwapTokens(GameObject[] tiles)
     {
@@ -1031,6 +1068,8 @@ public class playerControl : NetworkBehaviour {
         if (accepted)
         {
             goldShopPanel.gameObject.SetActive(false);
+            goldShopPanel.transform.GetChild(3).gameObject.SetActive(true);
+            buyWithGold = true;
         }
     }
     [ClientRpc]
@@ -1351,12 +1390,46 @@ public class playerControl : NetworkBehaviour {
         stealPanel.transform.GetChild(0).GetComponent<Dropdown>().value = 0;
     }
     [ClientRpc]
+    public void RpcSetupCardChoiceInterface(string[] politics, string[] trade, string[] science)
+    {
+        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Clear();
+        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Clear();
+        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Clear();
+        foreach (string s in politics)
+        {
+            cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+        }
+        foreach (string s in trade)
+        {
+            cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+        }
+        foreach (string s in science)
+        {
+            cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+        }
+        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 1;
+        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 0;
+        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 1;
+        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 0;
+        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 1;
+        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 0;
+
+        cardChoicePanel.SetActive(true);
+    }
+    [ClientRpc]
     public void RpcEndStealInterface()
     {
+        if (!isLocalPlayer) return;
         stealPanel.SetActive(false);
     }
+    [ClientRpc]
+    public void RpcEndCardChoiceInterface()
+    {
+        if (!isLocalPlayer) return;
+        cardChoicePanel.SetActive(false);
+    }
 
-	[ClientRpc]
+    [ClientRpc]
     public void RpcBeginInventor()
     {
         this.playInventor = true;
