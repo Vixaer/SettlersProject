@@ -199,12 +199,12 @@ public class playerControl : NetworkBehaviour {
         if (cardsShown)
         {
             cardsAnimation.Play("HideCards");
-            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Maximize";
+            CardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = "Maximize";
         }
         else
         {
             cardsAnimation.Play("ShowCards");
-            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Minimize";
+            CardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = "Minimize";
         }
         cardsShown = !cardsShown;
     }
