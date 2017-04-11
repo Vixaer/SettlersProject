@@ -1392,6 +1392,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetupCardChoiceInterface(string[] politics, string[] trade, string[] science)
     {
+        if (!isLocalPlayer) return;
         cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Clear();
         cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Clear();
         cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Clear();

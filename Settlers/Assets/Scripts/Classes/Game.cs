@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 public class Game : NetworkBehaviour
 {
     public const int BARB_ATTACK_POSITION = 7;
-
+    private int defenders = 0;
     static System.Random rng = new System.Random();
 
     DiceController gameDices = new DiceController();
@@ -802,7 +802,7 @@ public class Game : NetworkBehaviour
                 updatePlayerResourcesUI(player);
                 player.GetComponent<playerControl>().RpcCloseGoldShop(true);
                 // log
-                chatOnServer(player, tradingPlayer.name + " baught 1 " + (ResourceKind)wants + " from the bank for 2 gold.");
+                chatOnServer(player, tradingPlayer.name + " bought 1 " + (ResourceKind)wants + " from the bank for 2 gold.");
             }
             else
             {
@@ -811,7 +811,7 @@ public class Game : NetworkBehaviour
                 updatePlayerResourcesUI(player);
                 player.GetComponent<playerControl>().RpcCloseGoldShop(true);
                 // log
-                chatOnServer(player, tradingPlayer.name + " You baught 1 " + (ResourceKind)wants + " from the bank for 4 fishes.");
+                chatOnServer(player, tradingPlayer.name + " You bought 1 " + (ResourceKind)wants + " from the bank for 4 fishes.");
             }
 
         }
@@ -2218,6 +2218,7 @@ public class Game : NetworkBehaviour
                 case ProgressCardKind.PrinterCard:
                     {
                         cardPlayer.AddVictoryPoints(1);
+                        broadcastMessage("Player " + cardPlayer.name + " has gained a victory point using the Printer card.");
                         updatePlayerResourcesUI(player);
                         break;
                     }
@@ -2249,6 +2250,7 @@ public class Game : NetworkBehaviour
                 case ProgressCardKind.ConstitutionCard:
                     {
                         cardPlayer.AddVictoryPoints(1);
+                        broadcastMessage("Player " + cardPlayer.name + " has gained a victory point using the Constitution card.");
                         updatePlayerResourcesUI(player);
                         break;
                     }
@@ -2418,7 +2420,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't improve cities on this phase!");
         }
-        else if (!hasCity && !hasMetropolis)
+        else if (!hasCity && (!hasMetropolis || currentUpgrader.GetCityImprovementLevel((CommodityKind)kind) > 3))
         {
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
@@ -3231,11 +3233,11 @@ public class Game : NetworkBehaviour
         List<Player> mostContributed = new List<Player>();
         foreach (Player p in gamePlayers.Values)
         {
-            mostContributedAmount = Mathf.Max(mostContributedAmount, p.getActiveKnightCount());
+            mostContributedAmount = Mathf.Max(mostContributedAmount, p.getActiveKnightStrength());
         }
         foreach (Player p in gamePlayers.Values)
         {
-            if (p.getActiveKnightCount() == mostContributedAmount)
+            if (p.getActiveKnightStrength() == mostContributedAmount)
                 mostContributed.Add(p);
         }
         // If one player, give that player victory point
@@ -3243,16 +3245,24 @@ public class Game : NetworkBehaviour
         {
             var bestPlayer = mostContributed[0];
             broadcastMessage("Player " + bestPlayer.name + " is the defender of Catan!");
-            bestPlayer.AddVictoryPoints(1);
-            updatePlayerResourcesUI(playerObjects[bestPlayer]);
-            CheckForVictory();
+            if (defenders <= 6)
+            {
+                bestPlayer.AddVictoryPoints(1);
+                updatePlayerResourcesUI(playerObjects[bestPlayer]);
+                CheckForVictory();
+            }
+            else
+            {
+                playerObjects[bestPlayer].GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
+            }
+            defenders++;
         }
         else
         {
             foreach (Player p in mostContributed)
             {
                 var pGO = playerObjects[p];
-                // TODO: activate the right panel
+                pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
             }
         }
     }
@@ -3274,11 +3284,11 @@ public class Game : NetworkBehaviour
         List<Player> leastContributed = new List<Player>();
         foreach (Player p in victims)
         {
-            leastContributedAmount = Mathf.Min(leastContributedAmount, p.getActiveKnightCount());
+            leastContributedAmount = Mathf.Min(leastContributedAmount, p.getActiveKnightStrength());
         }
         foreach (Player p in victims)
         {
-            if (p.getActiveKnightCount() == leastContributedAmount)
+            if (p.getActiveKnightStrength() == leastContributedAmount)
                 leastContributed.Add(p);
         }
 
@@ -3298,7 +3308,7 @@ public class Game : NetworkBehaviour
         int total = 0;
         foreach (Player p in gamePlayers.Values)
         {
-            total += p.getActiveKnightCount();
+            total += p.getActiveKnightStrength();
         }
         return total;
     }
@@ -3462,8 +3472,16 @@ public class Game : NetworkBehaviour
     private void CheckForLongestRoad()
     {
         // Check each player for a potential longest road
-        var longestRoadLength = 4;
+        int longestRoadLength;
         var longestRoadPlayer = gamePlayers.Values.FirstOrDefault(p => p.hasLongestTradeRoute);
+        if (longestRoadPlayer == null)
+        {
+            longestRoadLength = 4;
+        }
+        else
+        {
+            longestRoadLength = GetPlayerLongestRoad(longestRoadPlayer);
+        }
         Player newLongestRoadPlayer = null;
         foreach (Player p in gamePlayers.Values)
         {
@@ -3496,7 +3514,7 @@ public class Game : NetworkBehaviour
         else
         {
             // Check if the longest road was broken up
-            if (longestRoadPlayer != null)
+            if (longestRoadPlayer != null && GetPlayerLongestRoad(longestRoadPlayer) < longestRoadLength)
             {
                 longestRoadPlayer.TakeLongestRoad();
                 updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
@@ -3569,8 +3587,9 @@ public class Game : NetworkBehaviour
 
     private int ConnectedRoadSegmentLength(List<Edges> connectedSet, Player p)
     {
+        bool hasCycles = false;
         // Find an endpoint
-        Edges endpoint = null;
+        List<Edges> endpoints = new List<Edges>();
         foreach (Edges temp in connectedSet)
         {
             int connectedEdges = 0;
@@ -3589,46 +3608,92 @@ public class Game : NetworkBehaviour
             }
             if (connectedEdges == 1)
             {
-                endpoint = temp;
+                endpoints.Add(temp);
                 break;
             }
         }
-        if (endpoint == null)
+        if (endpoints.Count == 0)
         {
-            endpoint = connectedSet[UnityEngine.Random.Range(0, connectedSet.Count)];
+            hasCycles = true;
+            endpoints = connectedSet;
         }
-        // Start the BFS
-        var visitedEdges = new List<Edges>();
-        var edgesToVisit = new Queue<EdgeDFSNode>();
-        var root = new EdgeDFSNode(endpoint, 1);
-        int maxLength = 0;
-        edgesToVisit.Enqueue(root);
-        while (edgesToVisit.Count > 0)
+        int m = int.MaxValue;
+        foreach (Edges endpoint in endpoints)
         {
-            var currentEdge = edgesToVisit.Dequeue();
-            if (!visitedEdges.Contains(currentEdge.edge))
+            int maxLength = 0;
+            if (hasCycles || connectedSet.Count >= 6)
             {
-                if (maxLength < currentEdge.depth)
+                // Start the DFS
+                var visitedEdges = new List<Edges>();
+                var edgesToVisit = new Stack<EdgeDFSNode>();
+                var root = new EdgeDFSNode(endpoint, 0);
+                edgesToVisit.Push(root);
+                while (edgesToVisit.Count > 0)
                 {
-                    maxLength = currentEdge.depth;
-                }
-                foreach (Intersection i in currentEdge.edge.endPoints)
-                {
-                    if (i.positionedUnit == null || i.positionedUnit.Owner == p)
+                    var currentEdge = edgesToVisit.Pop();
+                    if (maxLength < currentEdge.depth)
                     {
-                        foreach (Edges e in i.paths)
+                        maxLength = currentEdge.depth;
+                    }
+                    if (!visitedEdges.Contains(currentEdge.edge))
+                    {
+                        foreach (Intersection i in currentEdge.edge.endPoints)
                         {
-                            if (connectedSet.Contains(e))
+                            if (i.positionedUnit == null || i.positionedUnit.Owner == p)
                             {
-                                edgesToVisit.Enqueue(new EdgeDFSNode(e, currentEdge.depth + 1));
+                                foreach (Edges e in i.paths)
+                                {
+                                    if (connectedSet.Contains(e))
+                                    {
+                                        edgesToVisit.Push(new EdgeDFSNode(e, currentEdge.depth + 1));
+                                    }
+                                }
                             }
                         }
+                        visitedEdges.Add(currentEdge.edge);
                     }
                 }
-                visitedEdges.Add(currentEdge.edge);
+            }
+            else
+            {
+                // Start the BFS
+                var visitedEdges = new List<Edges>();
+                var edgesToVisit = new Queue<EdgeDFSNode>();
+                var root = new EdgeDFSNode(endpoint, 0);
+                edgesToVisit.Enqueue(root);
+                while (edgesToVisit.Count > 0)
+                {
+                    var currentEdge = edgesToVisit.Dequeue();
+                    if (maxLength < currentEdge.depth)
+                    {
+                        maxLength = currentEdge.depth;
+                    }
+                    if (!visitedEdges.Contains(currentEdge.edge))
+                    {
+                        foreach (Intersection i in currentEdge.edge.endPoints)
+                        {
+                            if (i.positionedUnit == null || i.positionedUnit.Owner == p)
+                            {
+                                foreach (Edges e in i.paths)
+                                {
+                                    if (connectedSet.Contains(e))
+                                    {
+                                        edgesToVisit.Enqueue(new EdgeDFSNode(e, currentEdge.depth + 1));
+                                    }
+                                }
+                            }
+                        }
+                        visitedEdges.Add(currentEdge.edge);
+                    }
+                }
+            }
+            if (m > maxLength)
+            {
+                m = maxLength;
             }
         }
-        return maxLength;
+        Debug.Log(m);
+        return m;
     }
 
 
