@@ -1023,6 +1023,7 @@ public class Game : NetworkBehaviour
                                 logAPlayer(player, "You built a knight!");
                                 updatePlayerResourcesUI(player);
                             }
+
                             else
                             {
                                 logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a knight before attempting to hire another knight");
@@ -1057,7 +1058,10 @@ public class Game : NetworkBehaviour
 
 					if (knight != null)
                     {
-						if (!currentBuilder.HasKnightResources ()) 
+                        /*
+                  
+ */
+                        if (!currentBuilder.HasKnightResources () && !CardsInPlay.Remove(ProgressCardKind.SmithCard)) 
 						{
                             logAPlayer (player, "Your resources are insufficient for upgrading this Knight."); 
 						}
@@ -1065,15 +1069,30 @@ public class Game : NetworkBehaviour
                         {
 							logAPlayer (player, "Can't upgrade further he's already the mightiest.");
 						}
+                        else if (knight.isPromotedThisTurn())
+                        {
+                            logAPlayer(player, "You already promoted the knight this turn!");
+                        }
                         else if (knight.level == KnightLevel.Basic)
                         {
 							if (currentBuilder.HasKnights (KnightLevel.Strong)) {
-								currentBuilder.PayKnightResources ();
-								knight.upgradeKnight ();
+
+                                if (!CardsInPlay.Contains(ProgressCardKind.SmithCard))
+                                {
+                                    currentBuilder.PayKnightResources();
+                                    updatePlayerResourcesUI(player);
+
+                                } else
+                                {
+                                    CardsInPlay.Remove(ProgressCardKind.SmithCard);
+                                    logAPlayer(player, "You upgraded for free because of the Smith Card.");
+                                }
+                                knight.upgradeKnight ();
 								inter.knight = KnightLevel.Strong;
 								currentBuilder.AddKnight (KnightLevel.Basic);
 								currentBuilder.RemoveKnight (KnightLevel.Strong);
-								updatePlayerResourcesUI (player);
+                                knight.setPromotedThisTurn(true);
+								
 							}
                             else
                             {
@@ -1089,13 +1108,26 @@ public class Game : NetworkBehaviour
 							}
                             else if (currentBuilder.HasKnights (KnightLevel.Mighty))
                             {
-								currentBuilder.PayKnightResources ();
-								knight.upgradeKnight ();
+
+                                if (!CardsInPlay.Contains(ProgressCardKind.SmithCard))
+                                {
+                                    currentBuilder.PayKnightResources();
+                                    updatePlayerResourcesUI(player);
+
+                                }
+                                else
+                                {
+                                    CardsInPlay.Remove(ProgressCardKind.SmithCard);
+                                    logAPlayer(player, "You upgraded for free because of the Smith Card.");
+                                }
+
+                                knight.upgradeKnight ();
 								inter.knight = KnightLevel.Mighty;
 								currentBuilder.AddKnight (KnightLevel.Strong);
 								currentBuilder.RemoveKnight (KnightLevel.Mighty);
-								updatePlayerResourcesUI (player);
-							}
+                                knight.setPromotedThisTurn(true);
+
+                            }
                             else
                             {
 								logAPlayer (player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
@@ -1126,7 +1158,7 @@ public class Game : NetworkBehaviour
 
                     if (knight != null && !knight.isKnightActive())
                     {
-                        if (!currentBuilder.HasKnightActivatingResources())
+                        if (!currentBuilder.HasKnightActivatingResources() )
                         {
                             logAPlayer(player, "You're resources are insufficient to activate this Knight.");
                         }
@@ -1293,7 +1325,7 @@ public class Game : NetworkBehaviour
         }
         else if (!onWater)
         {
-            logAPlayer(player, "You cant build a ship on land.");
+            logAPlayer(player, "You can't build a ship on land.");
         }
         else if (isOwned)
         {
@@ -1940,6 +1972,7 @@ public class Game : NetworkBehaviour
 				foreach (IntersectionUnit k in temp.ownedUnits.Where(u => u is Knight)) {
 					Knight knight = (Knight) k;
 					knight.setFirstTurn (true);
+                    knight.setPromotedThisTurn(false);
 				}
 
                 // suppose player ends turn while selecting something...
