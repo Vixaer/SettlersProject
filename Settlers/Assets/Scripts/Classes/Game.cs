@@ -401,7 +401,7 @@ public class Game : NetworkBehaviour
     }
     public void initiateCardChoice(GameObject player)
     {
-        player.GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
+        player.GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck(),false);
     }
     #endregion
 
@@ -2322,6 +2322,7 @@ public class Game : NetworkBehaviour
                         CardsInPlay.Add(k);
                         CardsInPlay.Add(k);
                         cardPlayer.cardsInHand.Remove(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         gameDices.returnCard(k);
                         break;
                     }
@@ -2332,6 +2333,7 @@ public class Game : NetworkBehaviour
                         CardsInPlay.Add(k);
                         CardsInPlay.Add(k);
                         cardPlayer.cardsInHand.Remove(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         gameDices.returnCard(k);
                         break;
                     }
@@ -2341,6 +2343,7 @@ public class Game : NetworkBehaviour
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         currentPhase = GamePhase.TurnRobberOnly;
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         stealAll = true;
                         break;
                     }
@@ -2356,6 +2359,7 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 
@@ -2363,12 +2367,14 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.IntrigueCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 //done
@@ -2387,12 +2393,14 @@ public class Game : NetworkBehaviour
                         }
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }                
                 case ProgressCardKind.SpyCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 //done
@@ -2413,24 +2421,28 @@ public class Game : NetworkBehaviour
                         }
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.WeddingCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.ComercialHarborCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.MasterMerchantCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.MerchantCard:
@@ -2447,6 +2459,7 @@ public class Game : NetworkBehaviour
                         cardPlayer.GiveMerchant();
                         updatePlayerResourcesUI(player);
                         CheckForVictory();
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         // TODO: place the merchant where you want it.
                         break;
                     }
@@ -2455,6 +2468,7 @@ public class Game : NetworkBehaviour
                         CardsInPlay.Add(k);
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 //done
@@ -2481,7 +2495,10 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Can't play cards when it isn't your turn.");
         }
     }
-
+    public void getCardFromDraw(GameObject player,EventKind k)
+    {
+        player.GetComponent<playerControl>().RpcAddProgressCard(gameDices.rollCard(k));
+    }
 	public void SwapTokens(GameObject player, GameObject[] tiles)
     {
         var invalidNumbers = new int[5] { 1, 2, 6, 8, 12 };
@@ -3364,7 +3381,7 @@ public class Game : NetworkBehaviour
             foreach (Player p in mostContributed)
             {
                 var pGO = playerObjects[p];
-                // TODO: activate the right panel
+                pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(null, null, null, true);
             }
         }
     }

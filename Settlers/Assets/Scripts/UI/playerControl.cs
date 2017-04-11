@@ -21,6 +21,7 @@ public class playerControl : NetworkBehaviour {
 
     public bool buyWithGold = true;
     public bool TradeCard = false;
+    public bool BarbarianDraw = false;
 
 
     public bool interactKnight = false;
@@ -722,25 +723,50 @@ public class playerControl : NetworkBehaviour {
 
     public void getCardChoice(GameObject buttonPressed)
     {
+        
         string text = buttonPressed.transform.GetChild(0).GetComponent<Text>().text;
         int temp = -1;
         string cardName = "";
         if (text.Equals("Politics"))
         {
-            temp = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value;
-            cardName = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+            if (BarbarianDraw)
+            {
+                CmdGetCardFromSelectedDeck(gameObject, EventKind.Politics);
+            }
+            else
+            {
+                temp = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value;
+                cardName = cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+                CmdGetCardChoice(gameObject, cardName);
+            }        
         }
         else if (text.Equals("Trade"))
         {
-            temp = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value;
-            cardName = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+            if (BarbarianDraw)
+            {
+                CmdGetCardFromSelectedDeck(gameObject, EventKind.Trade);
+            }
+            else
+            {
+                temp = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value;
+                cardName = cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+                CmdGetCardChoice(gameObject, cardName);
+            }
         }
         else if (text.Equals("Science"))
         {
-            temp = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value;
-            cardName = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+            if (BarbarianDraw)
+            {
+                CmdGetCardFromSelectedDeck(gameObject, EventKind.Science);
+            }
+            else
+            {
+                temp = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value;
+                cardName = cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options[temp].text;
+                CmdGetCardChoice(gameObject, cardName);
+            }
         }
-        CmdGetCardChoice(gameObject, cardName);
+        
     }
 
     public void SaveGame()
@@ -937,6 +963,12 @@ public class playerControl : NetworkBehaviour {
     public void CmdGetCardChoice(GameObject player, string cardName)
     {
         gameState.GetComponent<Game>().CardChoice(gameObject, cardName);
+    }
+    [Command]
+    public void CmdGetCardFromSelectedDeck(GameObject player, EventKind k)
+    {
+        gameState.GetComponent<Game>().getCardFromDraw(player, k);
+        BarbarianDraw = false;
     }
     [Command]
     public void CmdSwapTokens(GameObject[] tiles)
@@ -1461,32 +1493,42 @@ public class playerControl : NetworkBehaviour {
         stealPanel.transform.GetChild(0).GetComponent<Dropdown>().value = 0;
     }
     [ClientRpc]
-    public void RpcSetupCardChoiceInterface(string[] politics, string[] trade, string[] science)
+    public void RpcSetupCardChoiceInterface(string[] politics, string[] trade, string[] science, bool barbarian)
     {
         if (!isLocalPlayer) return;
-        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Clear();
-        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Clear();
-        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Clear();
-        foreach (string s in politics)
+        if (barbarian)
         {
-            cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+            cardChoicePanel.transform.GetChild(0).GetChild(1).gameObject.SetActive(false);
+            cardChoicePanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
+            cardChoicePanel.transform.GetChild(2).GetChild(1).gameObject.SetActive(false);
+            BarbarianDraw = true;
         }
-        foreach (string s in trade)
+        else
         {
-            cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
-        }
-        foreach (string s in science)
-        {
-            cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
-        }
-        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 1;
-        cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 0;
-        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 1;
-        cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 0;
-        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 1;
-        cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 0;
+            cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Clear();
+            cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Clear();
+            cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Clear();
+            foreach (string s in politics)
+            {
+                cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+            }
+            foreach (string s in trade)
+            {
+                cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+            }
+            foreach (string s in science)
+            {
+                cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+            }
+            cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 1;
+            cardChoicePanel.transform.GetChild(0).GetChild(1).GetComponent<Dropdown>().value = 0;
+            cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 1;
+            cardChoicePanel.transform.GetChild(1).GetChild(1).GetComponent<Dropdown>().value = 0;
+            cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 1;
+            cardChoicePanel.transform.GetChild(2).GetChild(1).GetComponent<Dropdown>().value = 0;
 
-        cardChoicePanel.SetActive(true);
+            cardChoicePanel.SetActive(true);
+        }     
     }
     [ClientRpc]
     public void RpcEndStealInterface()
