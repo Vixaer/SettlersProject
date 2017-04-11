@@ -149,7 +149,7 @@ public class DiceController
     #region Cards
     public void returnCard(ProgressCardKind k)
     {
-        if((int)k < 9)
+        if((int)k < 10)
         {
             sciencePool.Add(k);
         }
@@ -165,7 +165,7 @@ public class DiceController
     public bool hasCardInDeck(ProgressCardKind k)
     {
         bool check = false;
-        if ((int)k < 9 && sciencePool.Contains(k))
+        if ((int)k < 10 && sciencePool.Contains(k))
         {
             check = true;
         }
@@ -183,7 +183,7 @@ public class DiceController
     public ProgressCardKind getCard(ProgressCardKind k)
     {
         ProgressCardKind card = ProgressCardKind.NoCard;
-        if ((int)k < 9)
+        if ((int)k < 10)
         {
             card = k; 
             sciencePool.Remove(k);
