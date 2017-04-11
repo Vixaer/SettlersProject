@@ -16,6 +16,7 @@ public class Game : NetworkBehaviour
     DiceController gameDices = new DiceController();
     public bool waitingForRoad = false;
     public bool firstBarbAttack = false;
+    public bool bootDistributed = false;
 
     public int barbPosition = 0; // Max 7. Use MoveBarbs()
     public GamePhase currentPhase { get; private set; }
@@ -293,7 +294,9 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
                 case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
-				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;																												
+				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;
+                case GamePhase.TurnRobberOnly: playerTurn += " Move Robber "; break;
+                case GamePhase.TurnPirateOnly: playerTurn += " Move Pirate "; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -1968,8 +1971,10 @@ public class Game : NetworkBehaviour
     //allows client to actually move the robber
     public void moveRobber(GameObject player, GameObject tile)
     {
+        Player mover = (Player)gamePlayers[player];
+        List<String> names = new List<string>();
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
+        if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnRobberOnly) && checkCorrectPlayer(player))
         {
             if (tile.GetComponent<TerrainHex>().isRobber == true)
             {
@@ -1978,9 +1983,23 @@ public class Game : NetworkBehaviour
             else
             {
                 robberTile.GetComponent<TerrainHex>().isRobber = false;
+                foreach(Intersection inter in tile.GetComponent<TerrainHex>().corners)
+                {
+                    if(inter.owned && inter.positionedUnit is Village && !inter.positionedUnit.Owner.Equals(mover))
+                    {
+                        if (!names.Contains(inter.positionedUnit.Owner.name))
+                        {
+                            names.Add(inter.positionedUnit.Owner.name);
+                        }                    
+                    }
+                }
                 robberTile = tile;
                 tile.GetComponent<TerrainHex>().isRobber = true;
                 currentPhase = GamePhase.TurnFirstPhase;
+                if (names.Count > 0)
+                {
+                    player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                }    
                 updateTurn();
             }
         }
@@ -2020,7 +2039,7 @@ public class Game : NetworkBehaviour
     {
         //TO-DO
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player) && firstBarbAttack)
+        if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnPirateOnly) && checkCorrectPlayer(player) && firstBarbAttack)
         {
             if (tile.GetComponent<TerrainHex>().isPirate == true)
             {
@@ -2760,6 +2779,7 @@ public class Game : NetworkBehaviour
     {
         List<Player> receivingPlayers = new List<Player>();
         int sum = gameDices.getRed() + gameDices.getYellow();
+        System.Random luck = new System.Random();
         if (sum != 7)
         {
             foreach (GameObject tile in boardTile)
@@ -2773,6 +2793,7 @@ public class Game : NetworkBehaviour
                         if (connected.owned == true && connected.positionedUnit.GetType() == typeof(Village))
                         {
                             Player gainer = connected.positionedUnit.Owner;
+                            bool gainResources = false;
                             Village hisVillage = (Village)(connected.positionedUnit);
                             switch (tile.GetComponent<TerrainHex>().myTerrain)
                             {
@@ -2783,6 +2804,7 @@ public class Game : NetworkBehaviour
                                         {
                                             gainer.AddCommodities(1, CommodityKind.Cloth);
                                         }
+                                        gainResources = true;
                                         break;
                                     }
 
@@ -2793,6 +2815,7 @@ public class Game : NetworkBehaviour
                                         {
                                             gainer.AddCommodities(1, CommodityKind.Paper);
                                         }
+                                        gainResources = true;
                                         break;
                                     }
 
@@ -2803,6 +2826,7 @@ public class Game : NetworkBehaviour
                                         {
                                             gainer.AddCommodities(1, CommodityKind.Coin);
                                         }
+                                        gainResources = true;
                                         break;
                                     }
 
@@ -2811,11 +2835,12 @@ public class Game : NetworkBehaviour
                                         if (hisVillage.myKind == VillageKind.Settlement)
                                         {
                                             gainer.AddResources(1, ResourceKind.Brick);
-                                        }
+                                        }                                     
                                         else
                                         {
                                             gainer.AddResources(2, ResourceKind.Brick);
                                         }
+                                        gainResources = true;
                                         break;
                                     }
 
@@ -2829,6 +2854,7 @@ public class Game : NetworkBehaviour
                                         {
                                             gainer.AddResources(2, ResourceKind.Grain);
                                         }
+                                        gainResources = true;
                                         break;
                                     }
 
@@ -2842,11 +2868,43 @@ public class Game : NetworkBehaviour
                                         {
                                             gainer.AddGold(2);
                                         }
+                                        gainResources = true;
+                                        break;
+                                    }
+                                case TerrainKind.Desert:
+                                    {
+                                        if (tempTile.isLake && (sum == 2 || sum == 3 || sum == 11 || sum == 12))
+                                        {
+                                            if (hisVillage.myKind == VillageKind.Settlement)
+                                            {
+                                                giveFishTokens(1, gainer);
+                                            }
+                                            else
+                                            {
+                                                giveFishTokens(2, gainer);
+                                            }
+                                        }
+                                        break;
+                                    }
+                                case TerrainKind.Sea:
+                                    {
+                                        if (hisVillage.myKind == VillageKind.Settlement)
+                                        {
+                                            giveFishTokens(1, gainer);
+                                        }
+                                        else
+                                        {
+                                            giveFishTokens(2, gainer);
+                                        }                                          
                                         break;
                                     }
                             }
                             updatePlayerResourcesUI(playerObjects[gainer]);
-                            receivingPlayers.Add(gainer);
+                            if (gainResources)
+                            {
+                                receivingPlayers.Add(gainer);
+                            }
+                            
                         }
                     }
 
@@ -2869,7 +2927,6 @@ public class Game : NetworkBehaviour
                 }
             }
         }
-
         updatePlayerStatisticsUI();
     }
 
@@ -2916,6 +2973,64 @@ public class Game : NetworkBehaviour
                     paidTo.AddGold(2);
                     break;
                 }
+            case TerrainKind.Sea:
+                {
+                    giveFishTokens(2, paidTo);
+                    break;
+                }
+            case TerrainKind.Desert:
+                {
+                    if (hex.isLake)
+                    {
+                        giveFishTokens(2, paidTo);                  
+                    }
+                    break;
+                }
+        }
+    }
+
+    public void giveFishTokens(int tokenAmount, Player player)
+    {
+        System.Random luck = new System.Random();
+        for(int i=0; i<tokenAmount; i++)
+        {
+            if (!bootDistributed)
+            {
+                int value = luck.Next(1, 31);
+                if (value == 30)
+                {
+                    player.hasBoot = true;
+                    bootDistributed = true;
+                }
+                else if (value > 21)
+                {
+                    player.AddFishTokens(3);
+                }
+                else if (value > 11)
+                {
+                    player.AddFishTokens(2);
+                }
+                else
+                {
+                    player.AddFishTokens(1);
+                }
+            }
+            else
+            {
+                int value = luck.Next(1, 30);
+                if (value > 21)
+                {
+                    player.AddFishTokens(3);
+                }
+                else if (value > 11)
+                {
+                    player.AddFishTokens(2);
+                }
+                else
+                {
+                    player.AddFishTokens(1);
+                }
+            }
         }
     }
 
@@ -3227,7 +3342,15 @@ public class Game : NetworkBehaviour
     {
         foreach (Player p in gamePlayers.Values)
         {
-            if (p.victoryPoints >= 13)
+            if (p.hasBoot && p.victoryPoints >= 14)
+            {
+                string message = "Player " + p.name + " has won this game! \n Press the Exit button to quit.";
+                foreach (GameObject pl in gamePlayers.Keys)
+                {
+                    pl.GetComponent<playerControl>().RpcVictoryPanel(message);
+                }
+            }
+            else if(p.victoryPoints>= 13)
             {
                 string message = "Player " + p.name + " has won this game! \n Press the Exit button to quit.";
                 foreach (GameObject pl in gamePlayers.Keys)
