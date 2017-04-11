@@ -2521,6 +2521,7 @@ public class Game : NetworkBehaviour
         bool turnCheck = checkCorrectPlayer(player);
         bool hasCity = false;
         bool hasMetropolis = false;
+        bool willBeMetropolis = false;
         var mapper = new Dictionary<CommodityKind, VillageKind>()
                 {
                     { CommodityKind.Cloth, VillageKind.TradeMetropole },
@@ -2541,7 +2542,34 @@ public class Game : NetworkBehaviour
                 break;
             }
         }
-        if (!turnCheck)
+        // Check if this will be a metropolis
+        if (currentUpgrader.cityImprovementLevels[(CommodityKind)kind] + 1 >= 4)
+        {
+            GameObject metropolis;
+            switch (kind)
+            {
+                case (int)CommodityKind.Cloth:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.TradeMetropole);
+                    break;
+
+                case (int)CommodityKind.Coin:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.PoliticsMetropole);
+                    break;
+
+                case (int)CommodityKind.Paper:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.ScienceMetropole);
+                    break;
+
+                default:
+                    updatePlayerResourcesUI(player);
+                    return;
+            }
+            if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind])
+            {
+                willBeMetropolis = true;
+            }
+        }
+                if (!turnCheck)
         {
             logAPlayer(player, "Not your turn!");
         }
@@ -2549,7 +2577,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't improve cities on this phase!");
         }
-        else if (!hasCity && (!hasMetropolis || currentUpgrader.GetCityImprovementLevel((CommodityKind)kind) > 3))
+        else if (!hasCity && !hasMetropolis && willBeMetropolis)
         {
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
