@@ -35,6 +35,8 @@ public class Player {
 
     public bool hasBoot = false;
 
+    public bool hasFreeRoad = false;
+
     public int availableWalls { get; set; }
 
     //temp variables for forced knight moves
@@ -383,10 +385,19 @@ public bool HasWallResources(bool playedEngCard) {
     }
 
     // Get the number of active knights owned by this player
-    public int getActiveKnightCount()
+    public int getActiveKnightStrength()
     {
-        // TODO: Implement this method
-        return 0;
+        var total = 0;
+        foreach (OwnableUnit u in ownedUnits)
+        {
+            if (u is Knight)
+            {
+                var k = u as Knight;
+                if (k.isKnightActive())
+                    total += k.level == KnightLevel.None ? 0 : (int)k.level + 1;
+            }
+        }
+        return total;
     }
 
     // Get the number of city villages owned by this player
