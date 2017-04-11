@@ -30,6 +30,8 @@ public class playerControl : NetworkBehaviour {
     public bool knightSelected = false;
     public Color oldKnightColor;
     public GameObject selectedInter;
+    public bool desertSelectKnight = false;
+    public bool desertMoveKnight = false;
 
     private bool pickMetropolis = false;
 	private bool playInventor = false;
@@ -493,8 +495,17 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
+                if (desertSelectKnight)
+                {
+                    CmdDesertKnight(gameObject, hit.collider.gameObject);
+                }
 
-                if (pickMetropolis)
+                else if (desertMoveKnight)
+                {
+                    CmdDesertMoveKnight(gameObject, hit.collider.gameObject);
+                }
+
+                else if (pickMetropolis)
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
@@ -785,9 +796,18 @@ public class playerControl : NetworkBehaviour {
         }
     }
 
+    [Command]
+    void CmdDesertKnight(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().desertKnight(player, inter);
+    }
+    [Command]
+    void CmdDesertMoveKnight(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().moveDesertKnight(player, inter);
+    }
 
 
-    //??
     [Command]
     void CmdForceMoveKnight(GameObject player, GameObject inter)
     {
@@ -1055,6 +1075,31 @@ public class playerControl : NetworkBehaviour {
         this.movedShipThisTurn = false;
         this.shipSelected = false;
     }
+
+    [ClientRpc]
+    public void RpcStartDesertKnight()
+    {
+        desertSelectKnight = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndDesertKnight()
+    {
+        desertSelectKnight = false;
+    }
+    [ClientRpc]
+    public void RpcBeginDesertKnightMove()
+    {
+        desertMoveKnight = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndDesertKnightMove()
+    {
+        desertMoveKnight = false;
+    }
+
+
     [ClientRpc]
     public void RpcBeginMetropoleChoice()
     {

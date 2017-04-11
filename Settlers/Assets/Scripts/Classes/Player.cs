@@ -46,6 +46,14 @@ public class Player {
     public Edges selectedShip;
     public Intersection selectedKnight;
 
+    //temp variable for deserter
+    public KnightLevel desertKnightLevel;
+    public bool desertKnightActive;
+
+    //TO SAVE!!: stores intersections where first 2 cities were built
+    public Intersection firstCity;
+    public Intersection secondCity;
+
     public Player()
     {
         myColor = playerCount;
