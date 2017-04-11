@@ -1270,11 +1270,11 @@ public class Game : NetworkBehaviour
 		}
 
 		//pirate check
+		bool pirateCheck = false;
 		foreach (TerrainHex a in temp.inBetween) {
 			if (a.isPirate == true) {
-				logAPlayer (player, "Can't move ships next to pirate!");
-                shipToMove.DeselectShipForMoving(p);
-                temp3.RpcEndShipMove(false);
+				pirateCheck = true;
+				
 			}
 		}
 		if (!correctPlayer) {
@@ -1292,7 +1292,12 @@ public class Game : NetworkBehaviour
             shipToMove.DeselectShipForMoving(p);
             temp3.RpcEndShipMove(false);
 
-        } else if (correctPlayer && onWater && !isOwned && canBuild) {
+        } else if (pirateCheck) {
+			logAPlayer (player, "Can't move ships next to pirate!");
+            shipToMove.DeselectShipForMoving(p);
+            temp3.RpcEndShipMove(false);
+		
+		} else if (correctPlayer && onWater && !isOwned && canBuild) {
 			temp.BuildShip (p);
             shipToMove.RemoveShip (p);
 			logAPlayer (player, "Ship Moved! You cannot move anymore ships this turn.");
