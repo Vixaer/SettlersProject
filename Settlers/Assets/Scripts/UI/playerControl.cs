@@ -1069,6 +1069,7 @@ public class playerControl : NetworkBehaviour {
         {
             goldShopPanel.gameObject.SetActive(false);
             goldShopPanel.transform.GetChild(3).gameObject.SetActive(true);
+            buyWithGold = true;
         }
     }
     [ClientRpc]

@@ -793,9 +793,9 @@ public class Game : NetworkBehaviour
     public void BuyFromBank(GameObject player, int wants, bool currency)
     {
         Player tradingPlayer = gamePlayers[player];
-        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase && tradingPlayer.gold >= 2)
+        if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase)
         {
-            if (currency)
+            if (currency && tradingPlayer.gold>=2)
             {
                 tradingPlayer.AddGold(-2);
                 tradingPlayer.AddResources(1, (ResourceKind)wants);
