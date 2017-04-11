@@ -198,12 +198,15 @@ public class Intersection : NetworkBehaviour {
     {
         owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
-		if (knightRemoved) {
-			knightRemoved = false;
-		} else {
-			owned = true;
+        if (knightRemoved)
+        {
+            knightRemoved = false;
+        }
+        else
+        {
+            owned = true;
+        }
     }
-
 	public void OnWall(bool value){
 		
 		transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
@@ -219,14 +222,14 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
-		else if( value == 3)
-		{
-			Debug.Log ("hey");
-			transform.GetComponent<SpriteRenderer> ().sprite = cityWallSprite;
-		
-        transform.GetComponent<CircleCollider2D>().radius = 0.6f;
-    }
+        else if (value == 3)
+        {
+            Debug.Log("hey");
+            transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
 
+            transform.GetComponent<CircleCollider2D>().radius = 0.6f;
+        }
+    }
     public void OnHarbour(HarbourKind value)
     {
         harbor = value;
