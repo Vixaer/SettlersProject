@@ -10,13 +10,13 @@ public class Intersection : NetworkBehaviour {
     public Sprite settlement, city, intersection;
     public Sprite[] knightSprites, activeKnightSprites;
     public Sprite metropolisSprite;
-	public Sprite cityWallSprite;
+    public Sprite cityWallSprite;
     public bool owned;
-    
-    public IntersectionUnit positionedUnit { get; private set; }
-	public bool knightRemoved = false;
 
-    [SyncVar(hook ="OnHarbour")]
+    public IntersectionUnit positionedUnit { get; private set; }
+    public bool knightRemoved = false;
+
+    [SyncVar(hook = "OnHarbour")]
     public HarbourKind harbor = HarbourKind.None;
     [SyncVar(hook = "OnKnight")]
     public KnightLevel knight = KnightLevel.None;
@@ -29,14 +29,17 @@ public class Intersection : NetworkBehaviour {
     [SyncVar(hook = "OnMetropole")]
     public VillageKind metropolis = VillageKind.City;
     public bool movedKnight = false;
+    [SyncVar(hook = "OnFishing")]
+    public bool isFishingInter = false;
 
-    
-	// Use this for initialization
-	void Awake () {
+
+    // Use this for initialization
+    void Awake()
+    {
         positionedUnit = null;
-		cityWallSprite = (Sprite)Resources.Load<Sprite> ("CityWall");
-		intersection = (Sprite)Resources.Load<Sprite>  ("intersection");
-	}
+        cityWallSprite = (Sprite)Resources.Load<Sprite>("CityWall");
+        intersection = (Sprite)Resources.Load<Sprite>("intersection");
+    }
 
     public Color getColor()
     {
@@ -115,37 +118,38 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
-
-	public void MoveKnight(Player player, Knight knightToMove, bool forced){
+    public void MoveKnight(Player player, Knight knightToMove, bool forced)
+    {
         movedKnight = true;
         Knight temp = knightToMove;
-		positionedUnit = temp;
-		owned = true;
-		knight = temp.level;
+        positionedUnit = temp;
+        owned = true;
+        knight = temp.level;
         if (!forced)
         {
-           temp.deactivateKnight();
+            temp.deactivateKnight();
         }
         else
         {
             knightActive = knightToMove.isKnightActive();
         }
-        
-		switch (positionedUnit.Owner.myColor)
-		{
-		case 0: color = Color.red; break;
-		case 1: color = Color.blue; break;
-		case 2: color = Color.green; break;
-		case 3: color = new Color(255, 128, 0); break;
-		}
-	}
 
-    public void RemoveKnight(Player player, bool destroy) {
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
+
+    public void RemoveKnight(Player player, bool destroy)
+    {
         owned = false;
         Knight temp = (Knight)positionedUnit;
         // temp.deactivateKnight();
         knightActive = false;
-        knight = KnightLevel.None;  
+        knight = KnightLevel.None;
         knightRemoved = true;
 
         positionedUnit = null;
@@ -157,8 +161,8 @@ public class Intersection : NetworkBehaviour {
         }
 
         color = new Color(255, 255, 255);
-		
-	}
+
+    }
 
     public void SelectKnight()
     {
@@ -174,54 +178,40 @@ public class Intersection : NetworkBehaviour {
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
         }
-    
+
     }
 
-    public void BuildWall(Player player) {
-		type = 3;
-		player.availableWalls--;
-		switch (positionedUnit.Owner.myColor)
-		{
-			case 0: color = Color.red; break;
-			case 1: color = Color.blue; break;
-			case 2: color = Color.green; break;
-			case 3: color = new Color(255, 128, 0); break;
-		}
+    public void BuildWall(Player player)
+    {
+        type = 3;
+        player.availableWalls--;
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
 
-	}
     #region Sync Hooks
     public void OnOwned(Color value)
     {
+        owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
-		if (knightRemoved) {
-			knightRemoved = false;
-		} else {
-			owned = true;
-		}
     }
 
-	public void OnWall(bool value){
-		
-		transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
-	}
-   
     public void OnBuild(int value)
     {
         type = value;
-        if(value == 1)
+        if (value == 1)
         {
             transform.GetComponent<SpriteRenderer>().sprite = settlement;
         }
-        else if( value == 2)
+        else if (value == 2)
         {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
-		else if( value == 3)
-		{
-			Debug.Log ("hey");
-			transform.GetComponent<SpriteRenderer> ().sprite = cityWallSprite;
-		} 
-
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
     }
 
@@ -232,28 +222,26 @@ public class Intersection : NetworkBehaviour {
     public void OnKnight(KnightLevel value)
     {
         knight = value;
-        if (knight == KnightLevel.Basic || movedKnight)
+        if (knight == KnightLevel.Basic)
         {
-            movedKnight = false;
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
             transform.GetComponent<CircleCollider2D>().radius = 0.6f;
         }
-        
+        else if (knightActive)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
+        }
         else if (knight == KnightLevel.None)
         {
             transform.GetComponent<SpriteRenderer>().sprite = intersection;
             transform.GetComponent<SpriteRenderer>().color = Color.white;
             transform.GetComponent<CircleCollider2D>().radius = 0.2f;
         }
-        else if (knightActive)
-        {
-            transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
-        }
         else if (!knightActive)
         {
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
         }
-             
+
     }
     public void OnActivateKnight(bool value)
     {
@@ -272,28 +260,28 @@ public class Intersection : NetworkBehaviour {
     public void OnMetropole(VillageKind value)
     {
         metropolis = value;
-
-			switch (metropolis) {
-			case VillageKind.PoliticsMetropole:
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.blue;
-				break;
-			case VillageKind.ScienceMetropole:
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.green;
-				break;
-			case VillageKind.TradeMetropole:
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = metropolisSprite;
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().color = Color.yellow;
-				break;
-			default:
-				transform.GetChild (0).GetComponent<SpriteRenderer> ().sprite = null;
-				break;
-			}
-
-	
-
-	
+        switch (metropolis)
+        {
+            case VillageKind.PoliticsMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.blue;
+                break;
+            case VillageKind.ScienceMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.green;
+                break;
+            case VillageKind.TradeMetropole:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = metropolisSprite;
+                transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.yellow;
+                break;
+            default:
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+                break;
+        }
+    }
+    public void OnFishing(bool value)
+    {
+        isFishingInter = value;
     }
     #endregion
 
@@ -301,6 +289,7 @@ public class Intersection : NetworkBehaviour {
     public void Load(IntersectionData data, IntersectionUnit u)
     {
         this.harbor = data.harbourKind;
+        this.isFishingInter = data.isFishing;
         if (u != null)
         {
             if (u is Village)
@@ -361,7 +350,8 @@ public class IntersectionData
     public bool knightActive { get; set; }
     public int type { get; set; }
     public VillageKind metropolis { get; set; }
-    
+    public bool isFishing { get; set; }
+
     public IntersectionData(Intersection source)
     {
         this.name = source.name;
@@ -376,6 +366,7 @@ public class IntersectionData
             Guid.Empty : 
             source.positionedUnit.id;
         this.harbourKind = source.harbor;
+        this.isFishing = source.isFishingInter;
 
         this.linkedHexes = new string[source.linked.Length];
         for (int i = 0; i < source.linked.Length; i++)
