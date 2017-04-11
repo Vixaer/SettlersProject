@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 public class Game : NetworkBehaviour
 {
     public const int BARB_ATTACK_POSITION = 7;
-    private int defenders = 0;
+    public int defenders = 0;
     static System.Random rng = new System.Random();
 
     DiceController gameDices = new DiceController();
@@ -3357,7 +3357,7 @@ public class Game : NetworkBehaviour
         {
             var bestPlayer = mostContributed[0];
             broadcastMessage("Player " + bestPlayer.name + " is the defender of Catan!");
-            if (defenders <= 6)
+            if (defenders < 6)
             {
                 bestPlayer.AddVictoryPoints(1);
                 updatePlayerResourcesUI(playerObjects[bestPlayer]);
@@ -3905,6 +3905,7 @@ public class GameData
     public bool waitingForRoad  { get; set; }
     public bool firstBarbAttack { get; set; }
     public int barbPosition { get; set; }
+    public int defenders { get; private set; }
     public GamePhase currentPhase { get; set; }
     public List<PlayerData> gamePlayers { get; set; }
     public string currentPlayer;
@@ -3921,6 +3922,7 @@ public class GameData
         this.waitingForRoad = source.waitingForRoad;
         this.firstBarbAttack = source.firstBarbAttack;
         this.barbPosition = source.barbPosition;
+        this.defenders = source.defenders;
         this.currentPhase = source.currentPhase;
         this.currentPlayer = source.currentPlayer == null ? 
             null : 
