@@ -299,6 +299,7 @@ public class playerControl : NetworkBehaviour {
             upgradeKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 121, 121);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Building Knight";
 
         }
         else if (!activateKnight && !upgradeKnight & !moveKnight)
@@ -309,6 +310,7 @@ public class playerControl : NetworkBehaviour {
             moveKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Activating Knight";
         }
         else if (!upgradeKnight && !moveKnight && !buildKnight)
         {
@@ -318,6 +320,7 @@ public class playerControl : NetworkBehaviour {
             moveKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 240, 240);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Upgrading Knight";
         }
         else
         {
@@ -326,6 +329,8 @@ public class playerControl : NetworkBehaviour {
             upgradeKnight = false;
             moveKnight = true;
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 240, 121);
+
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Moving Knight";
         }
     }
     public void OnClickAcceptP2PButton()
