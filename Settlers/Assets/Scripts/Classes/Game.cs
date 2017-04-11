@@ -1037,7 +1037,7 @@ public class Game : NetworkBehaviour
                             logAPlayer(player, "You built a city wall!");
                         }
                     }
-                    CheckForLongestRoad();
+                    CheckForLongestTradeRoute();
                     updateTurn();
                 }
             }
@@ -1258,7 +1258,7 @@ public class Game : NetworkBehaviour
 
 
         }
-        CheckForLongestRoad();
+        CheckForLongestTradeRoute();
         updateTurn();
     }
 
@@ -1343,8 +1343,7 @@ public class Game : NetworkBehaviour
                 gamePlayers[player].PayRoadResources();
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
             }
-            
-            CheckForLongestRoad();
+            CheckForLongestTradeRoute();
             updatePlayerResourcesUI(player);
             updateTurn();
         }
@@ -1432,8 +1431,7 @@ public class Game : NetworkBehaviour
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 //update his UI to let him know he lost the resources;
             }
-            
-            CheckForLongestRoad();
+            CheckForLongestTradeRoute();
             updatePlayerResourcesUI(player);
             updateTurn();
         }
@@ -1606,7 +1604,7 @@ public class Game : NetworkBehaviour
             temp.BuildShip(p);
             shipToMove.RemoveShip(p);
             logAPlayer(player, "Ship Moved! You cannot move anymore ships this turn.");
-            CheckForLongestRoad();
+            CheckForLongestTradeRoute();
             temp3.RpcEndShipMove(true);
         }
         else
@@ -1803,7 +1801,7 @@ public class Game : NetworkBehaviour
                             temp.MoveKnight(temp3, temp4, false);
                             player.GetComponent<playerControl>().RpcEndKnightMove();
                             logAPlayer(player, "Knight moved!");
-                            CheckForLongestRoad();
+                            CheckForLongestTradeRoute();
 
                         }
                         else
@@ -1842,7 +1840,7 @@ public class Game : NetworkBehaviour
                             temp.MoveKnight(temp3, temp4, false);
                             logAPlayer(player, "Knight moved!");
                             player.GetComponent<playerControl>().RpcEndKnightMove();
-                            CheckForLongestRoad();
+                            CheckForLongestTradeRoute();
 
                         }
                         else
@@ -1868,7 +1866,7 @@ public class Game : NetworkBehaviour
                 temp.MoveKnight(temp3, temp4, false);
                 logAPlayer(player, "Knight moved!");
                 player.GetComponent<playerControl>().RpcEndKnightMove();
-                CheckForLongestRoad();
+                CheckForLongestTradeRoute();
             }
         }
     }
@@ -1991,7 +1989,7 @@ public class Game : NetworkBehaviour
             {
                 temp.MoveKnight(p, k, true);
                 logAPlayer(player, "Knight moved!");
-                CheckForLongestRoad();
+                CheckForLongestTradeRoute();
                 currentPhase = tempPhase;
                 updateTurn();
                 player.GetComponent<playerControl>().RpcEndForcedKnightMove();
@@ -2542,6 +2540,7 @@ public class Game : NetworkBehaviour
         bool turnCheck = checkCorrectPlayer(player);
         bool hasCity = false;
         bool hasMetropolis = false;
+        bool willBeMetropolis = false;
         var mapper = new Dictionary<CommodityKind, VillageKind>()
                 {
                     { CommodityKind.Cloth, VillageKind.TradeMetropole },
@@ -2562,7 +2561,34 @@ public class Game : NetworkBehaviour
                 break;
             }
         }
-        if (!turnCheck)
+        // Check if this will be a metropolis
+        if (currentUpgrader.cityImprovementLevels[(CommodityKind)kind] + 1 >= 4)
+        {
+            GameObject metropolis;
+            switch (kind)
+            {
+                case (int)CommodityKind.Cloth:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.TradeMetropole);
+                    break;
+
+                case (int)CommodityKind.Coin:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.PoliticsMetropole);
+                    break;
+
+                case (int)CommodityKind.Paper:
+                    metropolis = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit is Village && ((Village)i.GetComponent<Intersection>().positionedUnit).myKind == VillageKind.ScienceMetropole);
+                    break;
+
+                default:
+                    updatePlayerResourcesUI(player);
+                    return;
+            }
+            if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind])
+            {
+                willBeMetropolis = true;
+            }
+        }
+                if (!turnCheck)
         {
             logAPlayer(player, "Not your turn!");
         }
@@ -2570,7 +2596,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't improve cities on this phase!");
         }
-        else if (!hasCity && (!hasMetropolis || currentUpgrader.GetCityImprovementLevel((CommodityKind)kind) > 3))
+        else if (!hasCity && !hasMetropolis && willBeMetropolis)
         {
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
@@ -3449,7 +3475,19 @@ public class Game : NetworkBehaviour
             broadcastMessage(p.name + " was punished for providing the least active knights. A city has been downgraded.");
             List<Village> cities = p.getCities();
             int ind = rng.Next(cities.Count);
+            if (cities[ind].cityWall)
+                p.availableWalls++;
             cities[ind].downgradeToSettlement();
+            // Update the pools
+            p.AddCity();
+            p.RemoveSettlement();
+            var inter = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit == cities[ind]);
+            if (inter != null)
+            {
+                var i = inter.GetComponent<Intersection>();
+                i.DowngradeCity(p);
+            }
+            updatePlayerResourcesUI(playerObjects[p]);
         }
     }
 
@@ -3620,7 +3658,7 @@ public class Game : NetworkBehaviour
         }
     }
 
-    private void CheckForLongestRoad()
+    private void CheckForLongestTradeRoute()
     {
         // Check each player for a potential longest road
         int longestRoadLength;
@@ -3631,12 +3669,12 @@ public class Game : NetworkBehaviour
         }
         else
         {
-            longestRoadLength = GetPlayerLongestRoad(longestRoadPlayer);
+            longestRoadLength = GetPlayerLongestTradeRoute(longestRoadPlayer);
         }
         Player newLongestRoadPlayer = null;
         foreach (Player p in gamePlayers.Values)
         {
-            var longestRoadLengthP = GetPlayerLongestRoad(p);
+            var longestRoadLengthP = GetPlayerLongestTradeRoute(p);
             if (longestRoadLengthP > longestRoadLength)
             {
                 longestRoadLength = longestRoadLengthP;
@@ -3649,32 +3687,32 @@ public class Game : NetworkBehaviour
             {
                 longestRoadPlayer.TakeLongestRoad();
                 updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
-                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest road...");
+                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest trade route...");
                 newLongestRoadPlayer.GiveLongestTradeRoute();
                 updatePlayerResourcesUI(playerObjects[newLongestRoadPlayer]);
-                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest road!");
+                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest trade route!");
             }
             else if (longestRoadPlayer == null)
             {
                 newLongestRoadPlayer.GiveLongestTradeRoute();
                 updatePlayerResourcesUI(playerObjects[newLongestRoadPlayer]);
-                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest road!");
+                logAPlayer(playerObjects[newLongestRoadPlayer], "You now have the longest trade route!");
             }
             CheckForVictory();
         }
         else
         {
             // Check if the longest road was broken up
-            if (longestRoadPlayer != null && GetPlayerLongestRoad(longestRoadPlayer) < longestRoadLength)
+            if (longestRoadPlayer != null && GetPlayerLongestTradeRoute(longestRoadPlayer) < longestRoadLength)
             {
                 longestRoadPlayer.TakeLongestRoad();
                 updatePlayerResourcesUI(playerObjects[longestRoadPlayer]);
-                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest road...");
+                logAPlayer(playerObjects[longestRoadPlayer], "You have lost the longest trade route...");
             }
         }
     }
 
-    private int GetPlayerLongestRoad(Player p)
+    private int GetPlayerLongestTradeRoute(Player p)
     {
         var edgeSets = new List<List<Edges>>();
         // First, we break edges into connected sets
@@ -3692,7 +3730,9 @@ public class Game : NetworkBehaviour
                 {
                     foreach (Edges e in endpoint.paths)
                     {
-                        if (e.belongsTo == p)
+                        if (e.belongsTo == p && ((!startingEdge.isShip && !e.isShip) || (startingEdge.isShip && e.isShip) ||
+                                    (endpoint.positionedUnit != null && endpoint.positionedUnit.Owner == p && endpoint.positionedUnit is Village) ||
+                                    (endpoint.positionedUnit != null && endpoint.positionedUnit.Owner == p && endpoint.positionedUnit is Village)))
                         {
                             edgesToVisit.Push(e);
                         }
@@ -3711,7 +3751,9 @@ public class Game : NetworkBehaviour
                         {
                             foreach (Edges e in endpoint.paths)
                             {
-                                if (e.belongsTo == p)
+                                if (e.belongsTo == p && ((!currentEdge.isShip && !e.isShip) || (currentEdge.isShip && e.isShip) ||
+                                    (endpoint.positionedUnit != null && endpoint.positionedUnit.Owner == p && endpoint.positionedUnit is Village) || 
+                                    (endpoint.positionedUnit != null && endpoint.positionedUnit.Owner == p && endpoint.positionedUnit is Village)))
                                 {
                                     edgesToVisit.Push(e);
                                 }
@@ -3738,7 +3780,6 @@ public class Game : NetworkBehaviour
 
     private int ConnectedRoadSegmentLength(List<Edges> connectedSet, Player p)
     {
-        bool hasCycles = false;
         // Find an endpoint
         List<Edges> endpoints = new List<Edges>();
         foreach (Edges temp in connectedSet)
@@ -3765,30 +3806,31 @@ public class Game : NetworkBehaviour
         }
         if (endpoints.Count == 0)
         {
-            hasCycles = true;
             endpoints = connectedSet;
         }
-        int m = int.MaxValue;
+        int m = 0;
         foreach (Edges endpoint in endpoints)
         {
             int maxLength = 0;
-            if (hasCycles || connectedSet.Count >= 6)
+            // Start the DFS
+            var visitedEdges = new List<Edges>();
+            var visitedInts = new List<Intersection>();
+            var edgesToVisit = new Stack<EdgeDFSNode>();
+            var root = new EdgeDFSNode(endpoint, 0, null);
+            edgesToVisit.Push(root);
+            while (edgesToVisit.Count > 0)
             {
-                // Start the DFS
-                var visitedEdges = new List<Edges>();
-                var edgesToVisit = new Stack<EdgeDFSNode>();
-                var root = new EdgeDFSNode(endpoint, 0);
-                edgesToVisit.Push(root);
-                while (edgesToVisit.Count > 0)
+                var currentEdge = edgesToVisit.Pop();
+                if (maxLength < currentEdge.depth)
                 {
-                    var currentEdge = edgesToVisit.Pop();
-                    if (maxLength < currentEdge.depth)
+                    maxLength = currentEdge.depth;
+                }
+                visitedInts.Add(currentEdge.from);
+                if (!visitedEdges.Contains(currentEdge.edge))
+                {
+                    foreach (Intersection i in currentEdge.edge.endPoints)
                     {
-                        maxLength = currentEdge.depth;
-                    }
-                    if (!visitedEdges.Contains(currentEdge.edge))
-                    {
-                        foreach (Intersection i in currentEdge.edge.endPoints)
+                        if (!visitedInts.Contains(i))
                         {
                             if (i.positionedUnit == null || i.positionedUnit.Owner == p)
                             {
@@ -3796,49 +3838,16 @@ public class Game : NetworkBehaviour
                                 {
                                     if (connectedSet.Contains(e))
                                     {
-                                        edgesToVisit.Push(new EdgeDFSNode(e, currentEdge.depth + 1));
+                                        edgesToVisit.Push(new EdgeDFSNode(e, currentEdge.depth + 1, i));
                                     }
                                 }
                             }
                         }
-                        visitedEdges.Add(currentEdge.edge);
                     }
+                    visitedEdges.Add(currentEdge.edge);
                 }
             }
-            else
-            {
-                // Start the BFS
-                var visitedEdges = new List<Edges>();
-                var edgesToVisit = new Queue<EdgeDFSNode>();
-                var root = new EdgeDFSNode(endpoint, 0);
-                edgesToVisit.Enqueue(root);
-                while (edgesToVisit.Count > 0)
-                {
-                    var currentEdge = edgesToVisit.Dequeue();
-                    if (maxLength < currentEdge.depth)
-                    {
-                        maxLength = currentEdge.depth;
-                    }
-                    if (!visitedEdges.Contains(currentEdge.edge))
-                    {
-                        foreach (Intersection i in currentEdge.edge.endPoints)
-                        {
-                            if (i.positionedUnit == null || i.positionedUnit.Owner == p)
-                            {
-                                foreach (Edges e in i.paths)
-                                {
-                                    if (connectedSet.Contains(e))
-                                    {
-                                        edgesToVisit.Enqueue(new EdgeDFSNode(e, currentEdge.depth + 1));
-                                    }
-                                }
-                            }
-                        }
-                        visitedEdges.Add(currentEdge.edge);
-                    }
-                }
-            }
-            if (m > maxLength)
+            if (m < maxLength)
             {
                 m = maxLength;
             }
@@ -3852,11 +3861,12 @@ public class Game : NetworkBehaviour
     {
         public Edges edge { get; private set; }
         public int depth { get; private set; }
-
-        public EdgeDFSNode(Edges e, int d)
+        public Intersection from { get; private set; }
+        public EdgeDFSNode(Edges e, int d, Intersection i)
         {
             this.edge = e;
             this.depth = d;
+            this.from = i;
         }
     }
 
