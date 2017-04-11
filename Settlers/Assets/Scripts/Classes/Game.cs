@@ -789,7 +789,6 @@ public class Game : NetworkBehaviour
     public void BuyWithGold(GameObject player, int wants)
     {
         Player tradingPlayer = gamePlayers[player];
-        string log = "";
 
         if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnFirstPhase && tradingPlayer.gold >= 2)
         {
@@ -797,8 +796,6 @@ public class Game : NetworkBehaviour
             tradingPlayer.AddResources(1, (ResourceKind)wants);
             updatePlayerResourcesUI(player);
             player.GetComponent<playerControl>().RpcCloseGoldShop(true);
-            // log
-            chatOnServer(player, log);
         }
         else if (checkCorrectPlayer(player))
         {
@@ -3118,7 +3115,11 @@ public class Game : NetworkBehaviour
     private void HandleBarbarianRoll()
     {
         MoveBarbs();
-        if (barbPosition == BARB_ATTACK_POSITION)
+        if (barbPosition == BARB_ATTACK_POSITION - 1)
+        {
+            broadcastMessage("The barbarians will attack on the next roll!");
+        }
+        else if (barbPosition == BARB_ATTACK_POSITION)
         {
             broadcastMessage("Barbarians Rolled. Prepare for the attack!");
             BarbarianAttack();
@@ -3136,6 +3137,10 @@ public class Game : NetworkBehaviour
                 }
             }
         }
+        else
+        {
+            broadcastMessage("The barbarians have approached... they are now " + (BARB_ATTACK_POSITION - barbPosition) + " rolls away.");
+        }   
     }
 
     // Handle the barbarian attack
