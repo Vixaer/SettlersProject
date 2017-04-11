@@ -32,7 +32,8 @@ public class playerControl : NetworkBehaviour {
     public GameObject selectedInter;
 
     private bool pickMetropolis = false;
-
+	private bool playInventor = false;
+    private GameObject[] tilesToSwap = null;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
@@ -155,6 +156,8 @@ public class playerControl : NetworkBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
+			// Pre-load game data to the client
+            CmdGetGameData();
         }
     }
 
@@ -520,17 +523,31 @@ public class playerControl : NetworkBehaviour {
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
-            if (hit.collider.gameObject.CompareTag("TerrainHex") && !forceMoveKnight)
+            if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
-                if (hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                if (playInventor)
                 {
-                    CmdMovePirate(gameObject, hit.collider.gameObject);
+                    if (tilesToSwap[0] == null)
+                    {
+                        tilesToSwap[0] = hit.collider.gameObject;
+                    }
+                    else
+                    {
+                        tilesToSwap[1] = hit.collider.gameObject;
+                        CmdSwapTokens(tilesToSwap);
+                    }
                 }
                 else
                 {
-                    CmdMoveRobber(gameObject, hit.collider.gameObject);
-                }
-
+                    if (hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                    {
+                        CmdMovePirate(gameObject, hit.collider.gameObject);
+                    }
+                    else
+                    {
+                        CmdMoveRobber(gameObject, hit.collider.gameObject);
+                    }
+                }              
             }
             if (hit.collider.gameObject.CompareTag("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight)
             {
@@ -545,16 +562,16 @@ public class playerControl : NetworkBehaviour {
         if (!playerName.Equals("") && playerName != null)
         {
             CmdValidateName(playerName);
-            if (!isValidName) return;
-            CmdSendName(playerName);
+            //if (!isValidName) return;
+            //CmdSendName(playerName);
             //open the menus
-            resourcesWindow.gameObject.SetActive(true);
-            MenuWindow.gameObject.SetActive(true);
-            DiceWindow.gameObject.SetActive(true);
-            ChatWindow.gameObject.SetActive(true);
-            CardPanel.gameObject.SetActive(true);
+            //resourcesWindow.gameObject.SetActive(true);
+            //MenuWindow.gameObject.SetActive(true);
+            //DiceWindow.gameObject.SetActive(true);
+            //ChatWindow.gameObject.SetActive(true);
+            //CardPanel.gameObject.SetActive(true);
             //closet the window
-            nameWindow.SetActive(false);
+            //nameWindow.SetActive(false);
         }
 
     }
@@ -702,7 +719,7 @@ public class playerControl : NetworkBehaviour {
         var savePath = FileHelper.SanitizePath(inGameMenuPanel.transform.Find("FilePath").GetComponent<InputField>().text);
         if (!string.IsNullOrEmpty(savePath))
         {
-            CmdGetGameData();
+            //CmdGetGameData();
             if (this.saveGameData != null)
             {
                 File.WriteAllBytes(Application.persistentDataPath + "/" + savePath + ".dat", this.saveGameData.ToArray());
@@ -881,6 +898,13 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().stealPlayer(gameObject, name);
     }
+	
+	[Command]
+    public void CmdSwapTokens(GameObject[] tiles)
+    {
+        gameState.GetComponent<Game>().SwapTokens(gameObject, tiles);
+    }
+
     [Command]
     public void CmdGetGameData()
     {
@@ -1331,6 +1355,20 @@ public class playerControl : NetworkBehaviour {
     public void RpcEndStealInterface()
     {
         stealPanel.SetActive(false);
+    }
+
+	[ClientRpc]
+    public void RpcBeginInventor()
+    {
+        this.playInventor = true;
+        this.tilesToSwap = new GameObject[2] { null, null };
+    }
+
+    [ClientRpc]
+    public void RpcEndInventor(bool success)
+    {
+        this.playInventor = !success;
+        this.tilesToSwap = new GameObject[2] { null, null };
     }
     #endregion
 

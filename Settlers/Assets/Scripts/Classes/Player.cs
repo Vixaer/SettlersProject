@@ -221,10 +221,17 @@ public class Player {
         }
     }
 
-    public void improveCity(CommodityKind kind)
+    public void improveCity(CommodityKind kind, bool playedCraneCard)
     {
         //pay and upgrade
-        PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+		if (playedCraneCard)
+		{
+			PayCommoditys(GetCityImprovementLevel(kind), kind);
+		}
+		else
+		{
+        	PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+		}
         cityImprovementLevels[kind] += 1;
     }
 

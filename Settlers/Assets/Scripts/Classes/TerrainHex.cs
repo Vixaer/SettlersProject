@@ -54,6 +54,11 @@ public class TerrainHex : NetworkBehaviour
         numberToken = value;
         transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tokensSprites[value - 1];
     }
+
+    public void setTileNumber(int i)
+    {
+        numberToken = i;
+    }
     void OnChangeRobber(bool value)
     {
         isRobber = value;
