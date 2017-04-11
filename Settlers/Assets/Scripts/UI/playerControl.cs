@@ -32,6 +32,7 @@ public class playerControl : NetworkBehaviour {
     public GameObject selectedInter;
     public bool desertSelectKnight = false;
     public bool desertMoveKnight = false;
+    public bool intrigue = false;
 
     private bool pickMetropolis = false;
 	private bool playInventor = false;
@@ -504,6 +505,10 @@ public class playerControl : NetworkBehaviour {
                 {
                     CmdDesertMoveKnight(gameObject, hit.collider.gameObject);
                 }
+                else if (intrigue)
+                {
+                    CmdIntrigue(gameObject, hit.collider.gameObject);
+                }
 
                 else if (pickMetropolis)
                 {
@@ -795,6 +800,12 @@ public class playerControl : NetworkBehaviour {
             gameState.GetComponent<Game>().moveKnightCheck(player, inter);
         }
     }
+    [Command]
+    void CmdIntrigue(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().Intrigue(player, inter);
+    }
+
 
     [Command]
     void CmdDesertKnight(GameObject player, GameObject inter)
@@ -1134,6 +1145,19 @@ public class playerControl : NetworkBehaviour {
     {
         this.forceMoveKnight = false;
     }
+
+    [ClientRpc]
+    public void RpcStartSelectIntrigue()
+    {
+        intrigue = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndSelectIntrigue()
+    {
+        intrigue = false;
+    }
+
     [ClientRpc]
     public void RpcUpdateTurn(string value)
     {

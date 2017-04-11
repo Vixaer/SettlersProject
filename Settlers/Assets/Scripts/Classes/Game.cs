@@ -299,6 +299,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.TurnRobberOnly: playerTurn += " Move Robber "; break;
                 case GamePhase.TurnPirateOnly: playerTurn += " Move Pirate "; break;
                 case GamePhase.TurnDesertKnight: playerTurn += " Deserter "; break;
+                case GamePhase.Intrigue: playerTurn += " Intrigue "; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -1966,8 +1967,12 @@ public class Game : NetworkBehaviour
 		if (checkCorrectPlayer(player) && currentPhase == GamePhase.ForcedKnightMove)
         {
             logAPlayer(player, "Opponent must move his displaced knight first.");
-        }																			 		
-        if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate && currentPhase != GamePhase.TurnDesertKnight)
+        }
+        else if (checkCorrectPlayer(player) && currentPhase == GamePhase.Intrigue)
+        {
+            logAPlayer(player, "Select a knight to displace first");
+        }
+        else if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate && currentPhase != GamePhase.TurnDesertKnight)
         {
             if (currentPhase != GamePhase.TurnDiceRolled)
             {
@@ -2349,7 +2354,7 @@ public class Game : NetworkBehaviour
                         }
                         else
                         {
-                            logAPlayer(player, "No opponents have knights");
+                            logAPlayer(player, "No opponents have knights, can't play this card");
                         }
 
                         
@@ -2363,8 +2368,33 @@ public class Game : NetworkBehaviour
                     }
                 case ProgressCardKind.IntrigueCard:
                     {
-                        cardPlayer.cardsInHand.Remove(k);
-                        gameDices.returnCard(k);
+                        bool atLeastOneKnight = false;
+                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
+                        while (keys.MoveNext())
+                        {
+                            Player temp = (Player)keys.Current;
+                            foreach (IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
+                            {
+                                atLeastOneKnight = true;
+                                break;
+                            }
+
+                        }
+
+                        if (atLeastOneKnight)
+                        {
+                            tempPhase = currentPhase;
+                            currentPhase = GamePhase.Intrigue;
+                            player.GetComponent<playerControl>().RpcStartSelectIntrigue();
+                            cardPlayer.cardsInHand.Remove(k);
+                            gameDices.returnCard(k);
+                            playedDeserter = cardPlayer;
+                        }
+                        else
+                        {
+                            logAPlayer(player, "No opponents have knights, can't play this card");
+                        }
+
                         break;
                     }
                 case ProgressCardKind.SaboteurCard:
@@ -2459,6 +2489,69 @@ public class Game : NetworkBehaviour
         else
         {
             logAPlayer(player, "Can't play cards when it isn't your turn.");
+        }
+    }
+
+    public void Intrigue(GameObject player, GameObject inter)
+    {
+        Intersection i = inter.GetComponent<Intersection>();
+        Player p = gamePlayers[player];
+
+        if (i.owned)
+        {
+            IntersectionUnit temp = i.positionedUnit;
+            if (!temp.Owner.Equals(p))
+            {
+                // Check that it actually is a knight
+                var byebye = temp as Knight;
+
+                if (byebye != null)
+                {
+                    //check to see if knight is connected to at least one of your roads
+                    bool connectCheck = false;
+                    foreach (Edges e in i.paths)
+                    {
+                        if (e.belongsTo == null)
+                        {
+                            continue;
+                        } else if (e.belongsTo.Equals(p))
+                        {
+                            connectCheck = true;
+                            break;
+                        }
+                    }
+                    if (connectCheck)
+                    {
+                        Player opponent = byebye.Owner;
+                        logAPlayer(playerObjects[opponent], "Because " + p.name + " has used the Intrigue card, your knight has been displaced and you must move it!");
+                        opponent.storedKnight = byebye;
+                        opponent.storedInter = i;
+                        opponent.hasToMoveKnight = true;
+                        i.RemoveKnight(opponent, false);
+                        tempPhase = currentPhase;
+                        currentPhase = GamePhase.ForcedKnightMove;
+                        ForcedMovePlayer = opponent;
+                        updateTurn();
+                        playerObjects[opponent].GetComponent<playerControl>().RpcBeginForcedKnightMove();
+                        player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                    }
+                    else
+                    {
+                        logAPlayer(player, "Opponent knight must be connected to one of your roads!");
+                    }
+                }
+                else
+                {
+                    logAPlayer(player, "Select an opponent knight!");
+                }
+            }
+            else
+            {
+                logAPlayer(player, "Select an opponent knight!");
+            }
+        } else
+        {
+            logAPlayer(player, "Select an opponent knight!");
         }
     }
 
