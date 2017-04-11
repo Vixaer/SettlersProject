@@ -33,6 +33,8 @@ public class Player {
     public bool hasMerchant { get; private set; }
     public bool hasLongestTradeRoute { get; private set; }
 
+    public bool hasBoot = false;
+
     public int availableWalls { get; set; }
 
     //temp variables for forced knight moves
