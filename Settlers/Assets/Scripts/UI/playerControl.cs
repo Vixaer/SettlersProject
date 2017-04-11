@@ -16,25 +16,26 @@ public class playerControl : NetworkBehaviour {
     public bool buildShip = false;
     public bool moveShip = false;
     public bool shipSelected = false;
-    public bool movedShipThisTurn = false;						  
+    public bool movedShipThisTurn = false;
     public Color oldEdgeColor;
 
     public bool buyWithGold = true;
-	
-	
+    public bool TradeCard = false;
+
+
     public bool interactKnight = false;
     public bool activateKnight = false;
     public bool upgradeKnight = false;
     public bool moveKnight = false;
     public bool buildKnight = false;
-	
+
     private bool forceMoveKnight = false;
     public bool knightSelected = false;
     public Color oldKnightColor;
     public GameObject selectedInter;
 
     private bool pickMetropolis = false;
-	private bool playInventor = false;
+    private bool playInventor = false;
     private GameObject[] tilesToSwap = null;
     private GameObject gameState;
     private bool isSeletionOpen = false;
@@ -256,7 +257,7 @@ public class playerControl : NetworkBehaviour {
     public void setToBuildRoads()
     {
         buildShip = false;
-		moveShip = false;	   
+        moveShip = false;
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
     }
@@ -549,7 +550,7 @@ public class playerControl : NetworkBehaviour {
                     {
                         CmdMoveRobber(gameObject, hit.collider.gameObject);
                     }
-                }              
+                }
             }
             if (hit.collider.gameObject.CompareTag("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight)
             {
@@ -577,7 +578,7 @@ public class playerControl : NetworkBehaviour {
         }
 
     }
-	
+
     [Command]
     void CmdAcceptP2PTradeRequest()
     {
@@ -841,9 +842,9 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().rollDice(player);
     }
     [Command]
-    void CmdSendSelection(GameObject player, int value)
+    void CmdSendSelection(GameObject player, int value, bool toggle)
     {
-        gameState.GetComponent<Game>().updateSelection(player, value);
+        gameState.GetComponent<Game>().updateSelection(player, value, toggle);
     }
     [Command]
     void CmdEndTurn(GameObject player)
@@ -862,7 +863,7 @@ public class playerControl : NetworkBehaviour {
 
     }
     [Command]
-    void CmdBuyFromBank(GameObject player, int toBuy,bool currency)
+    void CmdBuyFromBank(GameObject player, int toBuy, bool currency)
     {
         gameState.GetComponent<Game>().BuyFromBank(player, toBuy, currency);
     }
@@ -927,17 +928,17 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().stealPlayer(gameObject, name);
     }
-	[Command]
+    [Command]
     public void CmdInitiateCardChoice(GameObject player)
     {
         gameState.GetComponent<Game>().initiateCardChoice(gameObject);
     }
     [Command]
-    public void CmdGetCardChoice(GameObject player,string cardName)
+    public void CmdGetCardChoice(GameObject player, string cardName)
     {
         gameState.GetComponent<Game>().CardChoice(gameObject, cardName);
     }
-	[Command]
+    [Command]
     public void CmdSwapTokens(GameObject[] tiles)
     {
         gameState.GetComponent<Game>().SwapTokens(gameObject, tiles);
@@ -1043,15 +1044,29 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcAskDesiredAquaResource()
     {
+        if (!isLocalPlayer) return;
         isSeletionOpen = true;
         SelectionWindow.gameObject.SetActive(true);
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Clear();
+
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Wool" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Lumber" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Ore" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Brick" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Grain" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Coin" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Cloth" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Paper" });
+
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 1;
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 0;
         int selectedValue = 0;
         while (isSeletionOpen)
         {
             selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
         }
         SelectionWindow.gameObject.SetActive(false);
-        CmdSendSelection(gameObject, selectedValue);
+        CmdSendSelection(gameObject, selectedValue, TradeCard);
     }
     [ClientRpc]
     public void RpcCloseTrade(bool accepted)
@@ -1137,6 +1152,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcAddProgressCard(ProgressCardKind value)
     {
+        if (!isLocalPlayer) return;
         //adds a card to panel when received;
         GameObject tempCard = Instantiate(cardPrefab);
         //set the card value and it will change its sprite accordingly
@@ -1148,6 +1164,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcRemoveProgressCard(ProgressCardKind value)
     {
+        if (!isLocalPlayer) return;
         CardControl[] tempCards = CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).GetComponentsInChildren<CardControl>();
         foreach (CardControl card in tempCards)
         {
@@ -1158,7 +1175,58 @@ public class playerControl : NetworkBehaviour {
             }
         }
     }
+    [ClientRpc]
+    public void RpcResourceMonopoly()
+    {
+        if (!isLocalPlayer) return;
+        isSeletionOpen = true;
+        SelectionWindow.gameObject.SetActive(true);
+        int selectedValue = 0;
+        SelectionWindow.transform.GetChild(3).GetComponent<Text>().text = "Select the resource you wish to steal 2 of from all players.";
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Clear();
 
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Wool" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Lumber" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Ore" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Brick" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Grain" });
+
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 1;
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 0;
+        while (isSeletionOpen)
+        {
+            selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
+        }
+        SelectionWindow.gameObject.SetActive(false);
+        CmdSendSelection(gameObject, selectedValue, TradeCard);
+        TradeCard = false;
+        SelectionWindow.transform.GetChild(3).GetComponent<Text>().text = "";
+    }
+    [ClientRpc]
+    public void RpcTradeMonopoly()
+    {
+        if (!isLocalPlayer) return;
+        isSeletionOpen = true;
+        SelectionWindow.gameObject.SetActive(true);
+        int selectedValue = 0;
+        SelectionWindow.transform.GetChild(3).GetComponent<Text>().text = "Select the commodity you wish to steal from all players.";
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Clear();
+
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Coin" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Cloth" });
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = "Paper" });
+
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 1;
+        SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value = 0;
+        while (isSeletionOpen)
+        {
+            selectedValue = SelectionWindow.transform.GetChild(1).GetComponent<Dropdown>().value;
+        }
+        SelectionWindow.gameObject.SetActive(false);
+        CmdSendSelection(gameObject, selectedValue+5, TradeCard);
+        TradeCard = false;
+        SelectionWindow.transform.GetChild(3).GetComponent<Text>().text = "";
+    }
     [ClientRpc]
     public void RpcDiscardTime(int discardAmount, string ExtraInfo)
     {
@@ -1181,6 +1249,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcUpdateSliders(int level, int kind)
     {
+        if (!isLocalPlayer) return;
         if (level == 1)
         {
             improvementPanel.transform.GetChild(kind).GetChild(0).GetChild(1).GetChild(0).gameObject.SetActive(true);
@@ -1191,6 +1260,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcVictoryPanel(string message)
     {
+        if (!isLocalPlayer) return;
         this.victoryPanel.SetActive(true);
         this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
     }
@@ -1221,6 +1291,7 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcLogP2PTradeDebugText(string txt, bool red)
     {
+
         if (red)
         {
             P2PTrade_DebugText.color = Color.red;

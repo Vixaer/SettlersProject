@@ -10,6 +10,7 @@ public class TerrainHex : NetworkBehaviour
     public Sprite[] tokensSprites;
     public Sprite robberSprite;
     public Sprite pirateSprite;
+    public Sprite merchantSprite;
     public Sprite lakeSprite;
     public Sprite fishingSprite;
 
@@ -30,6 +31,9 @@ public class TerrainHex : NetworkBehaviour
 
     [SyncVar(hook = "OnChangeFishingSpot")]
     public bool hasFishing = false;
+
+    [SyncVar(hook = "OnChangeMerchant")]
+    public bool hasMerchant = false;
 
     public Intersection[] corners;
     public Edges[] myEdges;
@@ -186,6 +190,10 @@ public class TerrainHex : NetworkBehaviour
             transform.GetComponent<SpriteRenderer>().sprite = fishingSprite;
         }
 
+    }
+    public void OnChangeMerchant(bool value)
+    {
+        hasMerchant = value;
     }
     public void setTile(int terrainKind, int tokenValue)
     {
