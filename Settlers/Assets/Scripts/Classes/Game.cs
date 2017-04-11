@@ -888,7 +888,7 @@ public class Game : NetworkBehaviour
                     else
                     {
                         logAPlayer(player, "You've reached the 5 settlement cap, try upgrading a city before attempting to place another settlement");
-                    }				
+                    }
                 }
                 else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
                 {
@@ -910,7 +910,7 @@ public class Game : NetworkBehaviour
                         {
                             logAPlayer(player, "You've reached the cities cap (4).");
                         }
-                        else if(currentBuilder.HasCityUpgradeResources(medCard) && currentBuilder.HasCities())
+                        else if (currentBuilder.HasCityUpgradeResources(medCard) && currentBuilder.HasCities())
                         {
                             currentBuilder.payCityResources(medCard);
                             inter.UpgradeSettlement(currentBuilder);
@@ -924,41 +924,43 @@ public class Game : NetworkBehaviour
                             updatePlayerResourcesUI(player);
                             logAPlayer(player, "You upgraded your settlement into a city!");
                             CheckForVictory();
-                        }				   
+                        }
                     }
-					else if ( village != null && (village.myKind == VillageKind.City || village.myKind == VillageKind.TradeMetropole || village.myKind == VillageKind.PoliticsMetropole || village.myKind == VillageKind.ScienceMetropole))
-					{
-						bool engCard = false;
-						if (CardsInPlay.Contains (ProgressCardKind.EngineerCard)) {
-							engCard = true;
-						} 
+                    else if (village != null && (village.myKind == VillageKind.City || village.myKind == VillageKind.TradeMetropole || village.myKind == VillageKind.PoliticsMetropole || village.myKind == VillageKind.ScienceMetropole))
+                    {
+                        bool engCard = false;
+                        if (CardsInPlay.Contains(ProgressCardKind.EngineerCard)) {
+                            engCard = true;
+                        }
 
-						if (!currentBuilder.HasWallResources(engCard))
-						{
-							logAPlayer(player, "Your resources are insufficient for building a city wall.");
-						}
-						else if (!currentBuilder.HasWalls())
-						{
-							logAPlayer(player, "You've reached the city walls cap (3).");
-						}
+                        if (!currentBuilder.HasWallResources(engCard))
+                        {
+                            logAPlayer(player, "Your resources are insufficient for building a city wall.");
+                        }
+                        else if (!currentBuilder.HasWalls())
+                        {
+                            logAPlayer(player, "You've reached the city walls cap (3).");
+                        }
 
-						else if (inter.getType() == 3)
-						{
-							logAPlayer(player, "There is already a city wall here.");
-						}
+                        else if (inter.getType() == 3)
+                        {
+                            logAPlayer(player, "There is already a city wall here.");
+                        }
 
-						else if (currentBuilder.HasWallResources (engCard) && currentBuilder.HasWalls ()) 
-						{
-							currentBuilder.payWallResources (engCard);
-							inter.BuildWall (currentBuilder);
+                        else if (currentBuilder.HasWallResources(engCard) && currentBuilder.HasWalls())
+                        {
+                            currentBuilder.payWallResources(engCard);
+                            inter.BuildWall(currentBuilder);
 
-							CardsInPlay.Remove(ProgressCardKind.EngineerCard);
-							updatePlayerResourcesUI(player);
-							logAPlayer(player, "You built a city wall!");
+                            CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+                            updatePlayerResourcesUI(player);
+                            logAPlayer(player, "You built a city wall!");
+                        }
+                    }
+                    CheckForLongestRoad();
+                    updateTurn();
                 }
             }
-            CheckForLongestRoad();
-            updateTurn();
         }
     }
 
@@ -1044,12 +1046,18 @@ public class Game : NetworkBehaviour
 					var knight = inter.positionedUnit as Knight;
 					// Upgrading knight
 
-					if (knight != null) {
+					if (knight != null)
+                    {
 						if (!currentBuilder.HasKnightResources ()) 
-						{	logAPlayer (player, "Your resources are insufficient for upgrading this Knight.");						} 
-						} else if (knight.level == KnightLevel.Mighty) {
+						{
+                            logAPlayer (player, "Your resources are insufficient for upgrading this Knight."); 
+						}
+                        else if (knight.level == KnightLevel.Mighty)
+                        {
 							logAPlayer (player, "Can't upgrade further he's already the mightiest.");
-						} else if (knight.level == KnightLevel.Basic) {
+						}
+                        else if (knight.level == KnightLevel.Basic)
+                        {
 							if (currentBuilder.HasKnights (KnightLevel.Strong)) {
 								currentBuilder.PayKnightResources ();
 								knight.upgradeKnight ();
@@ -1057,40 +1065,48 @@ public class Game : NetworkBehaviour
 								currentBuilder.AddKnight (KnightLevel.Basic);
 								currentBuilder.RemoveKnight (KnightLevel.Strong);
 								updatePlayerResourcesUI (player);
-							} else {
+							}
+                            else
+                            {
 								logAPlayer (player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
 							}						 
 
-						} else if (knight.level == KnightLevel.Strong) {
-							if (currentBuilder.cityImprovementLevels [CommodityKind.Coin] < 3) {
+						}
+                        else if (knight.level == KnightLevel.Strong)
+                        {
+							if (currentBuilder.cityImprovementLevels [CommodityKind.Coin] < 3)
+                            {
 								logAPlayer (player, "You need a fortress to create mighty knights.");
-							} else if (currentBuilder.HasKnights (KnightLevel.Mighty)) {
+							}
+                            else if (currentBuilder.HasKnights (KnightLevel.Mighty))
+                            {
 								currentBuilder.PayKnightResources ();
 								knight.upgradeKnight ();
 								inter.knight = KnightLevel.Mighty;
 								currentBuilder.AddKnight (KnightLevel.Strong);
 								currentBuilder.RemoveKnight (KnightLevel.Mighty);
 								updatePlayerResourcesUI (player);
-							} else {
+							}
+                            else
+                            {
 								logAPlayer (player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
 							}
-						}
+					}
 
-					}
-					else
-					{				 
-						logAPlayer(player, "You must select a knight!");
-					}
 				}
 				else
-				{
-					logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+				{				 
+					logAPlayer(player, "You must select a knight!");
 				}
+			}
+			else
+			{
+				logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+			}
 			}
 		}
         else
         {
-
             //check for activation
             if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
             {
@@ -1136,6 +1152,7 @@ public class Game : NetworkBehaviour
         CheckForLongestRoad();
         updateTurn();
     }
+
     //buildRoad ran on server from playerCOntrol class with authority
     //runs the build Road on the Edge selected by the player
     public void buildRoad(GameObject player, GameObject edge)
@@ -2642,12 +2659,15 @@ public class Game : NetworkBehaviour
                     //check to see if owned or else bleongs to is obviously null and return null pointer
                     if (e.owned && e.isShip == true)
                     {
-						if (e.belongsTo.Equals(player) ){
-							check = true;
-							break;
-						}
+                        if (e.belongsTo.Equals(player))
+                        {
+                            check = true;
+                            break;
+                        }
                     }
+                }
             }
+            
         }
         return check;
     }
