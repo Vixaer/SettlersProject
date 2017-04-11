@@ -60,7 +60,7 @@ public class Player {
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
         settlementPool = new List<VillageKind>();
-        cardsInHand = new List<ProgressCardKind>();
+        cardsInHand = new List<ProgressCardKind>() { ProgressCardKind.CraneCard, ProgressCardKind.InventorCard };
         knightTokens = new List<KnightLevel>();
 
         //add the tokens in the pool
@@ -198,10 +198,10 @@ public class Player {
         }
     }
 
-    public void improveCity(CommodityKind kind)
+    public void improveCity(CommodityKind kind, int cost)
     {
         //pay and upgrade
-        PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+        PayCommoditys(cost, kind);
         cityImprovementLevels[kind] += 1;
     }
 

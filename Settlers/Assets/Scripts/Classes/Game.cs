@@ -74,6 +74,10 @@ public class Game : NetworkBehaviour
         gamePlayers.Add(setPlayer, temp);
         playerObjects.Add(temp, setPlayer);
         updatePlayerResourcesUI(setPlayer);
+        foreach (ProgressCardKind k in temp.cardsInHand)
+        {
+            setPlayer.GetComponent<playerControl>().RpcAddProgressCard(k);
+        }
         reverseOrder = gamePlayers.Reverse().ToDictionary(x => x.Key, x => x.Value);
     }
 
@@ -1200,7 +1204,9 @@ public class Game : NetworkBehaviour
                 case ProgressCardKind.CraneCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
+                        CardsInPlay.Add(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.EngineerCard:
@@ -1213,6 +1219,9 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        logAPlayer(player, "Select two number tokens to swap.");
+                        player.GetComponent<playerControl>().RpcBeginInventor();
                         break;
                     }
                 case ProgressCardKind.IrrigationCard:
@@ -1243,7 +1252,7 @@ public class Game : NetworkBehaviour
                     }
                 case ProgressCardKind.MedicineCard:
                     {
-                        if(cardPlayer.HasCities() && cardPlayer.HasCityUpgradeResources(true))
+                        if(cardPlayer.HasCities() && cardPlayer.HasCityUpgradeResources(true) && !CardsInPlay.Contains(ProgressCardKind.MedicineCard))
                         {
                             CardsInPlay.Add(k);
                             player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
@@ -1252,7 +1261,7 @@ public class Game : NetworkBehaviour
                         }
                         else
                         {
-                            logAPlayer(player, "You will waste the card as you can't build due to lack of resources or city cap.");
+                            logAPlayer(player, "You will waste the card as you can't build due to lack of resources or city cap OR a medicine card has already been played.");
                         }
                         break;
                     }
@@ -1431,6 +1440,22 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Can't play cards when it isn't your turn.");
         }
     }
+
+    public void SwapTokens(GameObject player, GameObject[] tiles)
+    {
+        var invalidNumbers = new int[5] { 1, 2, 6, 8, 12 };
+        if (invalidNumbers.Contains(tiles[0].GetComponent<TerrainHex>().numberToken) || invalidNumbers.Contains(tiles[1].GetComponent<TerrainHex>().numberToken))
+        {
+            logAPlayer(player, "One or more of the tiles you have selected is invalid. Please select another pair.");
+            player.GetComponent<playerControl>().RpcEndInventor(false);
+            return;
+        }
+        var temp = tiles[0].GetComponent<TerrainHex>().numberToken;
+        tiles[0].GetComponent<TerrainHex>().setTile((int)tiles[0].GetComponent<TerrainHex>().myTerrain, tiles[1].GetComponent<TerrainHex>().numberToken);
+        tiles[1].GetComponent<TerrainHex>().setTile((int)tiles[1].GetComponent<TerrainHex>().myTerrain, temp);
+        logAPlayer(player, "Tokens successfully swapped");
+        player.GetComponent<playerControl>().RpcEndInventor(true);
+    }
     
     public void improveCity(GameObject player, int kind)
     {
@@ -1470,20 +1495,26 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Can't upgrade without a city. Get a city first!");
         }
         else
-        {        
+        {     
             int level = currentUpgrader.GetCityImprovementLevel((CommodityKind)kind);
+            int cost = level + 1;
+            if (CardsInPlay.Contains(ProgressCardKind.CraneCard))
+            {
+                cost--;
+                CardsInPlay.Remove(ProgressCardKind.CraneCard);
+            }
             if(level == 5)
             {
                 logAPlayer(player, "Your improvement level in this category is MAXED!");
             }
-            else if (!currentUpgrader.HasCommodities(level + 1, (CommodityKind)kind))
+            else if (!currentUpgrader.HasCommodities(cost, (CommodityKind)kind))
             {
-                logAPlayer(player, "You dont have the Commodities to upgrade you need " + (level+1) + " of " + ((CommodityKind)kind).ToString() + ".");
+                logAPlayer(player, "You dont have the Commodities to upgrade you need " + (cost) + " of " + ((CommodityKind)kind).ToString() + ".");
              
             }
             else
             {
-                currentUpgrader.improveCity((CommodityKind)kind);
+                currentUpgrader.improveCity((CommodityKind)kind, cost);
                 logAPlayer(player, "You just improved your cities!");
                 player.GetComponent<playerControl>().RpcUpdateSliders(level + 1, kind);
                 updatePlayerResourcesUI(player);

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,6 +17,8 @@ public class playerControl : NetworkBehaviour {
     public bool buildShip = false;
     public bool interactKnight = false;
     private bool pickMetropolis = false;
+    private bool playInventor = false;
+    private GameObject[] tilesToSwap = null;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
@@ -381,15 +384,29 @@ public class playerControl : NetworkBehaviour {
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
-                if(hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                if (playInventor)
                 {
-                    CmdMovePirate(gameObject, hit.collider.gameObject);
+                    if (tilesToSwap[0] == null)
+                    {
+                        tilesToSwap[0] = hit.collider.gameObject;
+                    }
+                    else
+                    {
+                        tilesToSwap[1] = hit.collider.gameObject;
+                        CmdSwapTokens(tilesToSwap);
+                    }
                 }
                 else
                 {
-                    CmdMoveRobber(gameObject, hit.collider.gameObject);
-                }
-                
+                    if (hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                    {
+                        CmdMovePirate(gameObject, hit.collider.gameObject);
+                    }
+                    else
+                    {
+                        CmdMoveRobber(gameObject, hit.collider.gameObject);
+                    }
+                }              
             }
         }
     }
@@ -611,6 +628,12 @@ public class playerControl : NetworkBehaviour {
     public void CmdGetGameData()
     {
         gameState.GetComponent<Game>().SaveGameData(this);
+    }
+
+    [Command]
+    public void CmdSwapTokens(GameObject[] tiles)
+    {
+        gameState.GetComponent<Game>().SwapTokens(gameObject, tiles);
     }
 
     [ClientRpc]
@@ -864,12 +887,21 @@ public class playerControl : NetworkBehaviour {
 	[ClientRpc]
 	public void RpcSetP2PTradePanelActive(bool active){
 		P2PTradePanel.SetActive (active);
-
-
-
-
-
 	}
+
+    [ClientRpc]
+    public void RpcBeginInventor()
+    {
+        this.playInventor = true;
+        this.tilesToSwap = new GameObject[2] { null, null };
+    }
+
+    [ClientRpc]
+    public void RpcEndInventor(bool success)
+    {
+        this.playInventor = !success;
+        this.tilesToSwap = new GameObject[2] { null, null };
+    }
 
 	/**
 	 * Reset the input field of P2P Trade Panel 
