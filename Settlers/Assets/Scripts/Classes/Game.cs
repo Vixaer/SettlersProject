@@ -1956,6 +1956,8 @@ public class Game : NetworkBehaviour
     //allows client to actually move the robber
     public void moveRobber(GameObject player, GameObject tile)
     {
+        Player mover = (Player)gamePlayers[player];
+        List<String> names = new List<string>();
         //TO-DO add constraint for first barbarian attack when they will be implemented
         if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
         {
@@ -1966,9 +1968,23 @@ public class Game : NetworkBehaviour
             else
             {
                 robberTile.GetComponent<TerrainHex>().isRobber = false;
+                foreach(Intersection inter in tile.GetComponent<TerrainHex>().corners)
+                {
+                    if(inter.owned && inter.positionedUnit is Village && !inter.positionedUnit.Owner.Equals(mover))
+                    {
+                        if (!names.Contains(inter.positionedUnit.Owner.name))
+                        {
+                            names.Add(inter.positionedUnit.Owner.name);
+                        }                    
+                    }
+                }
                 robberTile = tile;
                 tile.GetComponent<TerrainHex>().isRobber = true;
                 currentPhase = GamePhase.TurnFirstPhase;
+                if (names.Count > 0)
+                {
+                    player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                }    
                 updateTurn();
             }
         }
