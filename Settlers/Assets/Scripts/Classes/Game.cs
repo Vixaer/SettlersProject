@@ -294,7 +294,9 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
                 case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
-				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;																												
+				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;
+                case GamePhase.TurnRobberOnly: playerTurn += " Move Robber "; break;
+                case GamePhase.TurnPirateOnly: playerTurn += " Move Pirate "; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -1959,7 +1961,7 @@ public class Game : NetworkBehaviour
         Player mover = (Player)gamePlayers[player];
         List<String> names = new List<string>();
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player))
+        if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnRobberOnly) && checkCorrectPlayer(player))
         {
             if (tile.GetComponent<TerrainHex>().isRobber == true)
             {
@@ -2024,7 +2026,7 @@ public class Game : NetworkBehaviour
     {
         //TO-DO
         //TO-DO add constraint for first barbarian attack when they will be implemented
-        if (currentPhase == GamePhase.TurnRobberPirate && checkCorrectPlayer(player) && firstBarbAttack)
+        if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnPirateOnly) && checkCorrectPlayer(player) && firstBarbAttack)
         {
             if (tile.GetComponent<TerrainHex>().isPirate == true)
             {
