@@ -2961,7 +2961,7 @@ public class Game : NetworkBehaviour
             foreach (GameObject tile in boardTile)
             {
                 TerrainHex tempTile = tile.GetComponent<TerrainHex>();
-                if (tempTile.numberToken == sum && !tempTile.isRobber)
+                if (tempTile.numberToken == sum && !tempTile.isRobber && !tempTile.isPirate)
                 {
                     foreach (Intersection connected in tile.GetComponent<TerrainHex>().corners)
                     {
