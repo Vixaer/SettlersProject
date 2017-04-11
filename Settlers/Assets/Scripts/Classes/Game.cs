@@ -2564,7 +2564,7 @@ public class Game : NetworkBehaviour
                     updatePlayerResourcesUI(player);
                     return;
             }
-            if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind])
+            if (metropolis == null || metropolis.GetComponent<Intersection>().positionedUnit.Owner.cityImprovementLevels[(CommodityKind)kind] < currentUpgrader.cityImprovementLevels[(CommodityKind)kind] + 1)
             {
                 willBeMetropolis = true;
             }
