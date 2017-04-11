@@ -3382,7 +3382,7 @@ public class Game : NetworkBehaviour
             }
             else
             {
-                playerObjects[bestPlayer].GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
+                playerObjects[bestPlayer].GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck(),true);
             }
             defenders++;
         }
@@ -3391,11 +3391,8 @@ public class Game : NetworkBehaviour
             foreach (Player p in mostContributed)
             {
                 var pGO = playerObjects[p];
-<<<<<<< HEAD
                 pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(null, null, null, true);
-=======
-                pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(gameDices.returnPoliticDeck(), gameDices.returnTradeDeck(), gameDices.returnScienceDeck());
->>>>>>> refs/remotes/origin/master
+
             }
         }
     }
