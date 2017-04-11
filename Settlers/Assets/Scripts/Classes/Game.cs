@@ -1138,6 +1138,36 @@ public class Game : NetworkBehaviour
                             updatePlayerResourcesUI(player);
                             knight.setFirstTurn(false);
                             logAPlayer(player, "You have activated this knight.");
+                            bool pirate = false;
+                            bool robber = false;
+                            foreach (TerrainHex h in inter.linked)
+                            {
+                                if (h.isPirate) pirate = true;
+                                if (h.isRobber) robber = true;
+                            }
+
+                            if (pirate && robber)
+                            {
+                                knight.deactivateKnight();
+                                inter.knightActive = false;
+                                logAPlayer(player, "Choose place to move pirate or robber!");
+                                currentPhase = GamePhase.TurnRobberPirate;
+
+                            }
+                            else if (!pirate && robber)
+                            {
+                                knight.deactivateKnight();
+                                inter.knightActive = false;
+                                logAPlayer(player, "Choose place to move robber!");
+                                currentPhase = GamePhase.TurnRobberOnly;
+                            }
+                            else if (pirate && !robber)
+                            {
+                                knight.deactivateKnight();
+                                inter.knightActive = false;
+                                logAPlayer(player, "Choose place to move pirate!");
+                                currentPhase = GamePhase.TurnPirateOnly;
+                            }
                         }
                     }
                     else if (knight != null && knight.isKnightActive())
