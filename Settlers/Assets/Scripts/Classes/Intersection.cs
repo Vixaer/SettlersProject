@@ -103,6 +103,18 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+
+    public void DowngradeCity(Player player)
+    {
+        type = 1;
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
     #endregion
     public void BuildKnight(Player player)
     {

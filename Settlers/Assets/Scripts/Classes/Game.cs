@@ -3428,7 +3428,19 @@ public class Game : NetworkBehaviour
             broadcastMessage(p.name + " was punished for providing the least active knights. A city has been downgraded.");
             List<Village> cities = p.getCities();
             int ind = rng.Next(cities.Count);
+            if (cities[ind].cityWall)
+                p.availableWalls++;
             cities[ind].downgradeToSettlement();
+            // Update the pools
+            p.AddCity();
+            p.RemoveSettlement();
+            var inter = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit == cities[ind]);
+            if (inter != null)
+            {
+                var i = inter.GetComponent<Intersection>();
+                i.DowngradeCity(p);
+            }
+            updatePlayerResourcesUI(playerObjects[p]);
         }
     }
 
