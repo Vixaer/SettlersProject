@@ -62,7 +62,13 @@ public class Game : NetworkBehaviour
 
     public void ValidateName(GameObject player, string name)
     {
-        player.transform.GetComponent<playerControl>().isValidName = !isLoaded || tempPlayersByName.ContainsKey(name);
+        var isValidName = !isLoaded || tempPlayersByName.ContainsKey(name);
+        player.transform.GetComponent<playerControl>().isValidName = isValidName;
+        if (isValidName)
+        {
+            setPlayerName(player, name);
+        }
+        player.GetComponent<playerControl>().RpcNameCheck(isValidName);										   
     }
 
     //setup references for the game
@@ -91,7 +97,7 @@ public class Game : NetworkBehaviour
                 // All players have joined, we can try setting the current player
                 this.currentPlayer = gamePlayers.Values.GetEnumerator();
                 currentPlayer.MoveNext();
-                while (((Player)currentPlayer.Current).name != currentPlayerString)
+                while(((Player)currentPlayer.Current).name != currentPlayerString)
                 {
                     currentPlayer.MoveNext();
                 }
@@ -285,6 +291,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.SetupRoundTwo: playerTurn += " Second Setup"; break;
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
                 case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
+				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;																												
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -403,7 +410,6 @@ public class Game : NetworkBehaviour
         updatePlayerResourcesUI(player);
 
     }
-
     public void P2PTradeAccept(GameObject player)
     {
 
@@ -463,7 +469,6 @@ public class Game : NetworkBehaviour
             {
                 enoughResource = false;
             }
-
             if (enoughResource == false)
             {
                 player.GetComponent<playerControl>().RpcLogP2PTradeDebugText("You do not have enough Resource ", true);
@@ -495,11 +500,10 @@ public class Game : NetworkBehaviour
         }
     }
 
-    public void playerAcceptedTrade(GameObject fromPlayer, GameObject toPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
+    public void playerAcceptedTrade(GameObject fromPlayer, GameObject toPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)					  
     {
         Player fPlayer = gamePlayers[fromPlayer];
         Player tPlayer = gamePlayers[toPlayer];
-
         bool enoughResource = true;
         if (!tPlayer.HasResources(wantsBrick, ResourceKind.Brick))
         {
@@ -882,8 +886,7 @@ public class Game : NetworkBehaviour
                     else
                     {
                         logAPlayer(player, "You've reached the 5 settlement cap, try upgrading a city before attempting to place another settlement");
-                    }
-
+                    }				
                 }
                 else if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
                 {
@@ -899,13 +902,13 @@ public class Game : NetworkBehaviour
                         }
                         if (!currentBuilder.HasCityUpgradeResources(medCard))
                         {
-                            logAPlayer(player, "You're resources are insufficient for upgrading to a city.");
+                            logAPlayer(player, "Your resources are insufficient for upgrading to a city.");
                         }
                         else if (!currentBuilder.HasCities())
                         {
                             logAPlayer(player, "You've reached the cities cap (4).");
                         }
-                        else if (currentBuilder.HasCityUpgradeResources(medCard) && currentBuilder.HasCities())
+                        else if(currentBuilder.HasCityUpgradeResources(medCard) && currentBuilder.HasCities())
                         {
                             currentBuilder.payCityResources(medCard);
                             inter.UpgradeSettlement(currentBuilder);
@@ -919,9 +922,37 @@ public class Game : NetworkBehaviour
                             updatePlayerResourcesUI(player);
                             logAPlayer(player, "You upgraded your settlement into a city!");
                             CheckForVictory();
-                        }
-
+                        }				   
                     }
+					else if ( village != null && (village.myKind == VillageKind.City || village.myKind == VillageKind.TradeMetropole || village.myKind == VillageKind.PoliticsMetropole || village.myKind == VillageKind.ScienceMetropole))
+					{
+						bool engCard = false;
+						if (CardsInPlay.Contains (ProgressCardKind.EngineerCard)) {
+							engCard = true;
+						} 
+
+						if (!currentBuilder.HasWallResources(engCard))
+						{
+							logAPlayer(player, "Your resources are insufficient for building a city wall.");
+						}
+						else if (!currentBuilder.HasWalls())
+						{
+							logAPlayer(player, "You've reached the city walls cap (3).");
+						}
+
+						else if (inter.getType() == 3)
+						{
+							logAPlayer(player, "There is already a city wall here.");
+						}
+
+						else if (currentBuilder.HasWallResources (engCard) && currentBuilder.HasWalls ()) 
+						{
+							currentBuilder.payWallResources (engCard);
+							inter.BuildWall (currentBuilder);
+
+							CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+							updatePlayerResourcesUI(player);
+							logAPlayer(player, "You built a city wall!");
                 }
             }
             CheckForLongestRoad();
@@ -951,7 +982,6 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Can't build when it isn't your turn.");
         }
-
         if (build)
         {
             if (!hasLand && inter.knight == KnightLevel.None)
@@ -989,7 +1019,6 @@ public class Game : NetworkBehaviour
                         {
                             logAPlayer(player, "You need 1 wool and 1 ore to hire a basic knight.");
                         }
-
                     }
                     else
                     {
@@ -1003,79 +1032,60 @@ public class Game : NetworkBehaviour
             }
 
         }
+        else if (upgrade) {
+			
+			if (isOwned && inter.positionedUnit.Owner.Equals (currentBuilder)) 
+			{				
+				if (currentPhase == GamePhase.TurnFirstPhase) 
+				{
+					// Check that it actually is a knight
+					var knight = inter.positionedUnit as Knight;
+					// Upgrading knight
 
-        else if (upgrade)
-        {
+					if (knight != null) {
+						if (!currentBuilder.HasKnightResources ()) 
+						{	logAPlayer (player, "Your resources are insufficient for upgrading this Knight.");						} 
+						} else if (knight.level == KnightLevel.Mighty) {
+							logAPlayer (player, "Can't upgrade further he's already the mightiest.");
+						} else if (knight.level == KnightLevel.Basic) {
+							if (currentBuilder.HasKnights (KnightLevel.Strong)) {
+								currentBuilder.PayKnightResources ();
+								knight.upgradeKnight ();
+								inter.knight = KnightLevel.Strong;
+								currentBuilder.AddKnight (KnightLevel.Basic);
+								currentBuilder.RemoveKnight (KnightLevel.Strong);
+								updatePlayerResourcesUI (player);
+							} else {
+								logAPlayer (player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
+							}						 
 
-            if (isOwned && inter.positionedUnit.Owner.Equals(currentBuilder))
-            {
-                if (currentPhase == GamePhase.TurnFirstPhase)
-                {
-                    // Check that it actually is a knight
-                    var knight = inter.positionedUnit as Knight;
-                    // Upgrading knight
+						} else if (knight.level == KnightLevel.Strong) {
+							if (currentBuilder.cityImprovementLevels [CommodityKind.Coin] < 3) {
+								logAPlayer (player, "You need a fortress to create mighty knights.");
+							} else if (currentBuilder.HasKnights (KnightLevel.Mighty)) {
+								currentBuilder.PayKnightResources ();
+								knight.upgradeKnight ();
+								inter.knight = KnightLevel.Mighty;
+								currentBuilder.AddKnight (KnightLevel.Strong);
+								currentBuilder.RemoveKnight (KnightLevel.Mighty);
+								updatePlayerResourcesUI (player);
+							} else {
+								logAPlayer (player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
+							}
+						}
 
-                    if (knight != null)
-                    {
-                        if (!currentBuilder.HasKnightResources())
-                        {
-                            logAPlayer(player, "Your resources are insufficient for upgrading this Knight.");
-                        }
-                        else if (knight.level == KnightLevel.Mighty)
-                        {
-                            logAPlayer(player, "Can't upgrade further he's already the mightiest.");
-                        }
-                        else if (knight.level == KnightLevel.Basic)
-                        {
-                            if (currentBuilder.HasKnights(KnightLevel.Strong))
-                            {
-                                currentBuilder.PayKnightResources();
-                                knight.upgradeKnight();
-                                inter.knight = KnightLevel.Strong;
-                                currentBuilder.AddKnight(KnightLevel.Basic);
-                                currentBuilder.RemoveKnight(KnightLevel.Strong);
-                                updatePlayerResourcesUI(player);
-                            }
-                            else
-                            {
-                                logAPlayer(player, "Reached the strong cap(3) upgrade a strong knight before placing another.");
-                            }
-
-
-                        }
-                        else if (knight.level == KnightLevel.Strong)
-                        {
-                            if (currentBuilder.cityImprovementLevels[CommodityKind.Coin] < 3)
-                            {
-                                logAPlayer(player, "You need a fortress to create mighty knights.");
-                            }
-                            else if (currentBuilder.HasKnights(KnightLevel.Mighty))
-                            {
-                                currentBuilder.PayKnightResources();
-                                knight.upgradeKnight();
-                                inter.knight = KnightLevel.Mighty;
-                                currentBuilder.AddKnight(KnightLevel.Strong);
-                                currentBuilder.RemoveKnight(KnightLevel.Mighty);
-                                updatePlayerResourcesUI(player);
-                            }
-                            else
-                            {
-                                logAPlayer(player, "Reached the Mighty cap(3), you can't upgrade strongs anymore.");
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        logAPlayer(player, "You must select a knight!");
-                    }
-                }
-                else
-                {
-                    logAPlayer(player, "You can't upgrade or activate knights in this phase.");
-                }
-            }
-        }
+					}
+					else
+					{				 
+						logAPlayer(player, "You must select a knight!");
+					}
+				}
+				else
+				{
+					logAPlayer(player, "You can't upgrade or activate knights in this phase.");
+				}
+			}
+		}
         else
         {
 
@@ -1850,10 +1860,31 @@ public class Game : NetworkBehaviour
     public void endTurn(GameObject player)
     {
 
+		if (checkCorrectPlayer(player) && currentPhase == GamePhase.ForcedKnightMove)
+        {
+            logAPlayer(player, "Opponent must move his displaced knight first.");
+        }																			 		
         if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate)
         {
             if (currentPhase != GamePhase.TurnDiceRolled)
             {
+			player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
+
+				//Reset all knights' firstturn variables that are false since they were activated this turn
+				Player temp = gamePlayers[player];
+				foreach (IntersectionUnit k in temp.ownedUnits.Where(u => u is Knight)) {
+					Knight knight = (Knight) k;
+					knight.setFirstTurn (true);
+				}
+
+                // suppose player ends turn while selecting something...
+                if (temp.selectedShip != null)
+                    if (temp.selectedShip.belongsTo != null)
+                        temp.selectedShip.DeselectShipForMoving(temp);
+
+                if (temp.selectedKnight != null)
+                    if (temp.selectedKnight.positionedUnit != null)
+                        temp.selectedKnight.DeselectKnight();
                 currentPhase = GamePhase.TurnDiceRolled;
 
                 if (!currentPlayer.MoveNext())
@@ -1866,7 +1897,7 @@ public class Game : NetworkBehaviour
             }
 
         }
-        else
+        else if (checkCorrectPlayer(player) && currentPhase == GamePhase.TurnRobberPirate)
         {
             logAPlayer(player, "Move the robber before ending your turn.");
         }
@@ -2579,12 +2610,13 @@ public class Game : NetworkBehaviour
                 foreach (Edges e in i.paths)
                 {
                     //check to see if owned or else bleongs to is obviously null and return null pointer
-                    if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
+                    if (e.owned && e.isShip == true)
                     {
-                        check = true;
-                        break;
+						if (e.belongsTo.Equals(player) ){
+							check = true;
+							break;
+						}
                     }
-                }
             }
         }
         return check;
