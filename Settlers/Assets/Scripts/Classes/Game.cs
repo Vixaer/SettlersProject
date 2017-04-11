@@ -264,6 +264,10 @@ public class Game : NetworkBehaviour
                             fishingInters[2].isFishingInter = true;
                             hex.hasFishing = true;
                             hex.numberToken = fishToken;
+                            if(fishToken == 6)
+                            {
+                                fishToken++;
+                            }
                             fishToken++;
                         }
                     }
@@ -388,16 +392,31 @@ public class Game : NetworkBehaviour
 
     public void initiateSteal(GameObject player)
     {
-        int i = 0;
-        string[] names = new string[gamePlayers.Count];
-        IEnumerator values = gamePlayers.Values.GetEnumerator();
-        while (values.MoveNext())
+        if(currentPhase == GamePhase.TurnFirstPhase)
         {
-            Player temp = (Player)values.Current;
-            names[i] = temp.name;
-            i++;
+            int i = 0;
+            Player current = (Player)currentPlayer.Current;
+            string[] names = new string[gamePlayers.Count - 1];
+            IEnumerator values = gamePlayers.Values.GetEnumerator();
+            while (values.MoveNext())
+            {
+                Player temp = (Player)values.Current;
+                if (!current.name.Equals(temp.name))
+                {
+                    names[i] = temp.name;
+                    i++;
+                }
+            }
+            if(names.Length > 0)
+            {
+                player.GetComponent<playerControl>().RpcSetupStealInterface(names);
+            }       
         }
-        player.GetComponent<playerControl>().RpcSetupStealInterface(names);
+        else
+        {
+            logAPlayer(player, "You need to be in the build/trade phase to use the shop.");
+        }
+        
     }
     public void initiateCardChoice(GameObject player)
     {
@@ -1312,18 +1331,19 @@ public class Game : NetworkBehaviour
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free road because of the Road Building Card.");
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                gamePlayers[player].hasFreeRoad = false;
+                logAPlayer(player, "The workers give you this road because of your fish donation.");
+            }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasRoadResources())
             {
                 gamePlayers[player].PayRoadResources();
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
             }
-            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
-            {
-                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
-                gamePlayers[player].hasFreeRoad = false;
-                logAPlayer(player, "The workers give you this road because of your fish donation.");
-            }
+            
             CheckForLongestRoad();
             updatePlayerResourcesUI(player);
             updateTurn();
@@ -1399,6 +1419,12 @@ public class Game : NetworkBehaviour
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free ship because of the Road Building Card.");
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
+            {
+                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                gamePlayers[player].hasFreeRoad = false;
+                logAPlayer(player, "The workers give you this ship because of your fish donation.");
+            }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
             {
@@ -1406,12 +1432,7 @@ public class Game : NetworkBehaviour
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 //update his UI to let him know he lost the resources;
             }
-            else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
-            {
-                edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
-                gamePlayers[player].hasFreeRoad = false;
-                logAPlayer(player, "The workers give you this ship because of your fish donation.");
-            }
+            
             CheckForLongestRoad();
             updatePlayerResourcesUI(player);
             updateTurn();
@@ -2060,7 +2081,6 @@ public class Game : NetworkBehaviour
     {
         Player mover = (Player)gamePlayers[player];
         List<String> names = new List<string>();
-        //TO-DO add constraint for first barbarian attack when they will be implemented
         if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnRobberOnly) && checkCorrectPlayer(player))
         {
             if (tile.GetComponent<TerrainHex>().isRobber == true)
@@ -2136,8 +2156,6 @@ public class Game : NetworkBehaviour
     }
     public void movePirate(GameObject player, GameObject tile)
     {
-        //TO-DO
-        //TO-DO add constraint for first barbarian attack when they will be implemented
         if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnPirateOnly) && checkCorrectPlayer(player) && firstBarbAttack)
         {
             if (tile.GetComponent<TerrainHex>().isPirate == true)
@@ -2165,12 +2183,15 @@ public class Game : NetworkBehaviour
             if (currentPhase == GamePhase.TurnFirstPhase)
             {
 
-                if (pirateTile.GetComponent<TerrainHex>().isPirate)
+                if (pirateTile != null)
                 {
-                    Player tempPlay = gamePlayers[player];
-                    robberTile.GetComponent<TerrainHex>().isPirate = false;
-                    tempPlay.PayFishTokens(2);
-                    updatePlayerResourcesUI(player);
+                    if (pirateTile.GetComponent<TerrainHex>().isPirate)
+                    {
+                        Player tempPlay = gamePlayers[player];
+                        robberTile.GetComponent<TerrainHex>().isPirate = false;
+                        tempPlay.PayFishTokens(2);
+                        updatePlayerResourcesUI(player);
+                    }            
                 }
                 else
                 {
@@ -3099,7 +3120,7 @@ public class Game : NetworkBehaviour
                 {
                     GameObject selector;
                     playerObjects.TryGetValue(cur, out selector);
-                    selector.GetComponent<playerControl>().RpcAskDesiredAquaResource();
+                    gamePlayers[selector].AddGold(2);
                 }
             }
         }
