@@ -952,8 +952,14 @@ public class Game : NetworkBehaviour
                             currentBuilder.payWallResources(engCard);
                             inter.BuildWall(currentBuilder);
 
-                            CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+                            if (CardsInPlay.Contains(ProgressCardKind.EngineerCard))
+                            {
+                                CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+                                logAPlayer(player, "You used the Engineer Card");
+                            }
+                            
                             updatePlayerResourcesUI(player);
+                            
                             logAPlayer(player, "You built a city wall!");
                         }
                     }
@@ -2094,9 +2100,11 @@ public class Game : NetworkBehaviour
                         break;
                     }
                 case ProgressCardKind.EngineerCard:
-                    {
+                    {                     
                         cardPlayer.cardsInHand.Remove(k);
+                        CardsInPlay.Add(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 case ProgressCardKind.InventorCard:
@@ -2973,7 +2981,7 @@ public class Game : NetworkBehaviour
         while (values.MoveNext())
         {
             Player tempPlayer = (Player)values.Current;
-            if (tempPlayer.SumResources() > 7)
+            if (tempPlayer.SumResources() > (7 + 2*(3-tempPlayer.availableWalls)))
             {
                 int toDiscard = (int)(tempPlayer.SumResources() / 2.0);
                 playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard, "");
