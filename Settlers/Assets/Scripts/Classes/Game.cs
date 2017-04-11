@@ -1486,6 +1486,7 @@ public class Game : NetworkBehaviour
             temp.BuildShip(p);
             shipToMove.RemoveShip(p);
             logAPlayer(player, "Ship Moved! You cannot move anymore ships this turn.");
+            CheckForLongestRoad();
             temp3.RpcEndShipMove(true);
         }
         else
@@ -2268,6 +2269,11 @@ public class Game : NetworkBehaviour
                             if (unit is Knight)
                             {
                                 ((Knight)unit).activateKnight();
+                                var inter = intersections.FirstOrDefault(i => i.GetComponent<Intersection>().positionedUnit == unit);
+                                if (inter != null)
+                                {
+                                    inter.GetComponent<Intersection>().knightActive = true;
+                                }
                             }
                         }
                         cardPlayer.cardsInHand.Remove(k);
@@ -3118,6 +3124,17 @@ public class Game : NetworkBehaviour
             BarbarianAttack();
             firstBarbAttack = true;
             barbPosition = 0;
+            // Deactivate all knights
+            foreach (GameObject go in intersections)
+            {
+                var inter = go.GetComponent<Intersection>();
+                if (inter.positionedUnit != null && inter.positionedUnit is Knight)
+                {
+                    var knight = inter.positionedUnit as Knight;
+                    knight.deactivateKnight();
+                    inter.knightActive = false;
+                }
+            }
         }
     }
 
@@ -3140,8 +3157,35 @@ public class Game : NetworkBehaviour
 
     private void defeatBarbarians()
     {
-        broadcastMessage("Victory Not Yet Implemented. Needs card draw.");
-        // TODO: Complete this method
+        // Find out which player contributed the most
+        int mostContributedAmount = 0;
+        List<Player> mostContributed = new List<Player>();
+        foreach (Player p in gamePlayers.Values)
+        {
+            mostContributedAmount = Mathf.Max(mostContributedAmount, p.getActiveKnightCount());
+        }
+        foreach (Player p in gamePlayers.Values)
+        {
+            if (p.getActiveKnightCount() == mostContributedAmount)
+                mostContributed.Add(p);
+        }
+        // If one player, give that player victory point
+        if (mostContributed.Count == 1)
+        {
+            var bestPlayer = mostContributed[0];
+            broadcastMessage("Player " + bestPlayer.name + " is the defender of Catan!");
+            bestPlayer.AddVictoryPoints(1);
+            updatePlayerResourcesUI(playerObjects[bestPlayer]);
+            CheckForVictory();
+        }
+        else
+        {
+            foreach (Player p in mostContributed)
+            {
+                var pGO = playerObjects[p];
+                // TODO: activate the right panel
+            }
+        }
     }
 
     // TODO: getActiveKnightCount()
