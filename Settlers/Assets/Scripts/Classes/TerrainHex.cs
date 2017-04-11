@@ -10,6 +10,8 @@ public class TerrainHex : NetworkBehaviour
     public Sprite[] tokensSprites;
     public Sprite robberSprite;
     public Sprite pirateSprite;
+    public Sprite lakeSprite;
+    public Sprite fishingSprite;
 
     [SyncVar(hook = "OnChangeKind")]
     public TerrainKind myTerrain = TerrainKind.None;
@@ -23,6 +25,11 @@ public class TerrainHex : NetworkBehaviour
     [SyncVar(hook = "OnChangePirate")]
     public bool isPirate = false;
 
+    [SyncVar(hook = "OnChangeLake")]
+    public bool isLake = false;
+
+    [SyncVar(hook = "OnChangeFishingSpot")]
+    public bool hasFishing = false;
 
     public Intersection[] corners;
     public Edges[] myEdges;
@@ -86,10 +93,99 @@ public class TerrainHex : NetworkBehaviour
             }
         }
     }
+    public void OnChangeLake(bool value)
+    {
+        isLake = value;
+        transform.GetComponent<SpriteRenderer>().sprite = lakeSprite;
+    }
+    public void OnChangeFishingSpot(bool value)
+    {
+        hasFishing = value;
+        Intersection centerPoint = null;
+        if (hasFishing)
+        {
+            foreach (Intersection inter in corners)
+            {
+                if (!inter.isFishingInter)
+                {
+                    continue;
+                }
+                int neighbors = 0;
+                foreach (Edges e in inter.paths)
+                {
+                    if (e.inBetween[0] == this || e.inBetween[1] == this)
+                    {
+                        foreach (Intersection inter2 in e.endPoints)
+                        {
+                            if (inter2 != inter && inter2.isFishingInter)
+                            {
+                                neighbors++;
+                                continue;
+                            }
+                        }
+                    }
+                }
+                if (neighbors == 2)
+                {
+                    centerPoint = inter;
+                    break;
+                }
+            }
+        }
+        if (centerPoint != null)
+        {
+            //rotating the sprite the correct way based on the center point
+            float x = centerPoint.transform.localPosition.x;
+            float y = centerPoint.transform.localPosition.y;
+            Debug.Log("(" + x + "," + y + ")");
+            float x2 = this.transform.localPosition.x;
+            float y2 = this.transform.localPosition.y;
+            Debug.Log("(" + x2 + "," + y2 + ")");
+
+            float difX = x - x2; float difY = y - y2;
+            if (difX > -0.1 && difX < 0.1 && difY > 0)
+            {
+                //do nothing basic sprite will do
+            }
+            else if (difX > -0.1 && difX < 0.1 && difY < 0)
+            {
+                Debug.Log("turning 60 deg counter");
+                transform.localRotation = Quaternion.Euler(0, 0, 180);
+                transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, -180);
+            }
+            else if (difX > 0 && difY > 0)
+            {
+                Debug.Log("turning 300 deg counter");
+                transform.localRotation = Quaternion.Euler(0, 0, 300);
+                transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, -300);
+            }
+            else if (difX > 0 && difY < 0)
+            {
+                Debug.Log("turning 240 deg counter");
+                transform.localRotation = Quaternion.Euler(0, 0, 240);
+                transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, -240);
+            }
+            else if (difX < 0 && difY > 0)
+            {
+                Debug.Log("turning 60 deg counter");
+                transform.localRotation = Quaternion.Euler(0, 0, 60);
+                transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, -60);
+            }
+            else if (difX < 0 && difY < 0)
+            {
+                Debug.Log("turning 120 deg counter");
+                transform.localRotation = Quaternion.Euler(0, 0, 120);
+                transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, -120);
+            }
+
+            transform.GetComponent<SpriteRenderer>().sprite = fishingSprite;
+        }
+
+    }
     public void setTile(int terrainKind, int tokenValue)
     {
         myTerrain = (TerrainKind)terrainKind;
-        if((TerrainKind)terrainKind != TerrainKind.Desert && (TerrainKind)terrainKind != TerrainKind.Sea )
+        if ((TerrainKind)terrainKind != TerrainKind.Desert && (TerrainKind)terrainKind != TerrainKind.Sea)
         {
             numberToken = tokenValue;
         }
@@ -101,6 +197,7 @@ public class TerrainHex : NetworkBehaviour
         this.numberToken = data.numberToken;
         this.isRobber = data.isRobber;
         this.isPirate = data.isPirate;
+        this.hasFishing = data.hasFishing;
     }
 }
 
@@ -116,6 +213,8 @@ public class TerrainHexData
     public bool isPirate { get; set; }
     public float[] position { get; set; }
 
+    public bool hasFishing { get; set; }
+
     public TerrainHexData(TerrainHex source)
     {
         this.name = source.name;
@@ -124,6 +223,7 @@ public class TerrainHexData
         this.isRobber = source.isRobber;
         this.isPirate = source.isPirate;
         this.edges = new string[source.myEdges.Length];
+        this.hasFishing = source.hasFishing;
         for (int i = 0; i < source.myEdges.Length; i++)
         {
             this.edges[i] = source.myEdges[i].name;
