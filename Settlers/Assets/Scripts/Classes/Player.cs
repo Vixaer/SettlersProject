@@ -16,8 +16,10 @@ public class Player {
     public int victoryPoints { get; private set; }
     public int fishTokens { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
-    public List<HarbourKind> ownedHarbour { get; set; }
+    public List<HarbourKind> ownedHarbour { get; set; }										 
 
+	public int numberofCityWalls{ get; set;}
+	
     public List<VillageKind> settlementPool { get; set; }
 
     public List<VillageKind> citiesPool { get; set; }
@@ -48,6 +50,7 @@ public class Player {
         playerCount++;
         hasMerchant = false;
         hasLongestTradeRoute = false;
+		availableWalls = 3;												   
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -235,6 +238,13 @@ public class Player {
         cityImprovementLevels[kind] += 1;
     }
 
+	public void payWallResources(bool playedEngPC)
+	{
+		if (!playedEngPC)
+		{	
+			PayResources(2, ResourceKind.Brick);
+		}
+	}				  									   
     public void GiveLongestTradeRoute()
     {
         this.hasLongestTradeRoute = true;
@@ -336,6 +346,12 @@ public class Player {
         return this.HasResources(1, ResourceKind.Grain);
     }
 
+public bool HasWallResources(bool playedEngCard) {
+		if (!playedEngCard) {
+			return this.HasResources (2, ResourceKind.Brick);
+		}
+		return true;
+	}													  
     public int GetCityImprovementLevel(CommodityKind kind)
     {
         return cityImprovementLevels[kind];
@@ -427,6 +443,14 @@ public class Player {
         return false;
     }
 
+    public bool HasWalls()
+	{
+		if (availableWalls > 0)
+		{
+			return true;
+		}
+		return false;
+	}										 
     public bool HasKnights(KnightLevel level)
     {
         return knightTokens.Contains(level);

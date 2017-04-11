@@ -132,7 +132,7 @@ public class Intersection : NetworkBehaviour {
         else
         {
             knightActive = knightToMove.isKnightActive();
-        }
+        } 
 
         switch (positionedUnit.Owner.myColor)
         {
@@ -140,9 +140,8 @@ public class Intersection : NetworkBehaviour {
             case 1: color = Color.blue; break;
             case 2: color = Color.green; break;
             case 3: color = new Color(255, 128, 0); break;
-        }
+        }											
     }
-
     public void RemoveKnight(Player player, bool destroy)
     {
         owned = false;
@@ -199,8 +198,16 @@ public class Intersection : NetworkBehaviour {
     {
         owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
+		if (knightRemoved) {
+			knightRemoved = false;
+		} else {
+			owned = true;
     }
 
+	public void OnWall(bool value){
+		
+		transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
+	}							
     public void OnBuild(int value)
     {
         type = value;
@@ -212,6 +219,11 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = city;
         }
+		else if( value == 3)
+		{
+			Debug.Log ("hey");
+			transform.GetComponent<SpriteRenderer> ().sprite = cityWallSprite;
+		
         transform.GetComponent<CircleCollider2D>().radius = 0.6f;
     }
 
@@ -222,8 +234,9 @@ public class Intersection : NetworkBehaviour {
     public void OnKnight(KnightLevel value)
     {
         knight = value;
-        if (knight == KnightLevel.Basic)
+        if (knight == KnightLevel.Basic || movedKnight)
         {
+			movedKnight = false;					
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
             transform.GetComponent<CircleCollider2D>().radius = 0.6f;
         }
@@ -236,7 +249,7 @@ public class Intersection : NetworkBehaviour {
             transform.GetComponent<SpriteRenderer>().sprite = intersection;
             transform.GetComponent<SpriteRenderer>().color = Color.white;
             transform.GetComponent<CircleCollider2D>().radius = 0.2f;
-        }
+        }							  		 																							   		 
         else if (!knightActive)
         {
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];

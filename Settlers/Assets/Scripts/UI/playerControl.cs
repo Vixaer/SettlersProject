@@ -16,17 +16,17 @@ public class playerControl : NetworkBehaviour {
     public bool buildShip = false;
     public bool moveShip = false;
     public bool shipSelected = false;
-    public bool movedShipThisTurn = false;
-
+    public bool movedShipThisTurn = false;						  
     public Color oldEdgeColor;
+	
+	
     public bool interactKnight = false;
-
     public bool activateKnight = false;
     public bool upgradeKnight = false;
     public bool moveKnight = false;
     public bool buildKnight = false;
+	
     private bool forceMoveKnight = false;
-
     public bool knightSelected = false;
     public Color oldKnightColor;
     public GameObject selectedInter;
@@ -156,7 +156,6 @@ public class playerControl : NetworkBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
-			// Pre-load game data to the client
             CmdGetGameData();
         }
     }
@@ -255,6 +254,7 @@ public class playerControl : NetworkBehaviour {
     public void setToBuildRoads()
     {
         buildShip = false;
+		moveShip = false;	   
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
     }
@@ -575,6 +575,7 @@ public class playerControl : NetworkBehaviour {
         }
 
     }
+	
     [Command]
     void CmdAcceptP2PTradeRequest()
     {
@@ -1189,17 +1190,16 @@ public class playerControl : NetworkBehaviour {
         {
             P2PTrade_DebugText.color = Color.black;
         }
-        P2PTrade_DebugText.text = txt;
+        P2PTrade_DebugText.text = txt;																	 		  
     }
-
-    [ClientRpc]
+    [ClientRpc]			
     public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
     {
         if (requestingPlayer.GetInstanceID() == gameObject.GetInstanceID())
         {
             return;
         }
-        tradingPlayer = requestingPlayer;
+        tradingPlayer = requestingPlayer;						   						   
 
         this.giveOre = giveOre;
         this.giveBrick = giveBrick;
@@ -1220,7 +1220,6 @@ public class playerControl : NetworkBehaviour {
         this.wantsCloth = wantsCloth;
         this.wantsGold = wantsGold;
         this.wantsLumber = wantsLumber;
-
 
         string offerTxt = "";
         if (wantsBrick > 0)
@@ -1335,7 +1334,7 @@ public class playerControl : NetworkBehaviour {
         foreach (Transform child in this.P2PTrade_PlayerGives.transform)
         {
             child.transform.GetComponent<InputField>().text = "";
-        }
+        }		  
 
     }
     [ClientRpc]
