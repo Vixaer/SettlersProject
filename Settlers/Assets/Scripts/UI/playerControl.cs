@@ -13,67 +13,62 @@ public class playerControl : NetworkBehaviour {
     private bool resourcesShown = true;
     private bool rollsShown = true;
     private bool cardsShown = true;
-
     public bool buildShip = false;
-	public bool moveShip = false;
-	public bool shipSelected = false;
-	public bool movedShipThisTurn = false;
-	public Color oldEdgeColor;
-
+    public bool moveShip = false;
+    public bool shipSelected = false;
+    public bool movedShipThisTurn = false;						  
+    public Color oldEdgeColor;
+	
+	
     public bool interactKnight = false;
-
-	public bool activateKnight = false;
-	public bool upgradeKnight = false;
-	public bool moveKnight = false;
-	public bool buildKnight = false;
-
-	public bool knightSelected = false;
-	public Color oldKnightColor;
-	public GameObject selectedInter;
-
-	private bool forceMoveKnight = false;
+    public bool activateKnight = false;
+    public bool upgradeKnight = false;
+    public bool moveKnight = false;
+    public bool buildKnight = false;
+	
+    private bool forceMoveKnight = false;
+    public bool knightSelected = false;
+    public Color oldKnightColor;
+    public GameObject selectedInter;
 
     private bool pickMetropolis = false;
-
+	private bool playInventor = false;
+    private GameObject[] tilesToSwap = null;
     private GameObject gameState;
     private bool isSeletionOpen = false;
     public GameObject resourcesWindow, ChatWindow, MenuWindow, MaritimeWindow,
                       MapSelector, DiceWindow, SelectionWindow, nameWindow, CardPanel,
                       discardPanel, improvementPanel, inGameMenuPanel, goldShopPanel,
-                      victoryPanel;
+                      victoryPanel, fishPanel, stealPanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
 
+    // @author xingwei
+    // P2P Trade Resources
+    /* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+    private int giveBrick = 0;
+    private int giveOre = 0;
+    private int giveWool = 0;
+    private int giveCoin = 0;
+    private int giveWheat = 0;
+    private int giveCloth = 0;
+    private int giveLumber = 0;
+    private int givePaper = 0;
+    private int giveGold = 0;
+    private int wantsBrick = 0;
+    private int wantsOre = 0;
+    private int wantsWool = 0;
+    private int wantsCoin = 0;
+    private int wantsWheat = 0;
+    private int wantsCloth = 0;
+    private int wantsLumber = 0;
+    private int wantsPaper = 0;
+    private int wantsGold = 0;
 
-	// @author xingwei
+    public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives, P2PTradeOfferPanel;
+    public Text P2PTrade_DebugText, P2PTradeOfferedDescriptionText, P2PTradeGivingDescriptionText, P2PTradeOfferFromText;
 
-
-	// P2P Trade Resources
-	/* * Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
-	private int giveBrick = 0;
-	private int giveOre = 0;
-	private int giveWool = 0;
-	private int giveCoin = 0;
-	private int giveWheat = 0;
-	private int giveCloth = 0;
-	private int giveLumber = 0;
-	private int givePaper = 0;
-	private int giveGold = 0;
-	private int wantsBrick = 0;
-	private int wantsOre = 0;
-	private int wantsWool = 0;
-	private int wantsCoin = 0;
-	private int wantsWheat = 0;
-	private int wantsCloth = 0;
-	private int wantsLumber = 0;
-	private int wantsPaper = 0;
-	private int wantsGold = 0;
-
-
-	public GameObject P2PTradePanel, P2PTrade_PlayerWants, P2PTrade_PlayerGives,P2PTradeOfferPanel;
-	public Text P2PTrade_DebugText,P2PTradeOfferedDescriptionText,P2PTradeGivingDescriptionText,P2PTradeOfferFromText;
-
-	private GameObject tradingPlayer;
+    private GameObject tradingPlayer;
 
     #region SyncVar
     //resource panel values
@@ -97,6 +92,8 @@ public class playerControl : NetworkBehaviour {
     string Gold;
     [SyncVar(hook = "OnChangedVictory")]
     string VictoryPoints;
+    [SyncVar(hook = "OnChangeFish")]
+    int fishTokens;
 
     //dice panel Values
     [SyncVar(hook = "OnChangedRed")]
@@ -111,11 +108,9 @@ public class playerControl : NetworkBehaviour {
     public bool isValidName;
     #endregion
 
-
-
-
     #region Setup
-    void Start() {
+    void Start()
+    {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
         if (!isLocalPlayer) return;
         nameWindow.gameObject.SetActive(true);
@@ -133,7 +128,8 @@ public class playerControl : NetworkBehaviour {
         CmdStartUp();
     }
     #endregion
-    void Update() {
+    void Update()
+    {
         if (!isLocalPlayer) return;
         if (Input.GetMouseButtonDown(0))
         {
@@ -154,13 +150,12 @@ public class playerControl : NetworkBehaviour {
                     ChatWindow.transform.GetChild(1).GetComponent<InputField>().text = "";
                     CmdSendMessage(gameObject, message);
                 }
-                
+
             }
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             inGameMenuPanel.SetActive(!inGameMenuPanel.activeInHierarchy);
-            // Pre-load game data to the client
             CmdGetGameData();
         }
     }
@@ -214,7 +209,12 @@ public class playerControl : NetworkBehaviour {
     {
         isSeletionOpen = false;
     }
-    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities, int gold, int victoryPoints)
+
+    public void switchFishText()
+    {
+        fishPanel.transform.GetChild(2).GetComponent<Text>().text = "You have: " + fishTokens + " remaining";
+    }
+    public void setTextValues(Dictionary<ResourceKind, int> resources, Dictionary<CommodityKind, int> commodities, int gold, int victoryPoints, int fishTokens)
     {
         if (!isServer) return;
         int temp;
@@ -239,6 +239,8 @@ public class playerControl : NetworkBehaviour {
         Gold = gold.ToString();
         VictoryPoints = victoryPoints.ToString();
 
+        this.fishTokens = fishTokens;
+
     }
     public void setDiceValues(int red, int yellow, int eventValue)
     {
@@ -248,30 +250,31 @@ public class playerControl : NetworkBehaviour {
         this.Event = "Event Dice Roll: " + ((EventKind)eventValue).ToString();
 
     }
-    
+
     public void setToBuildRoads()
     {
         buildShip = false;
-		moveShip = false;
+		moveShip = false;	   
         MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
         MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
     }
 
     public void setToBuildShips()
     {
-		
-		if (buildShip == false) {
-			buildShip = true;
-			moveShip = false;
-			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
-			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
-		} else if (buildShip == true && moveShip == false) {
-			buildShip = false;
-			moveShip = true;
-			MenuWindow.transform.GetChild (4).GetComponent<Image> ().color = new Color32 (255, 255, 255, 255);
-			MenuWindow.transform.GetChild (5).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240); //button becomes blue
-		} 
-   
+        if (buildShip == false)
+        {
+            buildShip = true;
+            moveShip = false;
+            MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+            MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        }
+        else if (buildShip == true && moveShip == false)
+        {
+            buildShip = false;
+            moveShip = true;
+            MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+            MenuWindow.transform.GetChild(5).GetComponent<Image>().color = new Color32(121, 121, 240, 240); //button becomes blue
+        }
     }
     public void setToInteractWithSettlements()
     {
@@ -283,45 +286,50 @@ public class playerControl : NetworkBehaviour {
     public void setToInteractWithKnights()
     {
         interactKnight = true;
-		MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
-		if (!buildKnight && !activateKnight && !upgradeKnight ) {
-			buildKnight = true;
-			activateKnight = false;
-			moveKnight = false;
-			upgradeKnight = false;
+        MenuWindow.transform.GetChild(3).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        if (!buildKnight && !activateKnight && !upgradeKnight)
+        {
+            buildKnight = true;
+            activateKnight = false;
+            moveKnight = false;
+            upgradeKnight = false;
 
-			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 121, 121);
+            MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 121, 121);
 
-		} else if (!activateKnight && !upgradeKnight & !moveKnight){
-			buildKnight = false;
-			activateKnight = true;
-			upgradeKnight = false;
-			moveKnight = false;
+        }
+        else if (!activateKnight && !upgradeKnight & !moveKnight)
+        {
+            buildKnight = false;
+            activateKnight = true;
+            upgradeKnight = false;
+            moveKnight = false;
 
-			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 121, 240);
-		}
-		else if (!upgradeKnight && !moveKnight && !buildKnight) {
-			buildKnight = false;
-			activateKnight = false;
-			upgradeKnight = true;
-			moveKnight = false;
+            MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+        }
+        else if (!upgradeKnight && !moveKnight && !buildKnight)
+        {
+            buildKnight = false;
+            activateKnight = false;
+            upgradeKnight = true;
+            moveKnight = false;
 
-			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 121, 240, 240);
-		} else {
-			buildKnight = false;
-			activateKnight = false;
-			upgradeKnight = false;
-			moveKnight = true;
-			MenuWindow.transform.GetChild (8).GetComponent<Image> ().color = new Color32 (121, 240, 240, 121);
-		}
-        
+            MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 240, 240);
+        }
+        else
+        {
+            buildKnight = false;
+            activateKnight = false;
+            upgradeKnight = false;
+            moveKnight = true;
+            MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 240, 121);
+        }
+    }
+    public void OnClickAcceptP2PButton()
+    {
+        CmdAcceptP2PTradeRequest();
     }
 
-	public void OnClickAcceptP2PButton(){
-		CmdAcceptP2PTradeRequest ();
-	}
-
-	/*
+    /*
 	 * Called when clicked the Green Confirm Button on the P2P trade panel. 
 	 * 
 	 * The order of resource stored in the List is
@@ -330,95 +338,149 @@ public class playerControl : NetworkBehaviour {
 	 * Send Trade Request to server
 	 * 
 	 */
-	public void confirmP2PTradeStatus(){
-		//InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
-		string txt = "";
-		foreach (Transform child in this.P2PTrade_PlayerGives.transform){
-			//print (child.name);
-			string input = child.transform.GetComponentInChildren<InputField> ().text;
-			int number = 0;
-			if (int.TryParse (input, out number) && number > 0) {
-				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
-				assignNumberToVariable(child.name,number,false);
-			} else {
-				assignNumberToVariable(child.name,0,false);
-			}
-		}
+    public void confirmP2PTradeStatus()
+    {
+        //InputField i = this.P2PTrade_PlayerGives.transform.Find ("Brick").transform.GetComponentInChildren<InputField> ();
+        string txt = "";
+        foreach (Transform child in this.P2PTrade_PlayerGives.transform)
+        {
+            //print (child.name);
+            string input = child.transform.GetComponentInChildren<InputField>().text;
+            int number = 0;
+            if (int.TryParse(input, out number) && number > 0)
+            {
+                //txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+                assignNumberToVariable(child.name, number, false);
+            }
+            else
+            {
+                assignNumberToVariable(child.name, 0, false);
+            }
+        }
 
-		foreach (Transform child in this.P2PTrade_PlayerWants.transform){
-			//print (child.name);
-			string input = child.transform.GetComponentInChildren<InputField> ().text;
-			int number = 0;
-			if (int.TryParse (input, out number) && number > 0) {
-				//txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
-				assignNumberToVariable(child.name,number,true);
-			} else {
-				assignNumberToVariable(child.name,0,true);
-			}
-		}
-		CmdSendP2PTradeRequest (giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+        foreach (Transform child in this.P2PTrade_PlayerWants.transform)
+        {
+            //print (child.name);
+            string input = child.transform.GetComponentInChildren<InputField>().text;
+            int number = 0;
+            if (int.TryParse(input, out number) && number > 0)
+            {
+                //txt += child.name + ": " + child.transform.GetComponentInChildren<InputField> ().text + "\n";
+                assignNumberToVariable(child.name, number, true);
+            }
+            else
+            {
+                assignNumberToVariable(child.name, 0, true);
+            }
+        }
+        CmdSendP2PTradeRequest(giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
 
-		//gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
-	}
+        //gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+    }
 
-	/* Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
-	private void assignNumberToVariable(string name, int quantity, bool wants){
-		if (name == "Brick") {
-			if (wants) {
-				this.wantsBrick = quantity;
-			} else {
-				this.giveBrick = quantity;
-			}
-		} else if (name == "Ore") {
-			if (wants) {
-				this.wantsOre = quantity;
-			} else {
-				this.giveOre = quantity;
-			}
-		} else if (name == "Wool") {
-			if (wants) {
-				this.wantsWool = quantity;
-			} else {
-				this.giveWool = quantity;
-			}
-		} else if (name == "Coin") {
-			if (wants) {
-				this.wantsCoin = quantity;
-			} else {
-				this.giveCoin = quantity;
-			}
-		} else if (name == "Wheat") {
-			if (wants) {
-				this.wantsWheat = quantity;
-			} else {
-				this.giveWheat = quantity;
-			}
-		} else if (name == "Cloth") {
-			if (wants) {
-				this.wantsCloth = quantity;
-			} else {
-				this.giveCloth = quantity;
-			}
-		} else if (name == "Lumber") {
-			if (wants) {
-				this.wantsLumber = quantity;
-			} else {
-				this.giveLumber = quantity;
-			}
-		} else if (name == "Paper") {
-			if (wants) {
-				this.wantsPaper = quantity;
-			} else {
-				this.givePaper = quantity;
-			}
-		} else if (name == "Gold") {
-			if (wants) {
-				this.wantsGold = quantity;
-			} else {
-				this.giveGold = quantity;
-			}
-		}
-	}
+    /* Brick, Ore, Wool, Coin, Wheat, Cloth, Lumber, Paper, Gold */
+    private void assignNumberToVariable(string name, int quantity, bool wants)
+    {
+        if (name == "Brick")
+        {
+            if (wants)
+            {
+                this.wantsBrick = quantity;
+            }
+            else
+            {
+                this.giveBrick = quantity;
+            }
+        }
+        else if (name == "Ore")
+        {
+            if (wants)
+            {
+                this.wantsOre = quantity;
+            }
+            else
+            {
+                this.giveOre = quantity;
+            }
+        }
+        else if (name == "Wool")
+        {
+            if (wants)
+            {
+                this.wantsWool = quantity;
+            }
+            else
+            {
+                this.giveWool = quantity;
+            }
+        }
+        else if (name == "Coin")
+        {
+            if (wants)
+            {
+                this.wantsCoin = quantity;
+            }
+            else
+            {
+                this.giveCoin = quantity;
+            }
+        }
+        else if (name == "Wheat")
+        {
+            if (wants)
+            {
+                this.wantsWheat = quantity;
+            }
+            else
+            {
+                this.giveWheat = quantity;
+            }
+        }
+        else if (name == "Cloth")
+        {
+            if (wants)
+            {
+                this.wantsCloth = quantity;
+            }
+            else
+            {
+                this.giveCloth = quantity;
+            }
+        }
+        else if (name == "Lumber")
+        {
+            if (wants)
+            {
+                this.wantsLumber = quantity;
+            }
+            else
+            {
+                this.giveLumber = quantity;
+            }
+        }
+        else if (name == "Paper")
+        {
+            if (wants)
+            {
+                this.wantsPaper = quantity;
+            }
+            else
+            {
+                this.givePaper = quantity;
+            }
+        }
+        else if (name == "Gold")
+        {
+            if (wants)
+            {
+                this.wantsGold = quantity;
+            }
+            else
+            {
+                this.giveGold = quantity;
+            }
+        }
+    }
     #endregion
 
     #region Retrieve Client Info
@@ -437,45 +499,60 @@ public class playerControl : NetworkBehaviour {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
 
-				else if (forceMoveKnight) 
-				{
-					CmdForceMoveKnight(gameObject, hit.collider.gameObject);
-				}
+                else if (forceMoveKnight)
+                {
+                    CmdForceMoveKnight(gameObject, hit.collider.gameObject);
+                }
 
-				else if (interactKnight && !moveKnight)
+                else if (interactKnight && !moveKnight)
 
                 {
                     CmdBuildKnight(gameObject, hit.collider.gameObject, buildKnight, upgradeKnight);
                 }
-				else if (interactKnight && moveKnight)
-				{
-					CmdMoveKnight(gameObject, hit.collider.gameObject, knightSelected);
-				}
+                else if (interactKnight && moveKnight)
+                {
+                    CmdMoveKnight(gameObject, hit.collider.gameObject, knightSelected);
+                }
                 else
                 {
                     CmdBuildOnIntersection(hit.collider.gameObject);
                 }
-                
+
             }
-			if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true && !forceMoveKnight)
+            if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true && !forceMoveKnight)
             {
                 CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
             }
-            if (hit.collider.gameObject.CompareTag("TerrainHex") && !forceMoveKnight)
+            if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
-                if(hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                if (playInventor)
                 {
-                    CmdMovePirate(gameObject, hit.collider.gameObject);
+                    if (tilesToSwap[0] == null)
+                    {
+                        tilesToSwap[0] = hit.collider.gameObject;
+                    }
+                    else
+                    {
+                        tilesToSwap[1] = hit.collider.gameObject;
+                        CmdSwapTokens(tilesToSwap);
+                    }
                 }
                 else
                 {
-                    CmdMoveRobber(gameObject, hit.collider.gameObject);
-                }
-                
+                    if (hit.collider.gameObject.GetComponent<TerrainHex>().myTerrain == TerrainKind.Sea)
+                    {
+                        CmdMovePirate(gameObject, hit.collider.gameObject);
+                    }
+                    else
+                    {
+                        CmdMoveRobber(gameObject, hit.collider.gameObject);
+                    }
+                }              
             }
-			if (hit.collider.gameObject.CompareTag ("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight) {
-				CmdMoveShip (gameObject, hit.collider.gameObject, shipSelected);
-			}
+            if (hit.collider.gameObject.CompareTag("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight)
+            {
+                CmdMoveShip(gameObject, hit.collider.gameObject, shipSelected);
+            }
         }
     }
 
@@ -485,30 +562,31 @@ public class playerControl : NetworkBehaviour {
         if (!playerName.Equals("") && playerName != null)
         {
             CmdValidateName(playerName);
-            if (!isValidName) return;
+            //if (!isValidName) return;
             //CmdSendName(playerName);
-            ////open the menus
+            //open the menus
             //resourcesWindow.gameObject.SetActive(true);
             //MenuWindow.gameObject.SetActive(true);
             //DiceWindow.gameObject.SetActive(true);
             //ChatWindow.gameObject.SetActive(true);
             //CardPanel.gameObject.SetActive(true);
-            ////closet the window
-            //nameWindow.SetActive(false);  
+            //closet the window
+            //nameWindow.SetActive(false);
         }
 
     }
-
-	[Command] void CmdAcceptP2PTradeRequest(){
-		gameState.GetComponent<Game> ().playerAcceptedTrade (tradingPlayer, gameObject, this.giveBrick, this.giveOre, this.giveWool, this.giveCoin, this.giveWheat, this.giveCloth, this.giveLumber, this.givePaper, this.giveGold, this.wantsBrick, this.wantsOre, this.wantsWool, this.wantsCoin, this.wantsWheat, this.wantsCloth, this.wantsLumber, this.wantsPaper, this.wantsGold);
-	}
-
-	// Send P2P trade request to Game
-	[Command] 
-	private void CmdSendP2PTradeRequest(int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
-		gameState.GetComponent<Game> ().P2PTradeOffer (gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
-	}
-
+	
+    [Command]
+    void CmdAcceptP2PTradeRequest()
+    {
+        gameState.GetComponent<Game>().playerAcceptedTrade(tradingPlayer, gameObject, this.giveBrick, this.giveOre, this.giveWool, this.giveCoin, this.giveWheat, this.giveCloth, this.giveLumber, this.givePaper, this.giveGold, this.wantsBrick, this.wantsOre, this.wantsWool, this.wantsCoin, this.wantsWheat, this.wantsCloth, this.wantsLumber, this.wantsPaper, this.wantsGold);
+    }
+    // Send P2P trade request to Game
+    [Command]
+    private void CmdSendP2PTradeRequest(int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
+    {
+        gameState.GetComponent<Game>().P2PTradeOffer(gameObject, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+    }
     [Command]
     private void CmdValidateName(string name)
     {
@@ -526,7 +604,7 @@ public class playerControl : NetworkBehaviour {
         wanted = transform.GetChild(3).GetChild(3).GetComponent<Dropdown>().value;
         CmdSendNpcTrade(gameObject, toGive, wanted);
     }
-    
+
     public void GetTradeBuyValue()
     {
         var toBuy = goldShopPanel.transform.GetChild(1).GetComponent<Dropdown>().value;
@@ -537,7 +615,7 @@ public class playerControl : NetworkBehaviour {
     {
         int[] values = new int[8];
         int sum = 0;
-        for(int i = 0; i< values.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
             //i = 0 is wool like enum 0 = wool etc...
             if (discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text.Equals(""))
@@ -547,7 +625,7 @@ public class playerControl : NetworkBehaviour {
             }
             else
             {
-                
+
                 values[i] = int.Parse(discardPanel.transform.GetChild(i).GetChild(2).GetComponent<InputField>().text);
                 sum += values[i];
             }
@@ -559,7 +637,7 @@ public class playerControl : NetworkBehaviour {
             CmdSendDiscards(gameObject, values);
             discardPanel.SetActive(false);
         }
-        else if(sum > needed)
+        else if (sum > needed)
         {
             discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please remove : " + (sum - needed);
         }
@@ -567,7 +645,74 @@ public class playerControl : NetworkBehaviour {
         {
             discardPanel.transform.GetChild(9).GetComponent<Text>().text = "You need to discard : " + needed.ToString() + " you want to discard : " + sum.ToString() + " please add : " + (needed - sum);
         }
-        
+
+    }
+
+    public void getFishAction()
+    {
+        int action = fishPanel.transform.GetChild(0).GetComponent<Dropdown>().value;
+        switch (action)
+        {
+            //move robber
+            case 0:
+                {
+                    if (fishTokens > 1)
+                    {
+                        CmdResetPirate(gameObject);
+                    }
+                    break;
+                }
+            case 1:
+                {
+                    if (fishTokens > 1)
+                    {
+                        CmdResetRobber(gameObject);
+                    }
+                    break;
+                }
+            case 2:
+                {
+                    if (fishTokens > 2)
+                    {
+                        CmdInitiateSteal(gameObject);
+                    }
+                    break;
+                }
+            case 3:
+                {
+                    if (fishTokens > 3)
+                    {
+
+                    }
+                    break;
+                }
+            case 4:
+                {
+                    if (fishTokens > 4)
+                    {
+
+                    }
+                    break;
+                }
+            case 5:
+                {
+                    if (fishTokens > 6)
+                    {
+
+                    }
+                    break;
+                }
+        }
+
+    }
+
+    public void getStealPlayer()
+    {
+        int player = -1;
+        player = stealPanel.transform.GetChild(0).GetComponent<Dropdown>().value;
+        string name = stealPanel.transform.GetChild(0).GetComponent<Dropdown>().options[player].text;
+        Debug.Log(name);
+        CmdStealPlayer(gameObject, name);
     }
 
     public void SaveGame()
@@ -615,32 +760,39 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
-	[Command]
-	void CmdMoveShip(GameObject player, GameObject edge, bool selected){
-		if (!selected) {
-            gameState.GetComponent<Game> ().removeShipCheck (player, edge);
-		} else {
-			 gameState.GetComponent<Game> ().placeShipCheck (player, edge);
-		}
-	}
-	[Command]
-	void CmdMoveKnight(GameObject player, GameObject inter, bool selected){
-		if (!selected) {
-		    gameState.GetComponent<Game> ().selectKnightCheck (player, inter);
-		} else {
-			gameState.GetComponent<Game> ().moveKnightCheck (player, inter);
-		}
-	}
+    [Command]
+    void CmdMoveShip(GameObject player, GameObject edge, bool selected)
+    {
+        if (!selected)
+        {
+            gameState.GetComponent<Game>().removeShipCheck(player, edge);
+        }
+        else
+        {
+            gameState.GetComponent<Game>().placeShipCheck(player, edge);
+        }
+    }
+    [Command]
+    void CmdMoveKnight(GameObject player, GameObject inter, bool selected)
+    {
+        if (!selected)
+        {
+            gameState.GetComponent<Game>().selectKnightCheck(player, inter);
+        }
+        else
+        {
+            gameState.GetComponent<Game>().moveKnightCheck(player, inter);
+        }
+    }
 
 
 
     //??
-	[Command]
-	void CmdForceMoveKnight(GameObject player, GameObject inter)
-	{
-		gameState.GetComponent<Game> ().forceMoveKnight (player, inter);
-	}
-
+    [Command]
+    void CmdForceMoveKnight(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().forceMoveKnight(player, inter);
+    }
 
     [Command]
     void CmdBuildOnEdge(GameObject player, GameObject edge, bool buildShip)
@@ -653,7 +805,7 @@ public class playerControl : NetworkBehaviour {
         {
             gameState.GetComponent<Game>().buildRoad(player, edge);
         }
-        
+
     }
     [Command]
     void CmdRollDice(GameObject player)
@@ -692,33 +844,40 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().chatOnServer(player, message);
     }
     [Command]
-    void CmdMoveRobber (GameObject player, GameObject tile)
+    void CmdMoveRobber(GameObject player, GameObject tile)
     {
         gameState.GetComponent<Game>().moveRobber(player, tile);
     }
     [Command]
-    void CmdMovePirate (GameObject player, GameObject tile)
+    void CmdMovePirate(GameObject player, GameObject tile)
     {
         gameState.GetComponent<Game>().movePirate(player, tile);
     }
     [Command]
-    void CmdSendDiscards (GameObject player, int[] values)
+    void CmdResetRobber(GameObject player)
+    {
+        gameState.GetComponent<Game>().resetRobber(player);
+    }
+    [Command]
+    void CmdResetPirate(GameObject player)
+    {
+        gameState.GetComponent<Game>().resetPirate(player);
+    }
+    [Command]
+    void CmdSendDiscards(GameObject player, int[] values)
     {
         gameState.GetComponent<Game>().discardResources(player, values);
     }
     [Command]
-    public void CmdUseCard (ProgressCardKind k)
+    public void CmdUseCard(ProgressCardKind k)
     {
-        gameState.GetComponent<Game>().playCard(gameObject,k);
+        gameState.GetComponent<Game>().playCard(gameObject, k);
     }
     [Command]
     void CmdBuildKnight(GameObject player, GameObject intersection, bool build, bool upgrade)
     {
-
-            gameState.GetComponent<Game>().buildKnightOnIntersection(player, intersection, build, upgrade);      
-       
+        gameState.GetComponent<Game>().buildKnightOnIntersection(player, intersection, build, upgrade);
     }
-
     [Command]
     public void CmdSetMetropole(GameObject player, GameObject intersection)
     {
@@ -729,6 +888,22 @@ public class playerControl : NetworkBehaviour {
     public void CmdCityUpgrade(int kind)
     {
         gameState.GetComponent<Game>().improveCity(gameObject, kind);
+    }
+    [Command]
+    public void CmdInitiateSteal(GameObject player)
+    {
+        gameState.GetComponent<Game>().initiateSteal(player);
+    }
+    [Command]
+    public void CmdStealPlayer(GameObject player, string name)
+    {
+        gameState.GetComponent<Game>().stealPlayer(gameObject, name);
+    }
+	
+	[Command]
+    public void CmdSwapTokens(GameObject[] tiles)
+    {
+        gameState.GetComponent<Game>().SwapTokens(gameObject, tiles);
     }
 
     [Command]
@@ -794,6 +969,11 @@ public class playerControl : NetworkBehaviour {
     {
         transform.GetChild(0).GetChild(10).GetChild(0).GetComponent<Text>().text = value;
     }
+    void OnChangeFish(int value)
+    {
+        this.fishTokens = value;
+        fishPanel.transform.GetChild(2).GetComponent<Text>().text = "You have: " + fishTokens + " remaining";
+    }
     void OnChangedRed(string value)
     {
         DiceWindow.transform.GetChild(2).GetComponent<Text>().text = value;
@@ -853,7 +1033,6 @@ public class playerControl : NetworkBehaviour {
             goldShopPanel.gameObject.SetActive(false);
         }
     }
-
     [ClientRpc]
     public void RpcBeginShipMove()
     {
@@ -869,14 +1048,13 @@ public class playerControl : NetworkBehaviour {
             this.movedShipThisTurn = true;
         }
     }
-    
+
     [ClientRpc]
     public void RpcCanMoveShipAgain()
     {
         this.movedShipThisTurn = false;
         this.shipSelected = false;
     }
-
     [ClientRpc]
     public void RpcBeginMetropoleChoice()
     {
@@ -889,13 +1067,11 @@ public class playerControl : NetworkBehaviour {
     {
         this.pickMetropolis = false;
     }
-
     [ClientRpc]
     public void RpcBeginKnightMove()
     {
         this.knightSelected = true;
     }
-
     [ClientRpc]
     public void RpcEndKnightMove()
     {
@@ -903,23 +1079,22 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
-	public void RpcBeginForcedKnightMove()
-	{
-		this.forceMoveKnight = true;
-	}
+    public void RpcBeginForcedKnightMove()
+    {
+        this.forceMoveKnight = true;
+    }
 
-	[ClientRpc]
-	public void RpcEndForcedKnightMove()
-	{
-		this.forceMoveKnight = false;
-	}
-
+    [ClientRpc]
+    public void RpcEndForcedKnightMove()
+    {
+        this.forceMoveKnight = false;
+    }
     [ClientRpc]
     public void RpcUpdateTurn(string value)
     {
         transform.GetChild(8).GetComponent<Text>().text = value;
     }
-    
+
     [ClientRpc]
     public void RpcAddProgressCard(ProgressCardKind value)
     {
@@ -928,16 +1103,16 @@ public class playerControl : NetworkBehaviour {
         //set the card value and it will change its sprite accordingly
         tempCard.GetComponent<CardControl>().setCard(new Card(value));
         //put it in the view
-        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform,false);
+        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
     }
 
     [ClientRpc]
     public void RpcRemoveProgressCard(ProgressCardKind value)
     {
         CardControl[] tempCards = CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).GetComponentsInChildren<CardControl>();
-        foreach(CardControl card in tempCards)
+        foreach (CardControl card in tempCards)
         {
-            if(card.getCard().k == value)
+            if (card.getCard().k == value)
             {
                 card.removeCard();
                 break;
@@ -965,9 +1140,9 @@ public class playerControl : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcUpdateSliders(int level,int kind)
+    public void RpcUpdateSliders(int level, int kind)
     {
-        if(level == 1)
+        if (level == 1)
         {
             improvementPanel.transform.GetChild(kind).GetChild(0).GetChild(1).GetChild(0).gameObject.SetActive(true);
         }
@@ -977,11 +1152,9 @@ public class playerControl : NetworkBehaviour {
     [ClientRpc]
     public void RpcVictoryPanel(string message)
     {
-        if (!isLocalPlayer) return;
         this.victoryPanel.SetActive(true);
         this.victoryPanel.transform.Find("VictoryMessage").GetComponent<Text>().text = message;
     }
-
     [ClientRpc]
     public void RpcNameCheck(bool result)
     {
@@ -1002,173 +1175,201 @@ public class playerControl : NetworkBehaviour {
             nameWindow.transform.GetChild(0).GetComponent<InputField>().text = "";
         }
     }
-	
-	/**
-	 * @author xingwei
-	 * P2P trade UI text upgrading RPC functions
-	 */
-	[ClientRpc]
-	public void RpcLogP2PTradeDebugText(string txt, bool red){
-		if (red) {
-			P2PTrade_DebugText.color = Color.red;
-		} else {
-			P2PTrade_DebugText.color = Color.black;
-		}
-		P2PTrade_DebugText.text = txt;
-	}
+    /**
+ * @author xingwei
+ * P2P trade UI text upgrading RPC functions
+ */
+    [ClientRpc]
+    public void RpcLogP2PTradeDebugText(string txt, bool red)
+    {
+        if (red)
+        {
+            P2PTrade_DebugText.color = Color.red;
+        }
+        else
+        {
+            P2PTrade_DebugText.color = Color.black;
+        }
+        P2PTrade_DebugText.text = txt;																	 		  
+    }
+    [ClientRpc]			
+    public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
+    {
+        if (requestingPlayer.GetInstanceID() == gameObject.GetInstanceID())
+        {
+            return;
+        }
+        tradingPlayer = requestingPlayer;						   						   
 
-	[ClientRpc]
-	public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer,int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold){
-		if (requestingPlayer.GetInstanceID() == gameObject.GetInstanceID()) {
-			return;
-		}
-		tradingPlayer = requestingPlayer;
+        this.giveOre = giveOre;
+        this.giveBrick = giveBrick;
+        this.givePaper = givePaper;
+        this.giveWool = giveWool;
+        this.giveCoin = giveCoin;
+        this.giveWheat = giveWheat;
+        this.giveCloth = giveCloth;
+        this.giveGold = giveGold;
+        this.giveLumber = giveLumber;
 
-		this.giveOre = giveOre;
-		this.giveBrick = giveBrick;
-		this.givePaper = givePaper;
-		this.giveWool = giveWool;
-		this.giveCoin = giveCoin;
-		this.giveWheat = giveWheat;
-		this.giveCloth = giveCloth;
-		this.giveGold = giveGold;
-		this.giveLumber = giveLumber;
+        this.wantsOre = wantsOre;
+        this.wantsBrick = wantsBrick;
+        this.wantsPaper = wantsPaper;
+        this.wantsWool = wantsWool;
+        this.wantsCoin = wantsCoin;
+        this.wantsWheat = wantsWheat;
+        this.wantsCloth = wantsCloth;
+        this.wantsGold = wantsGold;
+        this.wantsLumber = wantsLumber;
 
-		this.wantsOre = wantsOre;
-		this.wantsBrick = wantsBrick;
-		this.wantsPaper = wantsPaper;
-		this.wantsWool = wantsWool;
-		this.wantsCoin = wantsCoin;
-		this.wantsWheat = wantsWheat;
-		this.wantsCloth = wantsCloth;
-		this.wantsGold = wantsGold;
-		this.wantsLumber = wantsLumber;
+        string offerTxt = "";
+        if (wantsBrick > 0)
+        {
+            offerTxt = offerTxt + "Brick :" + wantsBrick.ToString() + "\n";
+        }
+        if (wantsOre > 0)
+        {
+            offerTxt = offerTxt + "Ore :" + wantsOre.ToString() + "\n";
+        }
+        if (wantsWool > 0)
+        {
+            offerTxt = offerTxt + "Wool :" + wantsWool.ToString() + "\n";
+        }
+        if (wantsCoin > 0)
+        {
+            offerTxt = offerTxt + "Coin :" + wantsCoin.ToString() + "\n";
+        }
+        if (wantsWheat > 0)
+        {
+            offerTxt = offerTxt + "Wheat :" + wantsWheat.ToString() + "\n";
+        }
+        if (wantsCloth > 0)
+        {
+            offerTxt = offerTxt + "Cloth :" + wantsCloth.ToString() + "\n";
+        }
+        if (wantsLumber > 0)
+        {
+            offerTxt = offerTxt + "Lumber :" + wantsLumber.ToString() + "\n";
+        }
+        if (wantsPaper > 0)
+        {
+            offerTxt = offerTxt + "Paper :" + wantsPaper.ToString() + "\n";
+        }
+        if (wantsGold > 0)
+        {
+            offerTxt = offerTxt + "Gold :" + wantsGold.ToString() + "\n";
+        }
+        this.P2PTradeGivingDescriptionText.text = offerTxt;
 
+        string givesTxt = ""; // trading player gives, so other player receives
+        if (giveBrick > 0)
+        {
+            givesTxt = givesTxt + "Brick :" + giveBrick.ToString() + "\n";
+        }
+        if (giveOre > 0)
+        {
+            givesTxt = givesTxt + "Ore :" + giveOre.ToString() + "\n";
+        }
+        if (giveWool > 0)
+        {
+            givesTxt = givesTxt + "Wool :" + giveWool.ToString() + "\n";
+        }
+        if (giveCoin > 0)
+        {
+            givesTxt = givesTxt + "Coin :" + giveCoin.ToString() + "\n";
+        }
+        if (giveWheat > 0)
+        {
+            givesTxt = givesTxt + "Wheat :" + giveWheat.ToString() + "\n";
+        }
+        if (giveCloth > 0)
+        {
+            givesTxt = givesTxt + "Cloth :" + giveCloth.ToString() + "\n";
+        }
+        if (giveLumber > 0)
+        {
+            givesTxt = givesTxt + "Lumber :" + giveLumber.ToString() + "\n";
+        }
+        if (givePaper > 0)
+        {
+            givesTxt = givesTxt + "Paper :" + givePaper.ToString() + "\n";
+        }
+        if (giveGold > 0)
+        {
+            givesTxt = givesTxt + "Gold :" + giveGold.ToString() + "\n";
+        }
+        this.P2PTradeOfferedDescriptionText.text = givesTxt;
+        this.P2PTradeOfferPanel.SetActive(true);
+    }
 
-		string offerTxt = "";
-		if (wantsBrick > 0) {
-			offerTxt = offerTxt + "Brick :" + wantsBrick.ToString() + "\n";
-		}
-		if (wantsOre > 0) {
-			offerTxt = offerTxt +  "Ore :" + wantsOre.ToString() + "\n";
-		}
-		if (wantsWool > 0) {
-			offerTxt = offerTxt +  "Wool :" + wantsWool.ToString() + "\n";
-		}
-		if (wantsCoin > 0) {
-			offerTxt = offerTxt +  "Coin :" + wantsCoin.ToString() + "\n";
-		}
-		if (wantsWheat > 0) {
-			offerTxt = offerTxt +  "Wheat :" + wantsWheat.ToString() + "\n";
-		}
-		if (wantsCloth > 0) {
-			offerTxt = offerTxt +  "Cloth :" + wantsCloth.ToString() + "\n";
-		}
-		if (wantsLumber > 0) {
-			offerTxt = offerTxt +  "Lumber :" + wantsLumber.ToString() + "\n";
-		}
-		if (wantsPaper > 0) {
-			offerTxt = offerTxt +  "Paper :" + wantsPaper.ToString() + "\n";
-		}
-		if (wantsGold > 0) {
-			offerTxt = offerTxt +  "Gold :" + wantsGold.ToString() + "\n";
-		}
-		this.P2PTradeGivingDescriptionText.text = offerTxt;
+    [ClientRpc]
+    public void RpcSetP2PTradeOfferedDescriptionText(string txt)
+    {
+        P2PTradeOfferedDescriptionText.text = txt;
+    }
 
-		string givesTxt = ""; // trading player gives, so other player receives
-		if (giveBrick > 0) {
-			givesTxt = givesTxt + "Brick :" + giveBrick.ToString() + "\n";
-		}
-		if (giveOre > 0) {
-			givesTxt = givesTxt +  "Ore :" + giveOre.ToString() + "\n";
-		}
-		if (giveWool > 0) {
-			givesTxt = givesTxt +  "Wool :" + giveWool.ToString() + "\n";
-		}
-		if (giveCoin > 0) {
-			givesTxt = givesTxt +  "Coin :" + giveCoin.ToString() + "\n";
-		}
-		if (giveWheat > 0) {
-			givesTxt = givesTxt +  "Wheat :" + giveWheat.ToString() + "\n";
-		}
-		if (giveCloth > 0) {
-			givesTxt = givesTxt +  "Cloth :" + giveCloth.ToString() + "\n";
-		}
-		if (giveLumber > 0) {
-			givesTxt = givesTxt +  "Lumber :" + giveLumber.ToString() + "\n";
-		}
-		if (givePaper > 0) {
-			givesTxt = givesTxt +  "Paper :" + givePaper.ToString() + "\n";
-		}
-		if (giveGold > 0) {
-			givesTxt = givesTxt +  "Gold :" + giveGold.ToString() + "\n";
-		}
-		this.P2PTradeOfferedDescriptionText.text = givesTxt;
-		this.P2PTradeOfferPanel.SetActive (true);
-	}
+    [ClientRpc]
+    public void RpcSetP2PTradeGivingDescriptionText(string txt)
+    {
+        P2PTradeGivingDescriptionText.text = txt;
+    }
 
-	[ClientRpc]
-	public void RpcSetP2PTradeOfferedDescriptionText(string txt){
-		P2PTradeOfferedDescriptionText.text = txt;
-	}
+    [ClientRpc]
+    public void RpcSetP2PTradeOfferPanelActive(bool active)
+    {
+        P2PTradeOfferPanel.SetActive(active);
+    }
 
-	[ClientRpc]
-	public void RpcSetP2PTradeGivingDescriptionText(string txt){
-		P2PTradeGivingDescriptionText.text = txt;
-	}
+    [ClientRpc]
+    public void RpcSetP2PTradePanelActive(bool active)
+    {
+        P2PTradePanel.SetActive(active);
+    }
 
-	[ClientRpc]
-	public void RpcSetP2PTradeOfferPanelActive(bool active){
-		P2PTradeOfferPanel.SetActive (active);
-	}
-
-	[ClientRpc]
-	public void RpcSetP2PTradePanelActive(bool active){
-		P2PTradePanel.SetActive (active);
-
-
-
-
-
-	}
-
-	/**
+    /**
 	 * Reset the input field of P2P Trade Panel 
 	 */
-	[ClientRpc]
-	public void RpcResetP2PTradeInput(){
-		foreach (Transform child in this.P2PTrade_PlayerGives.transform) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			child.transform.GetComponent<InputField> ().text = "";
-		}
-
-	}
-    #endregion
-
-    public void testCard()
+    [ClientRpc]
+    public void RpcResetP2PTradeInput()
     {
-        //adds a card to panel when received;
-        GameObject tempCard = Instantiate(cardPrefab);
-        //set the card value and it will change its sprite accordingly
-        tempCard.GetComponent<CardControl>().setCard(new Card(ProgressCardKind.PrinterCard));
-        //put it in the view
-        tempCard.transform.SetParent(CardPanel.transform.GetChild(0).GetChild(0).GetChild(0).transform, false);
+        foreach (Transform child in this.P2PTrade_PlayerGives.transform)
+        {
+            child.transform.GetComponent<InputField>().text = "";
+        }		  
+
     }
+    [ClientRpc]
+    public void RpcSetupStealInterface(string[] names)
+    {
+        if (!isLocalPlayer) return;
+        stealPanel.SetActive(true);
+        stealPanel.transform.GetChild(0).GetComponent<Dropdown>().options.Clear();
+        foreach (string s in names)
+        {
+            stealPanel.transform.GetChild(0).GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = s });
+        }
+        stealPanel.transform.GetChild(0).GetComponent<Dropdown>().value = 1;
+        stealPanel.transform.GetChild(0).GetComponent<Dropdown>().value = 0;
+    }
+    [ClientRpc]
+    public void RpcEndStealInterface()
+    {
+        stealPanel.SetActive(false);
+    }
+
+	[ClientRpc]
+    public void RpcBeginInventor()
+    {
+        this.playInventor = true;
+        this.tilesToSwap = new GameObject[2] { null, null };
+    }
+
+    [ClientRpc]
+    public void RpcEndInventor(bool success)
+    {
+        this.playInventor = !success;
+        this.tilesToSwap = new GameObject[2] { null, null };
+    }
+    #endregion
 
     public void ExitGame()
     {

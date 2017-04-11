@@ -11,14 +11,15 @@ public class Player {
     public Dictionary<CommodityKind, int> cityImprovementLevels { get; set; }
     public Dictionary<ResourceKind, int> resources { get; set; }
     public Dictionary<CommodityKind, int> commodities { get; set; }
-    
+
     public int gold { get; private set; }
     public int victoryPoints { get; private set; }
+    public int fishTokens { get; private set; }
     public List<OwnableUnit> ownedUnits { get; set; }
-    public List<HarbourKind> ownedHarbour { get; set;}
+    public List<HarbourKind> ownedHarbour { get; set; }										 
 
 	public int numberofCityWalls{ get; set;}
-
+	
     public List<VillageKind> settlementPool { get; set; }
 
     public List<VillageKind> citiesPool { get; set; }
@@ -32,23 +33,24 @@ public class Player {
     public bool hasMerchant { get; private set; }
     public bool hasLongestTradeRoute { get; private set; }
 
-	public int availableWalls  { get; set; }
+    public int availableWalls { get; set; }
 
-	//temp variables for forced knight moves
-	public Knight storedKnight;
-	public Intersection storedInter;
+    //temp variables for forced knight moves
+    public Knight storedKnight;
+    public Intersection storedInter;
     public bool hasToMoveKnight = false;
 
     //temp variable for ship/knight move
     public Edges selectedShip;
     public Intersection selectedKnight;
 
-    public Player() {
+    public Player()
+    {
         myColor = playerCount;
         playerCount++;
         hasMerchant = false;
         hasLongestTradeRoute = false;
-		availableWalls = 3;
+		availableWalls = 3;												   
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
@@ -71,6 +73,7 @@ public class Player {
             { CommodityKind.Paper, 0 }
         };
         gold = 20;
+        fishTokens = 20;
         ownedUnits = new List<OwnableUnit>();
         ownedHarbour = new List<HarbourKind>();
         citiesPool = new List<VillageKind>();
@@ -79,7 +82,7 @@ public class Player {
         knightTokens = new List<KnightLevel>();
 
         //add the tokens in the pool
-        for(int i = 0; i<4; i++)
+        for (int i = 0; i < 4; i++)
         {
             citiesPool.Add(VillageKind.City);
             settlementPool.Add(VillageKind.Settlement);
@@ -91,7 +94,7 @@ public class Player {
                 knightTokens.Add(KnightLevel.Strong);
             }
         }
-	    settlementPool.Add(VillageKind.Settlement);
+        settlementPool.Add(VillageKind.Settlement);
         victoryPoints = 0;
 
     }
@@ -112,6 +115,14 @@ public class Player {
     public void AddVictoryPoints(int value)
     {
         victoryPoints += value;
+    }
+    public void AddFishTokens(int value)
+    {
+        fishTokens += value;
+    }
+    public void PayFishTokens(int value)
+    {
+        fishTokens -= value;
     }
 
     public void PayResources(int quantity, ResourceKind resourceKind)
@@ -174,7 +185,7 @@ public class Player {
     {
         knightTokens.Add(level);
     }
-		
+
     #endregion
 
     #region GameActions
@@ -213,10 +224,17 @@ public class Player {
         }
     }
 
-    public void improveCity(CommodityKind kind)
+    public void improveCity(CommodityKind kind, bool playedCraneCard)
     {
         //pay and upgrade
-        PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+		if (playedCraneCard)
+		{
+			PayCommoditys(GetCityImprovementLevel(kind), kind);
+		}
+		else
+		{
+        	PayCommoditys(GetCityImprovementLevel(kind) + 1, kind);
+		}
         cityImprovementLevels[kind] += 1;
     }
 
@@ -226,8 +244,7 @@ public class Player {
 		{	
 			PayResources(2, ResourceKind.Brick);
 		}
-	}
-
+	}				  									   
     public void GiveLongestTradeRoute()
     {
         this.hasLongestTradeRoute = true;
@@ -272,7 +289,7 @@ public class Player {
         IEnumerator counter = resources.Values.GetEnumerator();
         while (counter.MoveNext())
         {
-            sum += (int) counter.Current;
+            sum += (int)counter.Current;
         }
         counter = commodities.Values.GetEnumerator();
         while (counter.MoveNext())
@@ -329,13 +346,12 @@ public class Player {
         return this.HasResources(1, ResourceKind.Grain);
     }
 
-	public bool HasWallResources(bool playedEngCard) {
+public bool HasWallResources(bool playedEngCard) {
 		if (!playedEngCard) {
 			return this.HasResources (2, ResourceKind.Brick);
 		}
 		return true;
-	}
-
+	}													  
     public int GetCityImprovementLevel(CommodityKind kind)
     {
         return cityImprovementLevels[kind];
@@ -427,15 +443,14 @@ public class Player {
         return false;
     }
 
-	public bool HasWalls()
+    public bool HasWalls()
 	{
 		if (availableWalls > 0)
 		{
 			return true;
 		}
 		return false;
-	}
-
+	}										 
     public bool HasKnights(KnightLevel level)
     {
         return knightTokens.Contains(level);
