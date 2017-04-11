@@ -1064,9 +1064,9 @@ public class Game : NetworkBehaviour
 
         if (!correctPlayer)
         {
-            logAPlayer(player, "Can't build when it isn't your turn.");
+            logAPlayer(player, "Can't build or Upgrade Knights when it isn't your turn.");
         }
-        if (build)
+        else if (build)
         {
             if (!hasLand && inter.knight == KnightLevel.None)
             {
