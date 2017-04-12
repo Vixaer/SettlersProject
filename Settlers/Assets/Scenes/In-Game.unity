@@ -375,6 +375,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -383,6 +384,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 790445187}
   - {fileID: 108712742}
@@ -1560,6 +1562,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -1568,6 +1571,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 593759208}
   - {fileID: 998159917}
@@ -2579,6 +2583,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -2587,6 +2592,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 2285461}
   - {fileID: 1895225165}
@@ -2742,6 +2748,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -2750,6 +2757,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1749827768}
   - {fileID: 159499377}
@@ -2905,6 +2913,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -2913,6 +2922,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1592700091}
   - {fileID: 1150296974}
@@ -3068,6 +3078,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3076,6 +3087,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 411292853}
   - {fileID: 995537667}
@@ -3231,6 +3243,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3239,6 +3252,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 786961113}
   - {fileID: 2107363295}
@@ -3394,6 +3408,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3402,6 +3417,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 113601816}
   - {fileID: 1278501511}
@@ -3557,6 +3573,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3565,6 +3582,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1133156735}
   - {fileID: 34356953}
@@ -3720,6 +3738,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3728,6 +3747,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 469863990}
   - {fileID: 1451078717}
@@ -3883,6 +3903,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -3891,6 +3912,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 910561398}
   - {fileID: 1180029405}
@@ -4046,6 +4068,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4054,6 +4077,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 198619459}
   - {fileID: 323235005}
@@ -4209,6 +4233,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4217,6 +4242,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1973971912}
   - {fileID: 1731839038}
@@ -4372,6 +4398,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4380,6 +4407,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1794438021}
   - {fileID: 1506870314}
@@ -4535,6 +4563,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4543,6 +4572,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 2032348959}
   - {fileID: 1842910447}
@@ -4698,6 +4728,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4706,6 +4737,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 689442153}
   - {fileID: 962286534}
@@ -4861,6 +4893,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -4869,6 +4902,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1373140575}
   - {fileID: 1552550911}
@@ -5024,6 +5058,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5032,6 +5067,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1542576114}
   - {fileID: 837069423}
@@ -5187,6 +5223,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5195,6 +5232,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 647039774}
   - {fileID: 928405136}
@@ -5350,6 +5388,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5358,6 +5397,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1051473465}
   - {fileID: 1511563475}
@@ -5513,6 +5553,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5521,6 +5562,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 519956612}
   - {fileID: 1904326054}
@@ -5676,6 +5718,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5684,6 +5727,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1228869144}
   - {fileID: 1320838019}
@@ -5839,6 +5883,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -5847,6 +5892,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 511631510}
   - {fileID: 964058167}
@@ -11579,6 +11625,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -11587,6 +11634,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 410403751}
   - {fileID: 1561444228}
@@ -11912,6 +11960,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -11920,6 +11969,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 803086325}
   - {fileID: 910561398}
@@ -16652,6 +16702,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -16660,6 +16711,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 118605344}
   - {fileID: 1480037162}
@@ -17376,6 +17428,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -17384,6 +17437,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 59580682}
   - {fileID: 549502400}
@@ -19265,8 +19319,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1d89587a7ee1c842bcfc01b2aedcc20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defenders: 0
   waitingForRoad: 0
   firstBarbAttack: 0
+  bootDistributed: 0
+  stealAll: 0
   barbPosition: 0
   tempPhase: 0
   boardTile:
@@ -19796,6 +19853,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -19804,6 +19862,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1034122202}
   - {fileID: 818735702}
@@ -21827,6 +21886,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -21835,6 +21895,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1116339556}
   - {fileID: 327051887}
@@ -24686,6 +24747,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -24694,6 +24756,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 368614347}
   - {fileID: 2015361690}
@@ -25064,6 +25127,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -25072,6 +25136,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1557263139}
   - {fileID: 900882614}
@@ -32573,6 +32638,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -32581,6 +32647,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 2121246430}
   - {fileID: 147235371}
@@ -35778,6 +35845,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -35786,6 +35854,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 455196914}
   - {fileID: 311022985}
@@ -38327,6 +38396,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -38335,6 +38405,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1350696735}
   - {fileID: 2042857046}
@@ -38862,6 +38933,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -38870,6 +38942,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1157115775}
   - {fileID: 2088452988}
@@ -41384,6 +41457,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -41392,6 +41466,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 39556434}
   - {fileID: 1382471486}
@@ -44817,6 +44892,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -44825,6 +44901,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 2108777608}
   - {fileID: 808171783}
@@ -46961,6 +47038,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -46969,6 +47047,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 793624036}
   - {fileID: 197357113}
@@ -52593,6 +52672,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -52601,6 +52681,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1529833353}
   - {fileID: 194792453}
@@ -53481,6 +53562,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -53489,6 +53571,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1638736644}
   - {fileID: 197357113}
@@ -53664,6 +53747,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -53672,6 +53756,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 235664954}
   - {fileID: 672837817}
@@ -54037,6 +54122,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -54045,6 +54131,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 964058167}
   - {fileID: 469863990}
@@ -57640,6 +57727,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -57648,6 +57736,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1992546012}
   - {fileID: 1356341978}
@@ -58783,6 +58872,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -58791,6 +58881,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 713063792}
   - {fileID: 517727778}
@@ -60005,6 +60096,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -60013,6 +60105,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 2088452988}
   - {fileID: 415082162}
@@ -61611,6 +61704,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -61619,6 +61713,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 446264807}
   - {fileID: 1456639721}
@@ -65612,6 +65707,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -65620,6 +65716,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1889079857}
   - {fileID: 488066720}
@@ -72743,6 +72840,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -72751,6 +72849,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1624681479}
   - {fileID: 600554154}
@@ -76520,6 +76619,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e56a4274b1a037942b1ebd1a499be3fc, type: 3}
   robberSprite: {fileID: 21300000, guid: e66240c355ebef347bffd44d18b5f87c, type: 3}
   pirateSprite: {fileID: 21300000, guid: 4f7e20adda053964fb45c99b58f73e9a, type: 3}
+  merchantSprite: {fileID: 0}
   lakeSprite: {fileID: 21300000, guid: e93e9be601bf79c49809a1b872e13b3c, type: 3}
   fishingSprite: {fileID: 21300000, guid: 320cd5fcaa9d35b4a8556f31a60596d6, type: 3}
   myTerrain: 8
@@ -76528,6 +76628,7 @@ MonoBehaviour:
   isPirate: 0
   isLake: 0
   hasFishing: 0
+  hasMerchant: 0
   corners:
   - {fileID: 1364316562}
   - {fileID: 1157115775}

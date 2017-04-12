@@ -554,11 +554,8 @@ public class Game : NetworkBehaviour
             {
                 print(p.name);
                 print(tradingPlayer.name);
-                if (p.name != tradingPlayer.name)
-                {
-                    //TODO: print these offers and takes to other players' panels
-                    playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
-                }
+                //TODO: print these offers and takes to other players' panels
+                playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
             }
         }
         else if (checkCorrectPlayer(player))
