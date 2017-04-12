@@ -179,12 +179,12 @@ public class Intersection : NetworkBehaviour {
     }
     public void RemoveKnight(Player player, bool destroy)
     {
+        knightRemoved = true;
         owned = false;
         Knight temp = (Knight)positionedUnit;
         // temp.deactivateKnight();
         knightActive = false;
         knight = KnightLevel.None;
-        knightRemoved = true;
 
         positionedUnit = null;
 
@@ -231,7 +231,6 @@ public class Intersection : NetworkBehaviour {
     #region Sync Hooks
     public void OnOwned(Color value)
     {
-        owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
         if (knightRemoved)
         {

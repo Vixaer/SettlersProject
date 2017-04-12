@@ -51,6 +51,9 @@ public class Game : NetworkBehaviour
     private Dictionary<string, Player> tempPlayersByName;
     private VillageKind metropolisType = VillageKind.City;
 
+    //for checking if ship was built this turn;
+    private List<Edges> shipsBuiltThisTurn = new List<Edges>();
+
     #region Initial Setup
     void Start()
     {
@@ -1476,18 +1479,21 @@ public class Game : NetworkBehaviour
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free ship because of the Road Building Card.");
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
             }
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
             {
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 gamePlayers[player].hasFreeRoad = false;
                 logAPlayer(player, "The workers give you this ship because of your fish donation.");
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
             }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
             {
                 gamePlayers[player].PayShipResources();
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
                 //update his UI to let him know he lost the resources;
             }
             CheckForLongestTradeRoute();
@@ -1516,91 +1522,98 @@ public class Game : NetworkBehaviour
             }
             else if (temp.isShip == true && temp.belongsTo.Equals(temp2))
             {
-                // not connected to 2 ships/units check
-                bool connectCheck = false;
-                int count = 0;
-                int count2 = 0;
-                foreach (Intersection i in temp.endPoints)
+                if (shipsBuiltThisTurn.Contains(temp))
                 {
-
-                    foreach (Edges e in i.paths)
+                    logAPlayer(player, "Can't move ships just built!");
+                }
+                else {
+                    // not connected to 2 ships/units check
+                    bool connectCheck = false;
+                    int count = 0;
+                    int count2 = 0;
+                    foreach (Intersection i in temp.endPoints)
                     {
-                        //check to see if owned or else belongs to is obviously null and return null pointer
-                        if (e.owned)
+
+                        foreach (Edges e in i.paths)
                         {
-                            if (e.belongsTo.Equals(temp2))
+                            //check to see if owned or else belongs to is obviously null and return null pointer
+                            if (e.owned)
                             {
-                                if (!connectCheck)
+                                if (e.belongsTo.Equals(temp2))
                                 {
-                                    count++;
-                                    if (count == 2)
+                                    if (!connectCheck)
                                     {
-                                        connectCheck = true;
-                                        break;
+                                        count++;
+                                        if (count == 2)
+                                        {
+                                            connectCheck = true;
+                                            break;
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    count2++;
-                                    if (count2 == 2)
-                                        break;
+                                    else
+                                    {
+                                        count2++;
+                                        if (count2 == 2)
+                                            break;
+                                    }
+
                                 }
 
                             }
-
                         }
-                    }
-                    if (count == 2 || count2 == 2)
-                    {
-                        continue;
-                    }
-
-                    // Check to see if ship connected to any of player's units
-                    if (temp2.ownedUnits.Contains(i.positionedUnit))
-                    {
-                        if (!connectCheck)
+                        if (count == 2 || count2 == 2)
                         {
-                            count = 2;
-                            if (count == 2)
-                            {
-                                connectCheck = true;
-                            }
+                            continue;
+                        }
 
+                        // Check to see if ship connected to any of player's units
+                        if (temp2.ownedUnits.Contains(i.positionedUnit))
+                        {
+                            if (!connectCheck)
+                            {
+                                count = 2;
+                                if (count == 2)
+                                {
+                                    connectCheck = true;
+                                }
+
+                            }
+                            else
+                            {
+                                count2 = 2;
+                            }
+                        }
+
+                    }
+
+                    if (count2 > 1)
+                    {
+                        logAPlayer(player, "Can't move ships connected on both ends to your other pieces!");
+                    }
+                    else
+                    {
+                        //pirate check
+                        bool pirateCheck = false;
+                        foreach (TerrainHex a in temp.inBetween)
+                        {
+                            if (a.isPirate == true)
+                            {
+                                pirateCheck = true;
+                            }
+                        }
+                        if (pirateCheck)
+                        {
+                            logAPlayer(player, "Can't move ships that are next to pirate!");
                         }
                         else
                         {
-                            count2 = 2;
+                            temp.SelectShipForMoving(temp2);
+                            temp2.selectedShip = temp;
+                            player.GetComponent<playerControl>().RpcBeginShipMove();
+                            logAPlayer(player, "Ship Selected!");
                         }
-                    }
 
-                }
-
-                if (count2 > 1)
-                {
-                    logAPlayer(player, "Can't move ships connected on both ends to your other pieces!");
-                }
-                else
-                {
-                    //pirate check
-                    bool pirateCheck= false;
-                    foreach (TerrainHex a in temp.inBetween)
-                    {
-                        if (a.isPirate == true)
-                        {
-                            pirateCheck = true;
-                        }
                     }
-                    if (pirateCheck)
-                    {
-                        logAPlayer(player, "Can't move ships that are next to pirate!");
-                    } else
-                    {
-                        temp.SelectShipForMoving(temp2);
-                        temp2.selectedShip = temp;
-                        player.GetComponent<playerControl>().RpcBeginShipMove();
-                        logAPlayer(player, "Ship Selected!");
-                    }
-                    
                 }
             }
             else
@@ -1609,6 +1622,16 @@ public class Game : NetworkBehaviour
             }
         }
 
+    }
+
+    public void DeselectShip(GameObject player)
+    {
+        Edges shipToMove = gamePlayers[player].selectedShip;
+        if (shipToMove != null)
+        {
+            shipToMove.DeselectShipForMoving(gamePlayers[player]);
+            player.GetComponent<playerControl>().RpcEndShipMove(false);
+        }
     }
 
     public void placeShipCheck(GameObject player, GameObject edge)
@@ -1795,7 +1818,7 @@ public class Game : NetworkBehaviour
             {
                 knightToMove.DeselectKnight();
                 player.GetComponent<playerControl>().RpcEndKnightMove();
-                logAPlayer(player, "Can't move your knight here!");
+                logAPlayer(player, "Can't move your knight here! New place must be connected to old place.");
             }
 
             //Check to see if no cities or higher lvl knights at new intersection
@@ -1806,7 +1829,7 @@ public class Game : NetworkBehaviour
             {
                 knightToMove.DeselectKnight();
                 player.GetComponent<playerControl>().RpcEndKnightMove();
-                logAPlayer(player, "Can't move your knight here!");
+                logAPlayer(player, "Can't move your knight here! There is already something here.");
             }
 
             //If there is a knight at the new place
@@ -2079,7 +2102,8 @@ public class Game : NetworkBehaviour
         {
             if (currentPhase != GamePhase.TurnDiceRolled)
             {
-			player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
+			    player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
+                shipsBuiltThisTurn.Clear();
 
 				//Reset all knights' firstturn variables that are false since they were activated this turn
 				Player temp = gamePlayers[player];
@@ -2176,7 +2200,18 @@ public class Game : NetworkBehaviour
                 currentPhase = GamePhase.TurnFirstPhase;
                 if (names.Count > 0 && !Bishop)
                 {
-                    player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                    if (stealAll)
+                    {
+                        foreach (String name in names)
+                        {
+                            stealPlayer(player, name);
+                            stealAll = false;
+                        }
+                    }
+                    else
+                    {
+                        player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                    }
                 }
                 //Bishop steals from each player
                 else if (names.Count > 0 && Bishop)

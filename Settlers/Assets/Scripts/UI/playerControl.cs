@@ -270,6 +270,7 @@ public class playerControl : NetworkBehaviour {
     {
         if (buildShip == false)
         {
+            CmdDeselectShip(gameObject);
             buildShip = true;
             moveShip = false;
             MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
@@ -891,6 +892,11 @@ public class playerControl : NetworkBehaviour {
             gameState.GetComponent<Game>().buildRoad(player, edge);
         }
 
+    }
+    [Command]
+    void CmdDeselectShip(GameObject player)
+    {
+        gameState.GetComponent<Game>().DeselectShip(player);
     }
     [Command]
     void CmdGetFreeRoad(GameObject player)
