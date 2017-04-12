@@ -2653,6 +2653,7 @@ public class Game : NetworkBehaviour
                         if (metropolis != null && metropolis.GetComponent<Intersection>().positionedUnit.Owner != currentUpgrader)
                         {
                             metropolis.GetComponent<Intersection>().metropolis = VillageKind.City;
+                            ((Village)metropolis.GetComponent<Intersection>().positionedUnit).setVillageType(VillageKind.City);
                             metropolis.GetComponent<Intersection>().positionedUnit.Owner.AddVictoryPoints(-2);
                             updatePlayerResourcesUI(playerObjects[metropolis.GetComponent<Intersection>().positionedUnit.Owner]);
                         }
@@ -3437,6 +3438,7 @@ public class Game : NetworkBehaviour
         {
             foreach (Player p in mostContributed)
             {
+                broadcastMessage("Player " + p.name + " is a defender of Catan and received a progress card.");
                 var pGO = playerObjects[p];
                 pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(null, null, null, true);
 
@@ -3457,7 +3459,7 @@ public class Game : NetworkBehaviour
         }
 
         // Find out which victim contributed the least
-        int leastContributedAmount = 0;
+        int leastContributedAmount = int.MaxValue;
         List<Player> leastContributed = new List<Player>();
         foreach (Player p in victims)
         {
