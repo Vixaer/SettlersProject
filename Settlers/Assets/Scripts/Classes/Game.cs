@@ -553,7 +553,7 @@ public class Game : NetworkBehaviour
             foreach (Player p in playerObjects.Keys)
             {
                 //TODO: print these offers and takes to other players' panels
-                playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
+				playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold, tradingPlayer.name);
             }
         }
         else if (checkCorrectPlayer(player))

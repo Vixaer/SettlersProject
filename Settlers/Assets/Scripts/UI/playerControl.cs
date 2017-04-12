@@ -1344,12 +1344,14 @@ public class playerControl : NetworkBehaviour {
         P2PTrade_DebugText.text = txt;																	 		  
     }
     [ClientRpc]			
-    public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
+	public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold, string tradername)
     {
 		if (!isLocalPlayer)
 			return;
 		
 		tradingPlayer = requestingPlayer;
+
+		this.P2PTradeOfferFromText.text = "Trade Request From " + tradername;
 
         this.giveOre = giveOre;
         this.giveBrick = giveBrick;
