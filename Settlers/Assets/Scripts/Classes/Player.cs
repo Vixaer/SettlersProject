@@ -67,17 +67,17 @@ public class Player {
         // Possibly move this code to a constructor
         resources = new Dictionary<ResourceKind, int>()
         {
-            { ResourceKind.Brick, 100 },
-            { ResourceKind.Grain, 100 },
-            { ResourceKind.Lumber, 100 },
-            { ResourceKind.Ore, 100 },
-            { ResourceKind.Wool, 100 }
+            { ResourceKind.Brick, 0 },
+            { ResourceKind.Grain, 0 },
+            { ResourceKind.Lumber, 0 },
+            { ResourceKind.Ore, 0 },
+            { ResourceKind.Wool, 0 }
         };
         commodities = new Dictionary<CommodityKind, int>()
         {
-            { CommodityKind.Cloth, 100 },
-            { CommodityKind.Coin, 100 },
-            { CommodityKind.Paper, 100 }
+            { CommodityKind.Cloth, 0 },
+            { CommodityKind.Coin, 0 },
+            { CommodityKind.Paper, 0 }
         };
         cityImprovementLevels = new Dictionary<CommodityKind, int>()
         {
