@@ -41,6 +41,7 @@ public class playerControl : NetworkBehaviour {
 
     private bool pickMetropolis = false;
     private bool playInventor = false;
+    private bool playDiplomat = false;
     private GameObject[] tilesToSwap = null;
     private GameObject gameState;
     private bool isSeletionOpen = false;
@@ -557,7 +558,14 @@ public class playerControl : NetworkBehaviour {
             }
             if (hit.collider.gameObject.CompareTag("Edge") && moveShip != true && !forceMoveKnight)
             {
-                CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
+                if (playDiplomat)
+                {
+                    CmdMoveRoad(hit.collider.gameObject);
+                }
+                else
+                {
+                    CmdBuildOnEdge(gameObject, hit.collider.gameObject, buildShip);
+                }    
             }
             if (hit.collider.gameObject.CompareTag("TerrainHex"))
             {
@@ -1066,6 +1074,12 @@ public class playerControl : NetworkBehaviour {
     public void CmdGetGameData()
     {
         gameState.GetComponent<Game>().SaveGameData(this);
+    }
+
+    [Command]
+    public void CmdMoveRoad(GameObject edge)
+    {
+        gameState.GetComponent<Game>().MoveRoad(this.gameObject, edge);
     }
 
     [ClientRpc]
@@ -1697,6 +1711,18 @@ public class playerControl : NetworkBehaviour {
     {
         this.playInventor = !success;
         this.tilesToSwap = new GameObject[2] { null, null };
+    }
+
+    [ClientRpc]
+    public void RpcBeginDiplomat()
+    {
+        this.playDiplomat = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndDiplomat()
+    {
+        this.playDiplomat = false;
     }
     #endregion
 

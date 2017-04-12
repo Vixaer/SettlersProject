@@ -259,7 +259,7 @@ public class Intersection : NetworkBehaviour {
         }
         else if (value == 3)
         {
-            Debug.Log("hey");
+            
             transform.GetComponent<SpriteRenderer>().sprite = cityWallSprite;
 
             transform.GetComponent<CircleCollider2D>().radius = 0.6f;

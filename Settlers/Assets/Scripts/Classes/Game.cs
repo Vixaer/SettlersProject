@@ -1396,6 +1396,12 @@ public class Game : NetworkBehaviour
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free road because of the Road Building Card.");
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase && CardsInPlay.Contains(ProgressCardKind.DiplomatCard))
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                CardsInPlay.Remove(ProgressCardKind.DiplomatCard);
+                logAPlayer(player, "You have moved your road.");
+            }
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
             {
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
@@ -2039,10 +2045,14 @@ public class Game : NetworkBehaviour
         HashSet<Intersection> closedSet = new HashSet<Intersection>();
         openSet.Enqueue(oldInter);
 
-        if (temp.owned)
+        if (oldInter.Equals(temp))
         {
             logAPlayer(player, "Sadly, not a valid place to move your knight.");
         }
+        else if (temp.owned)
+        {
+            logAPlayer(player, "Sadly, not a valid place to move your knight.");
+        }   
         else
         {
 
@@ -2651,32 +2661,47 @@ public class Game : NetworkBehaviour
                         break;
                     }
                 
+                //done
                 case ProgressCardKind.DeserterCard:
                     {
                         //I have no idea what im doing
-                        logAPlayer(player, "selected deserter");
+                       
                         List<String> names = new List<string>();
-                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
-                        while (keys.MoveNext())
+
+                        IEnumerator keys = (gamePlayers.Keys).GetEnumerator();
+                        bool remaining = true;
+                        //set to first player
+                        keys.MoveNext();
+                        while (remaining)
                         {
-                            Player temp = (Player)keys.Current;
-                            foreach(IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
+                            GameObject ObjectPlayer = (GameObject)keys.Current;
+                            Player p = gamePlayers[ObjectPlayer];
+                            foreach (IntersectionUnit i in p.ownedUnits.Where(u => u is Knight))
                             {
-                                if (!names.Contains(temp.name)){
-                                    names.Add(temp.name);
+                                if (!names.Contains(p.name) && !p.Equals(cardPlayer))
+                                {
+                                    names.Add(p.name);
                                 }
                             }
-                          
+
+
+                            if (!keys.MoveNext())
+                            {
+                                remaining = false;
+                            }
                         }
-                        
+        
                         if (names.Count > 0)
                         {
                             tempPhase = currentPhase;
                             currentPhase = GamePhase.TurnDesertKnight;
-                            player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
                             cardPlayer.cardsInHand.Remove(k);
                             gameDices.returnCard(k);
                             playedDeserter = cardPlayer;
+                            updateTurn();
+                            player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                            player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                            
                         }
                         else
                         {
@@ -2686,36 +2711,55 @@ public class Game : NetworkBehaviour
                         break;
                     }
                 
+                //done
                 case ProgressCardKind.DiplomatCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        CardsInPlay.Add(k);
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        logAPlayer(player, "Select a road to move.");
+                        player.GetComponent<playerControl>().RpcBeginDiplomat();
                         break;
                     }
+
+                
+                //done
                 case ProgressCardKind.IntrigueCard:
                     {
                         bool atLeastOneKnight = false;
-                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
-                        while (keys.MoveNext())
+
+                        IEnumerator keys = (gamePlayers.Keys).GetEnumerator();
+                        bool remaining = true;
+                        //set to first player
+                        keys.MoveNext();
+                        while (remaining)
                         {
-                            Player temp = (Player)keys.Current;
-                            foreach (IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
+                            GameObject ObjectPlayer = (GameObject)keys.Current;
+                            Player p = gamePlayers[ObjectPlayer];
+                            foreach (IntersectionUnit i in p.ownedUnits.Where(u => u is Knight))
                             {
-                                atLeastOneKnight = true;
-                                break;
+                                if (!p.Equals(cardPlayer))
+                                {
+                                    atLeastOneKnight = true;
+                                }
                             }
 
+
+                            if (!keys.MoveNext())
+                            {
+                                remaining = false;
+                            }
                         }
 
                         if (atLeastOneKnight)
                         {
                             tempPhase = currentPhase;
                             currentPhase = GamePhase.Intrigue;
+                            updateTurn();
                             player.GetComponent<playerControl>().RpcStartSelectIntrigue();
-                            cardPlayer.cardsInHand.Remove(k);
-                            gameDices.returnCard(k);
-                            playedDeserter = cardPlayer;
+                            logAPlayer(player, "Select a knight to intrigue!");
+
                         }
                         else
                         {
@@ -2875,39 +2919,167 @@ public class Game : NetworkBehaviour
                     }
                     if (connectCheck)
                     {
-                        Player opponent = byebye.Owner;
-                        logAPlayer(playerObjects[opponent], "Because " + p.name + " has used the Intrigue card, your knight has been displaced and you must move it!");
-                        opponent.storedKnight = byebye;
-                        opponent.storedInter = i;
-                        opponent.hasToMoveKnight = true;
-                        i.RemoveKnight(opponent, false);
-                        tempPhase = currentPhase;
-                        currentPhase = GamePhase.ForcedKnightMove;
-                        ForcedMovePlayer = opponent;
-                        updateTurn();
-                        playerObjects[opponent].GetComponent<playerControl>().RpcBeginForcedKnightMove();
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(ProgressCardKind.IntrigueCard);
+                        gamePlayers[player].cardsInHand.Remove(ProgressCardKind.IntrigueCard);
+                        gameDices.returnCard(ProgressCardKind.IntrigueCard);
                         player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                        logAPlayer(player, "You have intrigued a knight!");
+
+                        Player opponent = byebye.Owner;
+
+                        if (IntrigueCheck(i))
+                        {
+                            logAPlayer(playerObjects[opponent], "Because " + p.name + " has used the Intrigue card, your knight has been displaced and you must move it!");
+                            opponent.storedKnight = byebye;
+                            opponent.storedInter = i;
+                            opponent.hasToMoveKnight = true;
+                            i.RemoveKnight(opponent, false);
+
+                            currentPhase = GamePhase.ForcedKnightMove;
+                            ForcedMovePlayer = opponent;
+                            updateTurn();
+                            playerObjects[opponent].GetComponent<playerControl>().RpcBeginForcedKnightMove();
+                        } else
+                        {
+                            logAPlayer(playerObjects[opponent], "Because " + p.name + " has used the Intrigue card, your knight has been removed from the board!");
+                            i.RemoveKnight(opponent, true);
+                            currentPhase = tempPhase;
+                            updateTurn();
+
+                        }
+
+
                     }
                     else
                     {
                         logAPlayer(player, "Opponent knight must be connected to one of your roads!");
+                        player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                        currentPhase = tempPhase;
+                        updateTurn();
                     }
                 }
                 else
                 {
                     logAPlayer(player, "Select an opponent knight!");
+                    player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                    currentPhase = tempPhase;
+                    updateTurn();
                 }
             }
             else
             {
                 logAPlayer(player, "Select an opponent knight!");
+                player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                currentPhase = tempPhase;
+                updateTurn();
             }
         } else
         {
             logAPlayer(player, "Select an opponent knight!");
+            player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+            currentPhase = tempPhase;
+            updateTurn();
         }
     }
 
+    bool IntrigueCheck(Intersection inter)
+    {
+        Player opponent = inter.positionedUnit.Owner;
+
+        Queue<Intersection> openSet = new Queue<Intersection>();
+        HashSet<Intersection> closedSet = new HashSet<Intersection>();
+        openSet.Enqueue(inter);
+
+        bool connectCheck = false;
+        while (openSet.Count > 0)
+        {
+            Intersection currentInter = openSet.Dequeue();
+            closedSet.Add(currentInter);
+
+            foreach (Edges e in currentInter.paths)
+            {
+                if (e.belongsTo == null)
+                {
+                    continue;
+                }
+                else if (!e.belongsTo.Equals(opponent))
+                {
+                    continue;
+                }
+                foreach (Intersection i in e.endPoints)
+                {
+                    if (!i.Equals(currentInter))
+                    {
+
+                        //empty space has been found!
+                        if (!i.owned)
+                        {
+                            connectCheck = true;
+                            break;
+                        }
+                        //Add intersection to open set if intersection is occupied by a friendly unit and it hasn't been explored yet
+                        else if (!closedSet.Contains(i) && opponent.ownedUnits.Contains(i.positionedUnit))
+                        {
+                            openSet.Enqueue(i);
+                        }
+                    }
+
+                }
+            }
+            if (connectCheck)
+                break;
+        }
+        return connectCheck;
+    }
+
+    public void MoveRoad(GameObject player, GameObject edgeGO)
+    {
+        var edge = edgeGO.GetComponent<Edges>();
+        if (!edge.owned || edge.isShip)
+        {
+            logAPlayer(player, "Select a road to move.");
+            return;
+        }
+        var isOpenPoint = new bool[2] { true, true };
+        int j = 0;
+        foreach (Intersection i in edge.endPoints)
+        {
+            if (i.positionedUnit != null)
+            {
+                isOpenPoint[j] = false;
+            }
+            foreach (Edges e in i.paths)
+            {
+                if (e.owned && e != edge)
+                {
+                    isOpenPoint[j] = false;
+                }
+            }
+            j++;
+        }
+        var isOpen = isOpenPoint[0] || isOpenPoint[1];
+        if (!isOpen)
+        {
+            logAPlayer(player, "Select an open road to move.");
+            return;
+        }
+        else
+        {
+            logAPlayer(player, "You have moved a road");
+            if (edge.belongsTo != gamePlayers[player])
+            {
+                CardsInPlay.Remove(ProgressCardKind.DiplomatCard);
+            }
+            else
+            {
+                logAPlayer(player, "Please replace your road.");
+            }
+            edge.RemoveRoad(gamePlayers[player]);
+            CheckForLongestTradeRoute();
+            updatePlayerResourcesUI(player);
+            player.GetComponent<playerControl>().RpcEndDiplomat();
+        }
+    }
     public void getCardFromDraw(GameObject player,EventKind k)
     {
         ProgressCardKind card = gameDices.rollCard(k);
@@ -3168,6 +3340,7 @@ public class Game : NetworkBehaviour
                         break;
                     }
                 }
+                player.GetComponent<playerControl>().RpcEndStealInterface();
                 playerObjects[victim].GetComponent<playerControl>().RpcStartDesertKnight();
                 logAPlayer(playerObjects[victim], receiver.name + " played the Deserter card on you! Select a knight to be deserted!");
 
@@ -3302,6 +3475,7 @@ public class Game : NetworkBehaviour
                         {
                             logAPlayer(playerObjects[playedDeserter], "You have nowhere to place a new knight. You got deserted as well!");
                             currentPhase = tempPhase;
+                            updateTurn();
                         }
                         else
                         {
@@ -3310,13 +3484,15 @@ public class Game : NetworkBehaviour
                         }
 
                     }
-
-                    }
                     else
                     {
                         logAPlayer(playerObjects[playedDeserter], "You can't build any knights of the deserted knights level. You got deserted as well!");
                         currentPhase = tempPhase;
+                        updateTurn();
                     }
+
+                }
+                    
 
                 }
                  else
@@ -3336,10 +3512,35 @@ public class Game : NetworkBehaviour
 
         if (!i.owned)
         {
-            i.BuildDesertKnight(p);
-            logAPlayer(player, "Deserted Knight placed!");
-            player.GetComponent<playerControl>().RpcEndDesertKnightMove();
-            currentPhase = tempPhase;
+            //look everywhere for a place to build a knight
+            bool connectCheck = false;
+            foreach (Edges e in i.paths)
+            {
+                    if (e.belongsTo == null)
+                    {
+                        continue;
+                    }
+                    else if (e.belongsTo.Equals(playedDeserter))
+                    {
+                        connectCheck = true;
+                    }
+    
+            }
+
+
+            if (connectCheck)
+            {
+
+                i.BuildDesertKnight(p);
+                logAPlayer(player, "Deserted Knight placed!");
+                player.GetComponent<playerControl>().RpcEndDesertKnightMove();
+                currentPhase = tempPhase;
+                updateTurn();
+
+            } else
+            {
+                logAPlayer(player, "Not a valid place for your knight!");
+            }
         }
 
         else
