@@ -2075,14 +2075,18 @@ public class Game : NetworkBehaviour
                 {
                     if (i.owned)
                     {
-                        var knight = i.positionedUnit as Knight;
-                        if (knight != null)
+                        if (i.positionedUnit.Owner.Equals(gamePlayers[player]))
                         {
-                            if (knight.isKnightActive())
+                            var knight = i.positionedUnit as Knight;
+                            if (knight != null)
                             {
-                                canScare = true;
+                                if (knight.isKnightActive())
+                                {
+                                    canScare = true;
+                                }
                             }
                         }
+                    
                     }
                 }
                 if (canScare)
@@ -2528,6 +2532,7 @@ public class Game : NetworkBehaviour
                         currentPhase = GamePhase.TurnRobberOnly;
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         stealAll = true;
+                        updateTurn();
                         break;
                     }
                 //done
@@ -2542,7 +2547,7 @@ public class Game : NetworkBehaviour
                 case ProgressCardKind.DeserterCard:
                     {
                         //I have no idea what im doing
-
+                        logAPlayer(player, "selected deserter");
                         List<String> names = new List<string>();
                         IEnumerator keys = gamePlayers.Keys.GetEnumerator();
                         while (keys.MoveNext())
@@ -2550,8 +2555,9 @@ public class Game : NetworkBehaviour
                             Player temp = (Player)keys.Current;
                             foreach(IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
                             {
-                                names.Add(temp.name);
-                                break;
+                                if (!names.Contains(temp.name)){
+                                    names.Add(temp.name);
+                                }
                             }
                           
                         }
@@ -3320,10 +3326,10 @@ public class Game : NetworkBehaviour
         //on build phase it can be built/connect to any road or city.
         else if (currentPhase == GamePhase.TurnFirstPhase)
         {
-            
+
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
-                if (j == 0)
+                /*if (j == 0)
                 {
                     if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
                     {
@@ -3349,10 +3355,36 @@ public class Game : NetworkBehaviour
                         }
                     }
                 }
-                j++;
+                j++;*/
+                
+                //if enemy knight on an intersection, ignore edges from it even if they may be owned by you
+                if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
+                {
+                    continue;
+                }
+                //else if settlement/city on intersection, automatically connected
+                else if (i.owned && !(i.positionedUnit is Knight) && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;   
+                }
+                //Check for other roads owned by you going into intersection;
+                else
+                {
+                    foreach (Edges e in i.paths)
+                    {
+                        //check to see if owned or else belongs to is obviously null and return null pointer
+                        if (e.owned && e.belongsTo.Equals(player) && e.isShip == false)
+                        {
+                            check = true;
+
+                        }
+
+                    }
+                }
             }
         }
-        return (check || (bottomConnected && !bottomInterKnight) || (topConnected && !topInterKnight));
+        //return (check || (bottomConnected && !bottomInterKnight) || (topConnected && !topInterKnight));
+        return check;
     }
 
     private bool canBuildConnectedShip(Player player, GameObject edge)
