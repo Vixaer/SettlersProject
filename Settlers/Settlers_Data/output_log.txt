@@ -1,7 +1,5 @@
 Initialize engine version: 5.5.2f1 (3829d7f588f3)
 GfxDevice: creating device client; threaded=1
-Initialize engine version: 5.5.2f1 (3829d7f588f3)
-GfxDevice: creating device client; threaded=1
 Direct3D:
     Version:  Direct3D 11.0 [level 11.0]
     Renderer: NVIDIA GeForce GTX 960M (ID=0x139b)
@@ -9,106 +7,69 @@ Direct3D:
     VRAM:     2018 MB
     Driver:   21.20.16.4590
 Begin MonoManager ReloadAssembly
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
+Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
 - Completed reload, in  0.039 seconds
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\System.Core.dll (this message is harmless)
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\System.dll (this message is harmless)
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\SettlersProject\Settlers\Settlers_Data\Managed\System.dll (this message is harmless)
 <RI> Initializing input.
 <RI> Input initialized.
 desktop: 1920x1080 59Hz; virtual: 1536x864 at 0,0
 <RI> Initialized touch support.
-Direct3D:
-    Version:  Direct3D 11.0 [level 11.0]
-    Renderer: NVIDIA GeForce GTX 960M (ID=0x139b)
-    Vendor:   NVIDIA
-    VRAM:     2018 MB
-    Driver:   21.20.16.4590
-Begin MonoManager ReloadAssembly
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
-Loading C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.035 seconds
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\System.Core.dll (this message is harmless)
-Platform assembly: C:\Users\ryanl\Documents\School\Settlers of Catan\Master\SettlersProject\Settlers\Settlers_Data\Managed\System.dll (this message is harmless)
-<RI> Initializing input.
-<RI> Input initialized.
-desktop: 1920x1080 59Hz; virtual: 1536x864 at 0,0
-<RI> Initialized touch support.
-UnloadTime: 1.425333 ms
-UnloadTime: 1.328000 ms
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
+UnloadTime: 3.794666 ms
 Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
-Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 6.692888 ms
-UnloadTime: 4.990222 ms
-
-Unloading 14 unused Assets to reduce memory usage. Loaded Objects now: 5629.
-Total: 3.725777 ms (FindLiveObjects: 0.477333 ms CreateObjectMapping: 0.454222 ms MarkObjects: 2.729333 ms  DeleteObjects: 0.063555 ms)
-
--0.52,0.8199997
+UnloadTime: 15.253777 ms
+-0.5500002,0.8100004
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-0.5400009,0.8199997
+-0.9899998,-0.05000019
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.4300003,-0.8699999
+0.460001,-0.8999996
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-0.4799995,-0.8800001
+1.009999,-0.05000019
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.4700003,-0.8399997
+-0.54,0.7999992
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.4499998,-0.8200002
+0.5599995,0.8300004
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-1.01,-0.01000023
+1,-0.03999996
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
--0.46,-0.8499999
+0.4899998,-0.8699999
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-0.4800005,-0.8499999
+0.9900017,0
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-(7.37,14.65)
+(8.36,12.93)
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -116,7 +77,11 @@ Total: 3.725777 ms (FindLiveObjects: 0.477333 ms CreateObjectMapping: 0.454222 m
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-(12.34,12.9)
+turning 240 deg counter
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+(11.35,14.63)
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
@@ -124,771 +89,37 @@ Total: 3.725777 ms (FindLiveObjects: 0.477333 ms CreateObjectMapping: 0.454222 m
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-turning 240 deg counter
+(14.31,7.26)
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-(6.39,9.51)
+(14.31,8.36)
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-(6.4,8.36)
+turning 60 deg counter
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+(10.37,3.85)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+(11.36,3.3)
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+turning 60 deg counter
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 
-Unloading 16 unused Assets to reduce memory usage. Loaded Objects now: 7473.
-Total: 5.566666 ms (FindLiveObjects: 0.475111 ms CreateObjectMapping: 0.229333 ms MarkObjects: 4.792000 ms  DeleteObjects: 0.068000 ms)
-
-0.5400009,0.8200006
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(7.37,14.65)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(7.36,13.51)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(12.34,12.9)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(11.35,13.48)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-turning 240 deg counter
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.52,0.8200006
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.4700003,-0.8400002
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.46,-0.8499999
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(6.39,9.509999)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-(6.4,8.36)
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-0.4800005,-0.8499994
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-0.4799995,-0.8800001
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1.01,-0.009999752
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.4299994,-0.8699999
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.4500003,-0.8199997
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+Unloading 16 unused Assets to reduce memory usage. Loaded Objects now: 7477.
+Total: 9.893777 ms (FindLiveObjects: 0.695111 ms CreateObjectMapping: 0.467555 ms MarkObjects: 8.577777 ms  DeleteObjects: 0.143555 ms)
 
 Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 67
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 25
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 37
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 107
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 42
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 14
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 52
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 48
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 73
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Science
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 58
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 59
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-2
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 51
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 82
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-5
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 82
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 81
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException: Object reference not set to an instance of an object
-  at Game.canBuildConnectedRoad (.Player player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge, Boolean buildShip) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 58
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 26
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 60
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-1
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-4
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 4308 -> priority: 1 
-Setting up 1 worker threads for Enlighten.
-  Thread -> id: 5368 -> priority: 1 
+  Thread -> id: 29ec -> priority: 1 
