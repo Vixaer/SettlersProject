@@ -550,10 +550,12 @@ public class Game : NetworkBehaviour
             player.GetComponent<playerControl>().RpcLogP2PTradeDebugText("Waiting for other players... ", false);
 
             //TODO: Open trade request panel on other players and log the trading player (Waiting for other players etc)
-            foreach (Player p in playerObjects.Keys)
+			foreach (Player p in gamePlayers.Values)
             {
                 //TODO: print these offers and takes to other players' panels
-				playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold, tradingPlayer.name);
+				if (p != tradingPlayer) {
+					playerObjects [p].GetComponent<playerControl> ().RpcReceiveP2PTradeRequestFrom (player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold, tradingPlayer.name);
+				}
             }
         }
         else if (checkCorrectPlayer(player))
