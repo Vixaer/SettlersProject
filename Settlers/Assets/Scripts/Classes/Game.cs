@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
@@ -30,6 +30,7 @@ public class Game : NetworkBehaviour
 
     public GamePhase tempPhase;
     private Player ForcedMovePlayer;
+    private Player playedDeserter;
 
     private string currentPlayerString;
     public Dictionary<GameObject, Player> reverseOrder = new Dictionary<GameObject, Player>();
@@ -49,6 +50,11 @@ public class Game : NetworkBehaviour
 
     private Dictionary<string, Player> tempPlayersByName;
     private VillageKind metropolisType = VillageKind.City;
+
+    //for checking if ship was built this turn;
+    private List<Edges> shipsBuiltThisTurn = new List<Edges>();
+
+    private TerrainHex readyToScare;
 
     #region Initial Setup
     void Start()
@@ -302,6 +308,8 @@ public class Game : NetworkBehaviour
 				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;
                 case GamePhase.TurnRobberOnly: playerTurn += " Move Robber "; break;
                 case GamePhase.TurnPirateOnly: playerTurn += " Move Pirate "; break;
+                case GamePhase.TurnDesertKnight: playerTurn += " Deserter "; break;
+                case GamePhase.Intrigue: playerTurn += " Intrigue "; break;
 
             }
             player.GetComponent<playerControl>().RpcUpdateTurn(playerTurn);
@@ -929,6 +937,8 @@ public class Game : NetworkBehaviour
                 currentBuilder.AddVictoryPoints(1);
                 updatePlayerResourcesUI(player);
                 waitingForRoad = true;
+
+                currentBuilder.firstCity = inter;
             }
             //second setup spawns City
             else if (currentPhase == GamePhase.SetupRoundTwo && !waitingForRoad && canBuild)
@@ -944,6 +954,8 @@ public class Game : NetworkBehaviour
                 }
                 updatePlayerResourcesUI(player);
                 waitingForRoad = true;
+
+                currentBuilder.secondCity = inter;
             }
             else if (currentPhase == GamePhase.TurnFirstPhase)
             {
@@ -1029,8 +1041,14 @@ public class Game : NetworkBehaviour
                             currentBuilder.payWallResources(engCard);
                             inter.BuildWall(currentBuilder);
 
-                            CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+                            if (CardsInPlay.Contains(ProgressCardKind.EngineerCard))
+                            {
+                                CardsInPlay.Remove(ProgressCardKind.EngineerCard);
+                                logAPlayer(player, "You used the Engineer Card");
+                            }
+                            
                             updatePlayerResourcesUI(player);
+                            
                             logAPlayer(player, "You built a city wall!");
                         }
                     }
@@ -1091,6 +1109,7 @@ public class Game : NetworkBehaviour
                                 logAPlayer(player, "You built a knight!");
                                 updatePlayerResourcesUI(player);
                             }
+
                             else
                             {
                                 logAPlayer(player, "You've reached the 3 basic Knight cap, try upgrading a knight before attempting to hire another knight");
@@ -1125,13 +1144,24 @@ public class Game : NetworkBehaviour
 
 					if (knight != null)
                     {
-                        if (knight.level == KnightLevel.Mighty)
+    
+                        if (!currentBuilder.HasKnightResources () && !CardsInPlay.Remove(ProgressCardKind.SmithCard)) 
+						{
+                            logAPlayer (player, "Your resources are insufficient for upgrading this Knight."); 
+						}
+                        else if (knight.level == KnightLevel.Mighty)
+
                         {
 							logAPlayer (player, "Can't upgrade further he's already the mightiest.");
 						}
+                        else if (knight.isPromotedThisTurn())
+                        {
+                            logAPlayer(player, "You already promoted the knight this turn!");
+                        }
                         else if (knight.level == KnightLevel.Basic)
                         {
 							if (currentBuilder.HasKnights (KnightLevel.Strong)) {
+
                                 if (CardsInPlay.Contains(ProgressCardKind.SmithCard))
                                 {
                                     knight.upgradeKnight();
@@ -1140,7 +1170,7 @@ public class Game : NetworkBehaviour
                                     currentBuilder.RemoveKnight(KnightLevel.Strong);
                                     CardsInPlay.Remove(ProgressCardKind.SmithCard);
                                     logAPlayer(player, "You upgraded this knight freely because of your Smith Card.");
-                                    updatePlayerResourcesUI(player);
+                                    knight.setPromotedThisTurn(true);
                                 }
                                 else if (currentBuilder.HasKnightResources())
                                 {
@@ -1149,12 +1179,14 @@ public class Game : NetworkBehaviour
                                     inter.knight = KnightLevel.Strong;
                                     currentBuilder.AddKnight(KnightLevel.Basic);
                                     currentBuilder.RemoveKnight(KnightLevel.Strong);
+                                    knight.setPromotedThisTurn(true);
                                     updatePlayerResourcesUI(player);
                                 }
                                 else
                                 {
                                     logAPlayer(player, "Your resources are insufficient for upgrading this Knight.");
                                 }			
+
 							}
                             else
                             {
@@ -1170,6 +1202,7 @@ public class Game : NetworkBehaviour
 							}
                             else if (currentBuilder.HasKnights (KnightLevel.Mighty))
                             {
+
                                 if (CardsInPlay.Contains(ProgressCardKind.SmithCard))
                                 {
                                     knight.upgradeKnight();
@@ -1178,7 +1211,7 @@ public class Game : NetworkBehaviour
                                     currentBuilder.RemoveKnight(KnightLevel.Mighty);
                                     CardsInPlay.Remove(ProgressCardKind.SmithCard);
                                     logAPlayer(player, "You upgraded this knight freely because of your Smith Card.");
-                                    updatePlayerResourcesUI(player);
+                                    knight.setPromotedThisTurn(true);
                                 }
                                 else if (currentBuilder.HasKnightResources())
                                 {
@@ -1188,6 +1221,7 @@ public class Game : NetworkBehaviour
                                     currentBuilder.AddKnight(KnightLevel.Strong);
                                     currentBuilder.RemoveKnight(KnightLevel.Mighty);
                                     updatePlayerResourcesUI(player);
+                                    knight.setPromotedThisTurn(true);
                                 }
                                 else
                                 {
@@ -1223,9 +1257,9 @@ public class Game : NetworkBehaviour
 
                     if (knight != null && !knight.isKnightActive())
                     {
-                        if (!currentBuilder.HasKnightActivatingResources())
+                        if (!currentBuilder.HasKnightActivatingResources() )
                         {
-                            logAPlayer(player, "You're resources are insufficient to activate this Knight.");
+                            logAPlayer(player, "Your resources are insufficient to activate this Knight.");
                         }
                         else
                         {
@@ -1235,6 +1269,7 @@ public class Game : NetworkBehaviour
                             updatePlayerResourcesUI(player);
                             knight.setFirstTurn(false);
                             logAPlayer(player, "You have activated this knight.");
+                            
                         }
                     }
                     else if (knight != null && knight.isKnightActive())
@@ -1366,7 +1401,7 @@ public class Game : NetworkBehaviour
         }
         else if (!onWater)
         {
-            logAPlayer(player, "You cant build a ship on land.");
+            logAPlayer(player, "You can't build a ship on land.");
         }
         else if (isOwned)
         {
@@ -1414,18 +1449,21 @@ public class Game : NetworkBehaviour
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free ship because of the Road Building Card.");
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
             }
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
             {
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
                 gamePlayers[player].hasFreeRoad = false;
                 logAPlayer(player, "The workers give you this ship because of your fish donation.");
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
             }
             //during first phase building
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].HasShipResources())
             {
                 gamePlayers[player].PayShipResources();
                 edge.GetComponent<Edges>().BuildShip(gamePlayers[player]);
+                shipsBuiltThisTurn.Add(edge.GetComponent<Edges>());
                 //update his UI to let him know he lost the resources;
             }
             CheckForLongestTradeRoute();
@@ -1454,84 +1492,98 @@ public class Game : NetworkBehaviour
             }
             else if (temp.isShip == true && temp.belongsTo.Equals(temp2))
             {
-                // not connected to 2 ships/units check
-                bool connectCheck = false;
-                int count = 0;
-                int count2 = 0;
-                foreach (Intersection i in temp.endPoints)
+                if (shipsBuiltThisTurn.Contains(temp))
                 {
-
-                    foreach (Edges e in i.paths)
+                    logAPlayer(player, "Can't move ships just built!");
+                }
+                else {
+                    // not connected to 2 ships/units check
+                    bool connectCheck = false;
+                    int count = 0;
+                    int count2 = 0;
+                    foreach (Intersection i in temp.endPoints)
                     {
-                        //check to see if owned or else belongs to is obviously null and return null pointer
-                        if (e.owned)
+
+                        foreach (Edges e in i.paths)
                         {
-                            if (e.belongsTo.Equals(temp2))
+                            //check to see if owned or else belongs to is obviously null and return null pointer
+                            if (e.owned)
                             {
-                                if (!connectCheck)
+                                if (e.belongsTo.Equals(temp2))
                                 {
-                                    count++;
-                                    if (count == 2)
+                                    if (!connectCheck)
                                     {
-                                        connectCheck = true;
-                                        break;
+                                        count++;
+                                        if (count == 2)
+                                        {
+                                            connectCheck = true;
+                                            break;
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    count2++;
-                                    if (count2 == 2)
-                                        break;
+                                    else
+                                    {
+                                        count2++;
+                                        if (count2 == 2)
+                                            break;
+                                    }
+
                                 }
 
                             }
-
                         }
-                    }
-                    if (count == 2 || count2 == 2)
-                    {
-                        continue;
-                    }
-
-                    // Check to see if ship connected to any of player's units
-                    if (temp2.ownedUnits.Contains(i.positionedUnit))
-                    {
-                        if (!connectCheck)
+                        if (count == 2 || count2 == 2)
                         {
-                            count = 2;
-                            if (count == 2)
+                            continue;
+                        }
+
+                        // Check to see if ship connected to any of player's units
+                        if (temp2.ownedUnits.Contains(i.positionedUnit))
+                        {
+                            if (!connectCheck)
                             {
-                                connectCheck = true;
-                            }
+                                count = 2;
+                                if (count == 2)
+                                {
+                                    connectCheck = true;
+                                }
 
+                            }
+                            else
+                            {
+                                count2 = 2;
+                            }
                         }
-                        else
-                        {
-                            count2 = 2;
-                        }
+
                     }
 
-                }
-
-                if (count2 > 1)
-                {
-                    logAPlayer(player, "Can't move ships connected on both ends to your other pieces!");
-                }
-                else
-                {
-                    //pirate check
-                    foreach (TerrainHex a in temp.inBetween)
+                    if (count2 > 1)
                     {
-                        if (a.isPirate == true)
+                        logAPlayer(player, "Can't move ships connected on both ends to your other pieces!");
+                    }
+                    else
+                    {
+                        //pirate check
+                        bool pirateCheck = false;
+                        foreach (TerrainHex a in temp.inBetween)
+                        {
+                            if (a.isPirate == true)
+                            {
+                                pirateCheck = true;
+                            }
+                        }
+                        if (pirateCheck)
                         {
                             logAPlayer(player, "Can't move ships that are next to pirate!");
                         }
-                    }
+                        else
+                        {
+                            temp.SelectShipForMoving(temp2);
+                            temp2.selectedShip = temp;
+                            player.GetComponent<playerControl>().RpcBeginShipMove();
+                            logAPlayer(player, "Ship Selected!");
+                        }
 
-                    temp.SelectShipForMoving(temp2);
-                    temp2.selectedShip = temp;
-                    player.GetComponent<playerControl>().RpcBeginShipMove();
-                    logAPlayer(player, "Ship Selected!");
+                    }
                 }
             }
             else
@@ -1540,6 +1592,16 @@ public class Game : NetworkBehaviour
             }
         }
 
+    }
+
+    public void DeselectShip(GameObject player)
+    {
+        Edges shipToMove = gamePlayers[player].selectedShip;
+        if (shipToMove != null)
+        {
+            shipToMove.DeselectShipForMoving(gamePlayers[player]);
+            player.GetComponent<playerControl>().RpcEndShipMove(false);
+        }
     }
 
     public void placeShipCheck(GameObject player, GameObject edge)
@@ -1565,19 +1627,16 @@ public class Game : NetworkBehaviour
             }
         }
 
-        //pirate check
-        foreach (TerrainHex a in temp.inBetween)
-        {
-            if (a.isPirate == true)
-            {
-                logAPlayer(player, "Can't move ships next to pirate!");
-                shipToMove.DeselectShipForMoving(p);
-                temp3.RpcEndShipMove(false);
-            }
-        }
-        if (!correctPlayer)
-        {
-            logAPlayer(player, "It isn't your turn.");
+		//pirate check
+		bool pirateCheck = false;
+		foreach (TerrainHex a in temp.inBetween) {
+			if (a.isPirate == true) {
+				pirateCheck = true;
+				
+			}
+		}
+		if (!correctPlayer) {
+			logAPlayer (player, "It isn't your turn.");
             shipToMove.DeselectShipForMoving(p);
             temp3.RpcEndShipMove(false);
 
@@ -1594,14 +1653,17 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "There's already something built here.");
             shipToMove.DeselectShipForMoving(p);
             temp3.RpcEndShipMove(false);
-
-        }
-        else if (correctPlayer && onWater && !isOwned && canBuild)
-        {
-            temp.BuildShip(p);
-            shipToMove.RemoveShip(p);
-            logAPlayer(player, "Ship Moved! You cannot move anymore ships this turn.");
+            
+        } else if (pirateCheck) {
+			logAPlayer (player, "Can't move ships next to pirate!");
+            shipToMove.DeselectShipForMoving(p);
+            temp3.RpcEndShipMove(false);
+		
+		} else if (correctPlayer && onWater && !isOwned && canBuild) {
+			temp.BuildShip (p);
+            shipToMove.RemoveShip (p);
             CheckForLongestTradeRoute();
+            logAPlayer (player, "Ship Moved! You cannot move anymore ships this turn.");
             temp3.RpcEndShipMove(true);
         }
         else
@@ -1726,7 +1788,7 @@ public class Game : NetworkBehaviour
             {
                 knightToMove.DeselectKnight();
                 player.GetComponent<playerControl>().RpcEndKnightMove();
-                logAPlayer(player, "Can't move your knight here!");
+                logAPlayer(player, "Can't move your knight here! New place must be connected to old place.");
             }
 
             //Check to see if no cities or higher lvl knights at new intersection
@@ -1737,7 +1799,7 @@ public class Game : NetworkBehaviour
             {
                 knightToMove.DeselectKnight();
                 player.GetComponent<playerControl>().RpcEndKnightMove();
-                logAPlayer(player, "Can't move your knight here!");
+                logAPlayer(player, "Can't move your knight here! There is already something here.");
             }
 
             //If there is a knight at the new place
@@ -1772,6 +1834,7 @@ public class Game : NetworkBehaviour
                     {
                         if (temp.knight == KnightLevel.Basic)
                         {
+                            Knight temp4 = (Knight)knightToMove.positionedUnit;
 
                             if (opponentKnightCheck(temp, knightToMove))
                             {
@@ -1779,27 +1842,31 @@ public class Game : NetworkBehaviour
                                 opponent.storedKnight = opKnight;
                                 opponent.storedInter = temp;
                                 opponent.hasToMoveKnight = true;
+
                                 temp.RemoveKnight(opponent, false);
                                 tempPhase = currentPhase;
                                 currentPhase = GamePhase.ForcedKnightMove;
                                 ForcedMovePlayer = opponent;
                                 updateTurn();
+
                                 opponentGameObject.GetComponent<playerControl>().RpcBeginForcedKnightMove();
                             }
                             else
                             {
+       
                                 logAPlayer(opponentGameObject, "Your knight has been removed from the board!");
                                 temp.RemoveKnight(opponent, true);
+
+                                
                             }
 
-
-                            Knight temp4 = (Knight)knightToMove.positionedUnit;
-                            knightToMove.RemoveKnight(temp3, false);
+                                             
                             temp.MoveKnight(temp3, temp4, false);
+                            knightToMove.RemoveKnight(temp3, false);
                             player.GetComponent<playerControl>().RpcEndKnightMove();
                             logAPlayer(player, "Knight moved!");
                             CheckForLongestTradeRoute();
-
+                            
                         }
                         else
                         {
@@ -1819,11 +1886,13 @@ public class Game : NetworkBehaviour
                                 opponent.storedKnight = opKnight;
                                 opponent.storedInter = temp;
                                 opponent.hasToMoveKnight = true;
+
                                 temp.RemoveKnight(opponent, false);
                                 tempPhase = currentPhase;
                                 currentPhase = GamePhase.ForcedKnightMove;
                                 ForcedMovePlayer = opponent;
                                 updateTurn();
+
                                 opponentGameObject.GetComponent<playerControl>().RpcBeginForcedKnightMove();
                             }
                             else
@@ -1833,10 +1902,10 @@ public class Game : NetworkBehaviour
                             }
 
                             Knight temp4 = (Knight)knightToMove.positionedUnit;
-                            knightToMove.RemoveKnight(temp3, false);
                             temp.MoveKnight(temp3, temp4, false);
-                            logAPlayer(player, "Knight moved!");
+                            knightToMove.RemoveKnight(temp3, false);
                             player.GetComponent<playerControl>().RpcEndKnightMove();
+                            logAPlayer(player, "Knight moved!");
                             CheckForLongestTradeRoute();
 
                         }
@@ -1994,6 +2063,88 @@ public class Game : NetworkBehaviour
         }
     }
 
+    public void scareRobber(GameObject player, GameObject tile)
+    {
+        if (checkCorrectPlayer(player))
+        {
+            TerrainHex hex = tile.GetComponent<TerrainHex>();
+            if (hex.isRobber || hex.isPirate)
+            {
+                bool canScare = false;
+                foreach(Intersection i in hex.corners)
+                {
+                    if (i.owned)
+                    {
+                        if (i.positionedUnit.Owner.Equals(gamePlayers[player]))
+                        {
+                            var knight = i.positionedUnit as Knight;
+                            if (knight != null)
+                            {
+                                if (knight.isKnightActive())
+                                {
+                                    canScare = true;
+                                }
+                            }
+                        }
+                    
+                    }
+                }
+                if (canScare)
+                {
+                    readyToScare = hex;
+                    logAPlayer(player, "Select an active knight to scare the robber with!");
+                    player.GetComponent<playerControl>().RpcStartScare();
+                }
+            }
+        }
+    }
+
+    public void useKnightScareRobber(GameObject player, GameObject inter)
+    {
+        Intersection temp = inter.GetComponent<Intersection>();
+        Player p = gamePlayers[player];
+        if (temp.owned) { 
+            var knight = temp.positionedUnit as Knight;
+
+            if (knight != null)
+            {
+                if (knight.Owner.Equals(p))
+                {
+                    if (knight.isKnightActive())
+                    {
+
+                        if (readyToScare.isRobber)
+                        {
+                            knight.deactivateKnight();
+                            temp.knightActive = false;
+                            logAPlayer(player, "Choose place to move robber!");
+                            currentPhase = GamePhase.TurnRobberOnly;
+                        }
+                        else if (readyToScare.isPirate)
+                        {
+                            knight.deactivateKnight();
+                            temp.knightActive = false;
+                            logAPlayer(player, "Choose place to move pirate!");
+                            currentPhase = GamePhase.TurnPirateOnly;
+                        }
+                    }
+                    else
+                    {
+                        logAPlayer(player, "Not an active knight!");
+                        player.GetComponent<playerControl>().RpcEndScare();
+                    }
+                } else
+                {
+                    logAPlayer(player, "Not your knight!");
+                    player.GetComponent<playerControl>().RpcEndScare();
+                }
+            }
+        }
+
+        
+        updateTurn();
+    }
+
     //end player turn
     public void endTurn(GameObject player)
     {
@@ -2001,18 +2152,25 @@ public class Game : NetworkBehaviour
 		if (checkCorrectPlayer(player) && currentPhase == GamePhase.ForcedKnightMove)
         {
             logAPlayer(player, "Opponent must move his displaced knight first.");
-        }																			 		
-        if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate)
+        }
+        else if (checkCorrectPlayer(player) && currentPhase == GamePhase.Intrigue)
+        {
+            logAPlayer(player, "Select a knight to displace first");
+        }
+        else if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate && currentPhase != GamePhase.TurnDesertKnight)
         {
             if (currentPhase != GamePhase.TurnDiceRolled)
             {
-			player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
+			    player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
+                shipsBuiltThisTurn.Clear();
+                player.GetComponent<playerControl>().RpcEndScare();
 
-				//Reset all knights' firstturn variables that are false since they were activated this turn
-				Player temp = gamePlayers[player];
+                //Reset all knights' firstturn variables that are false since they were activated this turn
+                Player temp = gamePlayers[player];
 				foreach (IntersectionUnit k in temp.ownedUnits.Where(u => u is Knight)) {
 					Knight knight = (Knight) k;
 					knight.setFirstTurn (true);
+                    knight.setPromotedThisTurn(false);
 				}
 
                 // suppose player ends turn while selecting something...
@@ -2051,6 +2209,7 @@ public class Game : NetworkBehaviour
             gameDices.rollDice();
             updateRollsUI();
             HandleEventDice(); // Handle the outcome of the event dice
+            gamePlayers[player].cardsInHand.Add(ProgressCardKind.DeserterCard);
             if (gameDices.getRed() + gameDices.getYellow() == 7 && firstBarbAttack)
             {
                 currentPhase = GamePhase.TurnRobberPirate;
@@ -2074,6 +2233,7 @@ public class Game : NetworkBehaviour
     //allows client to actually move the robber
     public void moveRobber(GameObject player, GameObject tile)
     {
+        bool Bishop = CardsInPlay.Contains(ProgressCardKind.BishopCard);
         Player mover = (Player)gamePlayers[player];
         List<String> names = new List<string>();
         if ((currentPhase == GamePhase.TurnRobberPirate || currentPhase == GamePhase.TurnRobberOnly) && checkCorrectPlayer(player))
@@ -2098,11 +2258,11 @@ public class Game : NetworkBehaviour
                 robberTile = tile;
                 tile.GetComponent<TerrainHex>().isRobber = true;
                 currentPhase = GamePhase.TurnFirstPhase;
-                if (names.Count > 0)
+                if (names.Count > 0 && !Bishop)
                 {
                     if (stealAll)
                     {
-                        foreach(String name in names)
+                        foreach (String name in names)
                         {
                             stealPlayer(player, name);
                             stealAll = false;
@@ -2112,9 +2272,17 @@ public class Game : NetworkBehaviour
                     {
                         player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
                     }
-                    
-                }    
-                updateTurn();
+                }
+                //Bishop steals from each player
+                else if (names.Count > 0 && Bishop)
+                {
+                    foreach(String s in names)
+                    {
+                        stealPlayer(player, s);
+                    }
+                    CardsInPlay.Remove(ProgressCardKind.BishopCard);
+                }
+                    updateTurn();
             }
         }
     }
@@ -2237,11 +2405,11 @@ public class Game : NetworkBehaviour
                     }
                 //done
                 case ProgressCardKind.EngineerCard:
-                    {
+                    {                     
                         cardPlayer.cardsInHand.Remove(k);
                         CardsInPlay.Add(k);
-                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         gameDices.returnCard(k);
+                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         break;
                     }
                 //done
@@ -2357,11 +2525,14 @@ public class Game : NetworkBehaviour
                 //done
                 case ProgressCardKind.BishopCard:
                     {
+                        CardsInPlay.Add(k);
+                        currentPhase = GamePhase.TurnRobberOnly;
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
                         currentPhase = GamePhase.TurnRobberOnly;
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         stealAll = true;
+                        updateTurn();
                         break;
                     }
                 //done
@@ -2375,9 +2546,36 @@ public class Game : NetworkBehaviour
                 
                 case ProgressCardKind.DeserterCard:
                     {
-                        cardPlayer.cardsInHand.Remove(k);
-                        gameDices.returnCard(k);
-                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        //I have no idea what im doing
+                        logAPlayer(player, "selected deserter");
+                        List<String> names = new List<string>();
+                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
+                        while (keys.MoveNext())
+                        {
+                            Player temp = (Player)keys.Current;
+                            foreach(IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
+                            {
+                                if (!names.Contains(temp.name)){
+                                    names.Add(temp.name);
+                                }
+                            }
+                          
+                        }
+                        
+                        if (names.Count > 0)
+                        {
+                            tempPhase = currentPhase;
+                            currentPhase = GamePhase.TurnDesertKnight;
+                            player.GetComponent<playerControl>().RpcSetupStealInterface(names.ToArray());
+                            cardPlayer.cardsInHand.Remove(k);
+                            gameDices.returnCard(k);
+                            playedDeserter = cardPlayer;
+                        }
+                        else
+                        {
+                            logAPlayer(player, "No opponents have knights, can't play this card");
+                        }
+
                         break;
                     }
                 
@@ -2390,9 +2588,33 @@ public class Game : NetworkBehaviour
                     }
                 case ProgressCardKind.IntrigueCard:
                     {
-                        cardPlayer.cardsInHand.Remove(k);
-                        gameDices.returnCard(k);
-                        player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        bool atLeastOneKnight = false;
+                        IEnumerator keys = gamePlayers.Keys.GetEnumerator();
+                        while (keys.MoveNext())
+                        {
+                            Player temp = (Player)keys.Current;
+                            foreach (IntersectionUnit i in temp.ownedUnits.Where(u => u is Knight))
+                            {
+                                atLeastOneKnight = true;
+                                break;
+                            }
+
+                        }
+
+                        if (atLeastOneKnight)
+                        {
+                            tempPhase = currentPhase;
+                            currentPhase = GamePhase.Intrigue;
+                            player.GetComponent<playerControl>().RpcStartSelectIntrigue();
+                            cardPlayer.cardsInHand.Remove(k);
+                            gameDices.returnCard(k);
+                            playedDeserter = cardPlayer;
+                        }
+                        else
+                        {
+                            logAPlayer(player, "No opponents have knights, can't play this card");
+                        }
+
                         break;
                     }
                 //done
@@ -2513,12 +2735,77 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Can't play cards when it isn't your turn.");
         }
     }
+
+    public void Intrigue(GameObject player, GameObject inter)
+    {
+        Intersection i = inter.GetComponent<Intersection>();
+        Player p = gamePlayers[player];
+
+        if (i.owned)
+        {
+            IntersectionUnit temp = i.positionedUnit;
+            if (!temp.Owner.Equals(p))
+            {
+                // Check that it actually is a knight
+                var byebye = temp as Knight;
+
+                if (byebye != null)
+                {
+                    //check to see if knight is connected to at least one of your roads
+                    bool connectCheck = false;
+                    foreach (Edges e in i.paths)
+                    {
+                        if (e.belongsTo == null)
+                        {
+                            continue;
+                        } else if (e.belongsTo.Equals(p))
+                        {
+                            connectCheck = true;
+                            break;
+                        }
+                    }
+                    if (connectCheck)
+                    {
+                        Player opponent = byebye.Owner;
+                        logAPlayer(playerObjects[opponent], "Because " + p.name + " has used the Intrigue card, your knight has been displaced and you must move it!");
+                        opponent.storedKnight = byebye;
+                        opponent.storedInter = i;
+                        opponent.hasToMoveKnight = true;
+                        i.RemoveKnight(opponent, false);
+                        tempPhase = currentPhase;
+                        currentPhase = GamePhase.ForcedKnightMove;
+                        ForcedMovePlayer = opponent;
+                        updateTurn();
+                        playerObjects[opponent].GetComponent<playerControl>().RpcBeginForcedKnightMove();
+                        player.GetComponent<playerControl>().RpcEndSelectIntrigue();
+                    }
+                    else
+                    {
+                        logAPlayer(player, "Opponent knight must be connected to one of your roads!");
+                    }
+                }
+                else
+                {
+                    logAPlayer(player, "Select an opponent knight!");
+                }
+            }
+            else
+            {
+                logAPlayer(player, "Select an opponent knight!");
+            }
+        } else
+        {
+            logAPlayer(player, "Select an opponent knight!");
+        }
+    }
+
     public void getCardFromDraw(GameObject player,EventKind k)
     {
         ProgressCardKind card = gameDices.rollCard(k);
         player.GetComponent<playerControl>().RpcAddProgressCard(card);
         logAPlayer(player, "You got the " + card + " From drawing or winning the the barbarian win.");
     }
+
 	public void SwapTokens(GameObject player, GameObject[] tiles)
     {
         var invalidNumbers = new int[5] { 1, 2, 6, 8, 12 };
@@ -2698,6 +2985,7 @@ public class Game : NetworkBehaviour
         }
     }
 
+    //player steals from player with the name name
     public void stealPlayer(GameObject player, string name)
     {
         if (checkCorrectPlayer(player))
@@ -2757,6 +3045,24 @@ public class Game : NetworkBehaviour
                     }
                 }
             }
+            else if (currentPhase == GamePhase.TurnDesertKnight)
+            {
+                IEnumerator values = gamePlayers.Values.GetEnumerator();
+                Player receiver = (Player)gamePlayers[player];
+                Player victim = null;
+                while (values.MoveNext())
+                {
+                    Player temp = (Player)values.Current;
+                    if (temp.name.Equals(name) && !receiver.name.Equals(name))
+                    {
+                        victim = temp;
+                        break;
+                    }
+                }
+                playerObjects[victim].GetComponent<playerControl>().RpcStartDesertKnight();
+                logAPlayer(playerObjects[victim], receiver.name + " played the Deserter card on you! Select a knight to be deserted!");
+
+            }
             else
             {
                 logAPlayer(player, "You must be in the build/trade phase.");
@@ -2768,6 +3074,173 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "Wait your turn.");
         }
     }
+
+    public void desertKnight (GameObject player, GameObject inter)
+    {
+        Intersection i = inter.GetComponent<Intersection>();
+        Player loser = gamePlayers[player];
+
+        if (i.owned)
+        {
+            IntersectionUnit temp = i.positionedUnit;
+            if (temp.Owner.Equals(loser))
+            {
+                // Check that it actually is a knight
+                var deserter = temp as Knight;
+
+                if (deserter != null)
+                {
+                    player.GetComponent<playerControl>().RpcEndDesertKnight();
+
+                    playedDeserter.desertKnightLevel = deserter.level;
+                    playedDeserter.desertKnightActive = deserter.isKnightActive();
+                    i.RemoveKnight(loser, true);
+
+                    //check to see if player can build knight
+                    
+                    if (playedDeserter.HasKnights(playedDeserter.desertKnightLevel))
+                    {
+
+                        //look everywhere for a place to build a knight
+                        Queue<Intersection> openSet = new Queue<Intersection>();
+                        HashSet<Intersection> closedSet = new HashSet<Intersection>();
+                        openSet.Enqueue(playedDeserter.firstCity);
+
+                        bool connectCheck = false;
+                        while (openSet.Count > 0)
+                        {
+                            Intersection currentInter = openSet.Dequeue();
+                            closedSet.Add(currentInter);
+
+                            foreach (Edges e in currentInter.paths)
+                            {
+                                if (e.belongsTo == null)
+                                {
+                                    continue;
+                                }
+                                else if (!e.belongsTo.Equals(playedDeserter))
+                                {
+                                    continue;
+                                }
+                                foreach (Intersection a in e.endPoints)
+                                {
+                                    if (!a.Equals(currentInter))
+                                    {
+                                        if (a.owned == false)
+                                        {
+                                            connectCheck = true;
+                                            break;
+                                        }
+                                        //Add intersection to open set if it hasn't been explored and hasn't been owned or hasn't been explored and but player owns it
+                                        else if (!closedSet.Contains(a) && (!a.owned || (a.owned && playedDeserter.ownedUnits.Contains(a.positionedUnit))))
+                                        {
+                                            openSet.Enqueue(a);
+                                        }
+
+                                    }
+                                }
+                            }
+                            if (connectCheck)
+                                break;
+                        }
+
+                        if (!connectCheck)
+                        {
+                            openSet = new Queue<Intersection>();
+                            closedSet = new HashSet<Intersection>();
+                            openSet.Enqueue(playedDeserter.secondCity);
+
+
+                            while (openSet.Count > 0)
+                            {
+                                Intersection currentInter = openSet.Dequeue();
+                                closedSet.Add(currentInter);
+
+                                foreach (Edges e in currentInter.paths)
+                                {
+                                    if (e.belongsTo == null)
+                                    {
+                                        continue;
+                                    }
+                                    else if (!e.belongsTo.Equals(playedDeserter))
+                                    {
+                                        continue;
+                                    }
+                                    foreach (Intersection a in e.endPoints)
+                                    {
+                                        if (!a.Equals(currentInter))
+                                        {
+                                            if (a.owned == false)
+                                            {
+                                                connectCheck = true;
+                                                break;
+                                            }
+                                            //Add intersection to open set if it hasn't been explored and hasn't been owned or hasn't been explored and but player owns it
+                                            else if (!closedSet.Contains(a) && (!a.owned || (a.owned && playedDeserter.ownedUnits.Contains(a.positionedUnit))))
+                                            {
+                                                openSet.Enqueue(a);
+                                            }
+
+                                        }
+                                    }
+                                }
+                                if (connectCheck)
+                                    break;
+                            }
+                        }
+
+                        if (!connectCheck)
+                        {
+                            logAPlayer(playerObjects[playedDeserter], "You have nowhere to place a new knight. You got deserted as well!");
+                            currentPhase = tempPhase;
+                        }
+                        else
+                        {
+                            logAPlayer(playerObjects[playedDeserter], "You have gotten a new knight! Place it somewhere!");
+                            playerObjects[playedDeserter].GetComponent<playerControl>().RpcBeginDesertKnightMove();
+                        }
+
+                    }
+
+                    }
+                    else
+                    {
+                        logAPlayer(playerObjects[playedDeserter], "You can't build any knights of the deserted knights level. You got deserted as well!");
+                        currentPhase = tempPhase;
+                    }
+
+                }
+                 else
+                {
+                    logAPlayer(player, "You must select one of your own knights");
+                }
+            }
+            else {
+                logAPlayer(player, "You must select one of your own knights");
+            }
+    }
+
+    public void moveDesertKnight(GameObject player, GameObject inter)
+    {
+        Intersection i = inter.GetComponent<Intersection>();
+        Player p = gamePlayers[player];
+
+        if (!i.owned)
+        {
+            i.BuildDesertKnight(p);
+            logAPlayer(player, "Deserted Knight placed!");
+            player.GetComponent<playerControl>().RpcEndDesertKnightMove();
+            currentPhase = tempPhase;
+        }
+
+        else
+        {
+            logAPlayer(player, "Not a valid place for your knight!");
+        }
+    }
+
+
+
     public void CardChoice(GameObject player,string cardName)
     {
         ProgressCardKind card = (ProgressCardKind) Enum.Parse(typeof(ProgressCardKind), cardName);
@@ -2853,10 +3326,10 @@ public class Game : NetworkBehaviour
         //on build phase it can be built/connect to any road or city.
         else if (currentPhase == GamePhase.TurnFirstPhase)
         {
-            
+
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
-                if (j == 0)
+                /*if (j == 0)
                 {
                     if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
                     {
@@ -2882,10 +3355,36 @@ public class Game : NetworkBehaviour
                         }
                     }
                 }
-                j++;
+                j++;*/
+                
+                //if enemy knight on an intersection, ignore edges from it even if they may be owned by you
+                if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
+                {
+                    continue;
+                }
+                //else if settlement/city on intersection, automatically connected
+                else if (i.owned && !(i.positionedUnit is Knight) && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;   
+                }
+                //Check for other roads owned by you going into intersection;
+                else
+                {
+                    foreach (Edges e in i.paths)
+                    {
+                        //check to see if owned or else belongs to is obviously null and return null pointer
+                        if (e.owned && e.belongsTo.Equals(player) && e.isShip == false)
+                        {
+                            check = true;
+
+                        }
+
+                    }
+                }
             }
         }
-        return (check || (bottomConnected && !bottomInterKnight) || (topConnected && !topInterKnight));
+        //return (check || (bottomConnected && !bottomInterKnight) || (topConnected && !topInterKnight));
+        return check;
     }
 
     private bool canBuildConnectedShip(Player player, GameObject edge)
@@ -2920,6 +3419,7 @@ public class Game : NetworkBehaviour
         //on build phase it has to be connected to a city or another boat.
         else if (currentPhase == GamePhase.TurnFirstPhase)
         {
+            /*
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
                 //check owned true or else owned is null pointer
@@ -2941,7 +3441,39 @@ public class Game : NetworkBehaviour
                     }
                 }
             }
-            
+            */
+
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                
+                //if enemy knight on an intersection, ignore edges from it even if they may be owned by you
+                if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
+                {
+                    continue;
+                }
+                //else if settlement/city on intersection, automatically connected
+                else if (i.owned && !(i.positionedUnit is Knight) && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;
+                }
+                //Check for other ships owned by you going into intersection;
+                else
+                {
+                    foreach (Edges e in i.paths)
+                    {
+                        //check to see if owned or else belongs to is obviously null and return null pointer
+                        if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
+                        {
+                            check = true;
+
+                        }
+
+                    }
+                }
+            }
+
+
+
         }
         return check;
     }
@@ -3345,7 +3877,7 @@ public class Game : NetworkBehaviour
         while (values.MoveNext())
         {
             Player tempPlayer = (Player)values.Current;
-            if (tempPlayer.SumResources() > 7)
+            if (tempPlayer.SumResources() > (7 + 2*(3-tempPlayer.availableWalls)))
             {
                 int toDiscard = (int)(tempPlayer.SumResources() / 2.0);
                 playerObjects[tempPlayer].GetComponent<playerControl>().RpcDiscardTime(toDiscard, "");

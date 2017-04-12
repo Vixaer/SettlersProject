@@ -9,6 +9,7 @@ public class Knight : IntersectionUnit {
     public KnightLevel level;
     bool isActive = false;
     bool firstTurn = true;
+    bool promotedThisTurn = false;
 	// Use this for initialization
 	void Start () {
 		
@@ -58,6 +59,16 @@ public class Knight : IntersectionUnit {
     public void setFirstTurn(bool ft)
     {
         this.firstTurn = ft;
+    }
+
+    public bool isPromotedThisTurn()
+    {
+        return promotedThisTurn;
+    }
+
+    public void setPromotedThisTurn(bool value)
+    {
+        promotedThisTurn = value;
     }
 
     public static Knight Load(KnightData data, Player p)

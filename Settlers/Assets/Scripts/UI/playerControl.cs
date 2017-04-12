@@ -29,11 +29,15 @@ public class playerControl : NetworkBehaviour {
     public bool upgradeKnight = false;
     public bool moveKnight = false;
     public bool buildKnight = false;
+    private bool selectForScare = false;
 
     private bool forceMoveKnight = false;
     public bool knightSelected = false;
     public Color oldKnightColor;
     public GameObject selectedInter;
+    public bool desertSelectKnight = false;
+    public bool desertMoveKnight = false;
+    public bool intrigue = false;
 
     private bool pickMetropolis = false;
     private bool playInventor = false;
@@ -267,6 +271,7 @@ public class playerControl : NetworkBehaviour {
     {
         if (buildShip == false)
         {
+            CmdDeselectShip(gameObject);
             buildShip = true;
             moveShip = false;
             MenuWindow.transform.GetChild(4).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
@@ -503,7 +508,26 @@ public class playerControl : NetworkBehaviour {
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
 
-                if (pickMetropolis)
+                if (selectForScare)
+                {
+                    CmdSelectKnightForScare(gameObject, hit.collider.gameObject);
+                }
+
+                else if (desertSelectKnight)
+                {
+                    CmdDesertKnight(gameObject, hit.collider.gameObject);
+                }
+
+                else if (desertMoveKnight)
+                {
+                    CmdDesertMoveKnight(gameObject, hit.collider.gameObject);
+                }
+                else if (intrigue)
+                {
+                    CmdIntrigue(gameObject, hit.collider.gameObject);
+                }
+
+                else if (pickMetropolis)
                 {
                     CmdSetMetropole(gameObject, hit.collider.gameObject);
                 }
@@ -556,6 +580,8 @@ public class playerControl : NetworkBehaviour {
                     {
                         CmdMoveRobber(gameObject, hit.collider.gameObject);
                     }
+                    if (!selectForScare)
+                        CmdScareRobber(gameObject, hit.collider.gameObject);
                 }
             }
             if (hit.collider.gameObject.CompareTag("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight)
@@ -844,6 +870,25 @@ public class playerControl : NetworkBehaviour {
         }
     }
     [Command]
+    void CmdIntrigue(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().Intrigue(player, inter);
+    }
+
+
+    [Command]
+    void CmdDesertKnight(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().desertKnight(player, inter);
+    }
+    [Command]
+    void CmdDesertMoveKnight(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().moveDesertKnight(player, inter);
+    }
+
+
+    [Command]
     void CmdForceMoveKnight(GameObject player, GameObject inter)
     {
         gameState.GetComponent<Game>().forceMoveKnight(player, inter);
@@ -861,6 +906,11 @@ public class playerControl : NetworkBehaviour {
             gameState.GetComponent<Game>().buildRoad(player, edge);
         }
 
+    }
+    [Command]
+    void CmdDeselectShip(GameObject player)
+    {
+        gameState.GetComponent<Game>().DeselectShip(player);
     }
     [Command]
     void CmdGetFreeRoad(GameObject player)
@@ -918,6 +968,18 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().resetRobber(player);
     }
+
+    [Command]
+    void CmdScareRobber(GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().scareRobber(player, tile);
+    }
+    [Command]
+    void CmdSelectKnightForScare(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().useKnightScareRobber(player, inter);
+    }
+
     [Command]
     void CmdResetPirate(GameObject player)
     {
@@ -1150,6 +1212,43 @@ public class playerControl : NetworkBehaviour {
         this.movedShipThisTurn = false;
         this.shipSelected = false;
     }
+
+    [ClientRpc]
+    public void RpcStartScare()
+    {
+        selectForScare = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndScare()
+    {
+        selectForScare = false;
+    }
+
+    [ClientRpc]
+    public void RpcStartDesertKnight()
+    {
+        desertSelectKnight = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndDesertKnight()
+    {
+        desertSelectKnight = false;
+    }
+    [ClientRpc]
+    public void RpcBeginDesertKnightMove()
+    {
+        desertMoveKnight = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndDesertKnightMove()
+    {
+        desertMoveKnight = false;
+    }
+
+
     [ClientRpc]
     public void RpcBeginMetropoleChoice()
     {
@@ -1184,6 +1283,19 @@ public class playerControl : NetworkBehaviour {
     {
         this.forceMoveKnight = false;
     }
+
+    [ClientRpc]
+    public void RpcStartSelectIntrigue()
+    {
+        intrigue = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndSelectIntrigue()
+    {
+        intrigue = false;
+    }
+
     [ClientRpc]
     public void RpcUpdateTurn(string value)
     {

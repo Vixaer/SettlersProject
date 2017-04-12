@@ -130,6 +130,29 @@ public class Intersection : NetworkBehaviour {
             case 3: color = new Color(255, 128, 0); break;
         }
     }
+
+    public void BuildDesertKnight (Player player)
+    {
+        movedKnight = true;
+        positionedUnit = new Knight(player, player.desertKnightLevel);
+        player.ownedUnits.Add(positionedUnit);
+        owned = true;
+        knight = player.desertKnightLevel;
+        if (player.desertKnightActive)
+        {
+            var temp = positionedUnit as Knight;
+            temp.activateKnight();
+        }
+        knightActive = player.desertKnightActive;
+
+        switch (positionedUnit.Owner.myColor)
+        {
+            case 0: color = Color.red; break;
+            case 1: color = Color.blue; break;
+            case 2: color = Color.green; break;
+            case 3: color = new Color(255, 128, 0); break;
+        }
+    }
     public void MoveKnight(Player player, Knight knightToMove, bool forced)
     {
         movedKnight = true;
@@ -156,12 +179,13 @@ public class Intersection : NetworkBehaviour {
     }
     public void RemoveKnight(Player player, bool destroy)
     {
+        knightRemoved = true;
         owned = false;
         Knight temp = (Knight)positionedUnit;
         // temp.deactivateKnight();
-        knightActive = false;
         knight = KnightLevel.None;
-        knightRemoved = true;
+        knightActive = false;
+
 
         positionedUnit = null;
 
@@ -208,7 +232,6 @@ public class Intersection : NetworkBehaviour {
     #region Sync Hooks
     public void OnOwned(Color value)
     {
-        owned = true;
         gameObject.GetComponent<SpriteRenderer>().color = value;
         if (knightRemoved)
         {
@@ -249,7 +272,13 @@ public class Intersection : NetworkBehaviour {
     public void OnKnight(KnightLevel value)
     {
         knight = value;
-        if (knight == KnightLevel.Basic || movedKnight)
+        if (knight == KnightLevel.None)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = intersection;
+            transform.GetComponent<SpriteRenderer>().color = Color.white;
+            transform.GetComponent<CircleCollider2D>().radius = 0.2f;
+        }
+        else if (knight == KnightLevel.Basic || movedKnight)
         {
 			movedKnight = false;					
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
@@ -259,12 +288,7 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
         }
-        else if (knight == KnightLevel.None)
-        {
-            transform.GetComponent<SpriteRenderer>().sprite = intersection;
-            transform.GetComponent<SpriteRenderer>().color = Color.white;
-            transform.GetComponent<CircleCollider2D>().radius = 0.2f;
-        }							  		 																							   		 
+        						  		 																							   		 
         else if (!knightActive)
         {
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
