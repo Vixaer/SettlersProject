@@ -42,7 +42,8 @@ public enum PlayerStatus {Offline,Available,InGame,Ready};
 public enum EventKind {Barbarian,Trade,Politics,Science};
 [Serializable]
 public enum GamePhase {ReadyToJoin,SetupRoundOne,SetupRoundTwo,TurnFirstPhase,TurnDiceRolled,TurnRobberPirate,
-    ForcedKnightMove,TurnRobberOnly,TurnPirateOnly,TurnDesertKnight, DesertKnightMove, Intrigue, Alch};
+    ForcedKnightMove,TurnRobberOnly,TurnPirateOnly,TurnDesertKnight, DesertKnightMove, Intrigue, TurnMerchant};
+
 
 [Serializable]
 public enum HarbourKind{

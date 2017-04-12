@@ -10,7 +10,8 @@ public class TerrainHex : NetworkBehaviour
     public Sprite[] tokensSprites;
     public Sprite robberSprite;
     public Sprite pirateSprite;
-    //public Sprite merchantSprite;
+    public Sprite merchantSprite;
+    public Sprite merchantAndRobberSprite;
     public Sprite lakeSprite;
     public Sprite fishingSprite;
 
@@ -32,8 +33,8 @@ public class TerrainHex : NetworkBehaviour
     [SyncVar(hook = "OnChangeFishingSpot")]
     public bool hasFishing = false;
 
-    //[SyncVar(hook = "OnChangeMerchant")]
-    //public bool hasMerchant = false;
+    [SyncVar(hook = "OnChangeMerchant")]
+    public bool hasMerchant = false;
 
     public Intersection[] corners;
     public Edges[] myEdges;
@@ -66,13 +67,21 @@ public class TerrainHex : NetworkBehaviour
     void OnChangeRobber(bool value)
     {
         isRobber = value;
-        if (value)
+        if (value && hasMerchant)
+        {
+            transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = merchantAndRobberSprite;
+        }
+        else if (value)
         {
             transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = robberSprite;
         }
         else
         {
-            if (numberToken == 1)
+            if (hasMerchant)
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = merchantSprite;
+            }
+            else if (numberToken == 1)
             {
                 transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
             }
@@ -191,10 +200,32 @@ public class TerrainHex : NetworkBehaviour
         }
 
     }
-    //public void OnChangeMerchant(bool value)
-    //{
-    //    hasMerchant = value;
-    //}
+
+    public void OnChangeMerchant(bool value)
+    {
+        hasMerchant = value;
+        if (value)
+        {
+            if (isRobber)
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = merchantAndRobberSprite;
+            else
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = merchantSprite;
+        }
+        else
+        {
+            if (isRobber)
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = robberSprite;
+            else if (numberToken == 1)
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = null;
+            }
+            else
+            {
+                transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tokensSprites[numberToken - 1];
+            }
+        }
+    }
+
     public void setTile(int terrainKind, int tokenValue)
     {
         myTerrain = (TerrainKind)terrainKind;
@@ -210,8 +241,8 @@ public class TerrainHex : NetworkBehaviour
         this.numberToken = data.numberToken;
         this.isRobber = data.isRobber;
         this.isPirate = data.isPirate;
+        this.hasMerchant = data.hasMerchent;
         this.hasFishing = data.hasFishing;
-
     }
 }
 
@@ -225,6 +256,7 @@ public class TerrainHexData
     public int numberToken { get; set; }
     public bool isRobber { get; set; }
     public bool isPirate { get; set; }
+    public bool hasMerchent { get; set; }
     public float[] position { get; set; }
 
     public bool hasFishing { get; set; }
@@ -236,6 +268,7 @@ public class TerrainHexData
         this.numberToken = source.numberToken;
         this.isRobber = source.isRobber;
         this.isPirate = source.isPirate;
+        this.hasMerchent = source.hasMerchant;
         this.edges = new string[source.myEdges.Length];
         this.hasFishing = source.hasFishing;
         for (int i = 0; i < source.myEdges.Length; i++)

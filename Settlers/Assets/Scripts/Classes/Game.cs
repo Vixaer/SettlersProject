@@ -306,6 +306,7 @@ public class Game : NetworkBehaviour
                 case GamePhase.TurnFirstPhase: playerTurn += " Build & Trade"; break;
                 case GamePhase.TurnRobberPirate: playerTurn += " Move Robber or Pirate"; break;
 				case GamePhase.ForcedKnightMove: playerTurn = ForcedMovePlayer.name; playerTurn += " Forced Knight Move"; break;
+                case GamePhase.TurnMerchant: playerTurn += " Must place the merchant"; break;
                 case GamePhase.TurnRobberOnly: playerTurn += " Move Robber "; break;
                 case GamePhase.TurnPirateOnly: playerTurn += " Move Pirate "; break;
                 case GamePhase.TurnDesertKnight: playerTurn += " Deserter "; break;
@@ -697,12 +698,20 @@ public class Game : NetworkBehaviour
                         hasSpecial = true;
 
                     }
+                    if (tradingPlayer.hasMerchant && tradingPlayer.merchantResource == ResourceKind.Wool)
+                    {
+                        hasSpecial = true;
+                    }
                     break;
                 case 1:
                     if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Lumber))
                     {
                         hasSpecial = true;
 
+                    }
+                    if (tradingPlayer.hasMerchant && tradingPlayer.merchantResource == ResourceKind.Lumber)
+                    {
+                        hasSpecial = true;
                     }
                     break;
                 case 2:
@@ -711,6 +720,10 @@ public class Game : NetworkBehaviour
                         hasSpecial = true;
 
                     }
+                    if (tradingPlayer.hasMerchant && tradingPlayer.merchantResource == ResourceKind.Ore)
+                    {
+                        hasSpecial = true;
+                    }
                     break;
                 case 3:
                     if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Brick))
@@ -718,12 +731,20 @@ public class Game : NetworkBehaviour
                         hasSpecial = true;
 
                     }
+                    if (tradingPlayer.hasMerchant && tradingPlayer.merchantResource == ResourceKind.Brick)
+                    {
+                        hasSpecial = true;
+                    }
                     break;
                 case 4:
                     if (tradingPlayer.ownedHarbour.Contains(HarbourKind.Grain))
                     {
                         hasSpecial = true;
 
+                    }
+                    if (tradingPlayer.hasMerchant && tradingPlayer.merchantResource == ResourceKind.Grain)
+                    {
+                        hasSpecial = true;
                     }
                     break;
                 default:
@@ -925,7 +946,11 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Not following the distance rule.");
         }
-        if (correctPlayer && hasLand)
+        else if (currentPhase == GamePhase.TurnMerchant)
+        {
+            logAPlayer(player, "Please place the merchant first");
+        }
+        if (correctPlayer && hasLand && currentPhase != GamePhase.TurnMerchant)
         {
             //first Phase Spawn settlement
             if (currentPhase == GamePhase.SetupRoundOne && !waitingForRoad && canBuild)
@@ -1080,6 +1105,10 @@ public class Game : NetworkBehaviour
         if (!correctPlayer)
         {
             logAPlayer(player, "Can't build or Upgrade Knights when it isn't your turn.");
+        }
+        else if (currentPhase == GamePhase.TurnMerchant)
+        {
+            logAPlayer(player, "Place merchant before placing knights");
         }
         else if (build)
         {
@@ -1325,8 +1354,12 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "The road you are trying to build isn't connected");
         }
+        else if (currentPhase == GamePhase.TurnMerchant)
+        {
+            logAPlayer(player, "Please finish placing the merchent");
+        }
 
-        if (correctPlayer && onLand && !isOwned && canBuild)
+        if (correctPlayer && onLand && !isOwned && canBuild && currentPhase != GamePhase.TurnMerchant)
         {
             //first Phase Spawn settlement
             if (currentPhase == GamePhase.SetupRoundOne && waitingForRoad)
@@ -1417,8 +1450,12 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "The ship you are trying to build isn't connected.");
         }
+        else if (currentPhase == GamePhase.TurnMerchant)
+        {
+            logAPlayer(player, "Please finish placing the merchent");
+        }
 
-        if (correctPlayer && onWater && !isOwned && canBuild)
+        if (correctPlayer && onWater && !isOwned && canBuild && currentPhase != GamePhase.TurnMerchant)
         {
             //first Phase Spawn settlement
             if (currentPhase == GamePhase.SetupRoundOne && waitingForRoad)
@@ -2167,7 +2204,7 @@ public class Game : NetworkBehaviour
         {
             logAPlayer(player, "Select a knight to displace first");
         }
-        else if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate && currentPhase != GamePhase.TurnDesertKnight)
+        else if (checkCorrectPlayer(player) && currentPhase != GamePhase.TurnRobberPirate && currentPhase != GamePhase.TurnDesertKnight && currentPhase != GamePhase.TurnMerchant)
         {
             if (currentPhase != GamePhase.TurnDiceRolled)
             {
@@ -2270,6 +2307,76 @@ public class Game : NetworkBehaviour
             currentPhase = GamePhase.TurnFirstPhase;
         }
         DistributeResources();
+    }
+
+    //allows client to actually move the robber
+    public void moveMerchent(GameObject player, GameObject tile)
+    {
+        Player mover = (Player)gamePlayers[player];
+        List<String> names = new List<string>();
+        if (currentPhase == GamePhase.TurnMerchant && checkCorrectPlayer(player))
+        {
+            if (tile.GetComponent<TerrainHex>().hasMerchant == true)
+            {
+                logAPlayer(player, "You can't reselect the same hextile");
+            }
+            else
+            {
+                var ownsCityNextToTile = false;
+                foreach (Intersection inter in tile.GetComponent<TerrainHex>().corners)
+                {
+                    if (inter.owned && inter.positionedUnit is Village && inter.positionedUnit.Owner.Equals(mover))
+                    {
+                        ownsCityNextToTile = true;
+                    }
+                }
+
+                ResourceKind selectedResource = ResourceKind.Grain;
+                bool validResourceTile = true;
+                switch (tile.GetComponent<TerrainHex>().myTerrain)
+                {
+                    case TerrainKind.Pasture:
+                        selectedResource = ResourceKind.Wool;
+                        break;
+                    case TerrainKind.Forest:
+                        selectedResource = ResourceKind.Lumber;
+                        break;
+                    case TerrainKind.Mountains:
+                        selectedResource = ResourceKind.Ore;
+                        break;
+                    case TerrainKind.Hills:
+                        selectedResource = ResourceKind.Brick;
+                        break;
+                    case TerrainKind.Fields:
+                        selectedResource = ResourceKind.Grain;
+                        break;
+                    default:
+                        validResourceTile = false;
+                        break;
+                }
+
+                if (!ownsCityNextToTile)
+                {
+                    logAPlayer(player, "You do not own any villages next to this tile");
+                }
+                else if (!validResourceTile)
+                {
+                    logAPlayer(player, "You must place the merchant on a basic resource tile");
+                }
+                else
+                {
+                    
+                    if (merchantTile != null)
+                        merchantTile.GetComponent<TerrainHex>().hasMerchant = false;
+                    merchantTile = tile;
+                    mover.merchantResource = selectedResource;
+                    tile.GetComponent<TerrainHex>().hasMerchant = true;
+                    player.GetComponent<playerControl>().robberMove = true;
+                    currentPhase = GamePhase.TurnFirstPhase;
+                    updateTurn();
+                }
+            }
+        }
     }
 
     //allows client to actually move the robber
@@ -2779,7 +2886,9 @@ public class Game : NetworkBehaviour
                         updatePlayerResourcesUI(player);
                         CheckForVictory();
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
-                        // TODO: place the merchant where you want it.
+                        currentPhase = GamePhase.TurnMerchant;
+                        player.GetComponent<playerControl>().robberMove = false;
+                        updateTurn();
                         break;
                     }
                 case ProgressCardKind.MerchantFleetCard:
@@ -4687,7 +4796,6 @@ public class Game : NetworkBehaviour
         this.currentPlayerString = data.currentPlayer;
         this.bootDistributed = data.bootDistributed;
         this.stealAll = data.stealAll;
-        this.ForcedMovePlayer = data.forcedPlayer;
         this.tempPlayersByName = new Dictionary<string, Player>();
         this.robberTile = string.IsNullOrEmpty(data.robberTile) ? null : GameObject.Find(data.robberTile);
         this.pirateTile = string.IsNullOrEmpty(data.pirateTile) ? null : GameObject.Find(data.pirateTile);
@@ -4761,8 +4869,6 @@ public class GameData
     public string pirateTile { get; set; }
     public string merchantTile { get; set; }
 
-    public Player forcedPlayer { get; set; }
-
     public GameData(Game source)
     {
         this.waitingForRoad = source.waitingForRoad;
@@ -4776,7 +4882,6 @@ public class GameData
         this.CardsInPlay = source.CardsInPlay;
         this.bootDistributed = source.bootDistributed;
         this.stealAll = source.stealAll;
-        this.forcedPlayer = this.forcedPlayer;
         this.gamePlayers = source.gamePlayers.Values.Select(p => new PlayerData(p)).ToList();
         this.boardTile = source.boardTile.Select(t => new TerrainHexData(t.GetComponent<TerrainHex>())).ToArray();
         this.edges = source.edges.Select(t => new EdgeData(t.GetComponent<Edges>())).ToArray();
