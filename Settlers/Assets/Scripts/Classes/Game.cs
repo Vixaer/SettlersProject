@@ -1363,6 +1363,12 @@ public class Game : NetworkBehaviour
                 CardsInPlay.Remove(ProgressCardKind.RoadBuildingCard);
                 logAPlayer(player, "You built a free road because of the Road Building Card.");
             }
+            else if (currentPhase == GamePhase.TurnFirstPhase && CardsInPlay.Contains(ProgressCardKind.DiplomatCard))
+            {
+                edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
+                CardsInPlay.Remove(ProgressCardKind.DiplomatCard);
+                logAPlayer(player, "You have moved your road.");
+            }
             else if (currentPhase == GamePhase.TurnFirstPhase && gamePlayers[player].hasFreeRoad)
             {
                 edge.GetComponent<Edges>().BuildRoad(gamePlayers[player]);
@@ -2602,7 +2608,10 @@ public class Game : NetworkBehaviour
                     {
                         cardPlayer.cardsInHand.Remove(k);
                         gameDices.returnCard(k);
+                        CardsInPlay.Add(k);
                         player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
+                        logAPlayer(player, "Select a road to move.");
+                        player.GetComponent<playerControl>().RpcBeginDiplomat();
                         break;
                     }
 
@@ -2913,6 +2922,54 @@ public class Game : NetworkBehaviour
         return connectCheck;
     }
 
+    public void MoveRoad(GameObject player, GameObject edgeGO)
+    {
+        var edge = edgeGO.GetComponent<Edges>();
+        if (!edge.owned || edge.isShip)
+        {
+            logAPlayer(player, "Select a road to move.");
+            return;
+        }
+        var isOpenPoint = new bool[2] { true, true };
+        int j = 0;
+        foreach (Intersection i in edge.endPoints)
+        {
+            if (i.positionedUnit != null)
+            {
+                isOpenPoint[j] = false;
+            }
+            foreach (Edges e in i.paths)
+            {
+                if (e.owned && e != edge)
+                {
+                    isOpenPoint[j] = false;
+                }
+            }
+            j++;
+        }
+        var isOpen = isOpenPoint[0] || isOpenPoint[1];
+        if (!isOpen)
+        {
+            logAPlayer(player, "Select an open road to move.");
+            return;
+        }
+        else
+        {
+            logAPlayer(player, "You have moved a road");
+            if (edge.belongsTo != gamePlayers[player])
+            {
+                CardsInPlay.Remove(ProgressCardKind.DiplomatCard);
+            }
+            else
+            {
+                logAPlayer(player, "Please replace your road.");
+            }
+            edge.RemoveRoad(gamePlayers[player]);
+            CheckForLongestTradeRoute();
+            updatePlayerResourcesUI(player);
+            player.GetComponent<playerControl>().RpcEndDiplomat();
+        }
+    }
     public void getCardFromDraw(GameObject player,EventKind k)
     {
         ProgressCardKind card = gameDices.rollCard(k);
