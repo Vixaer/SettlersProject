@@ -70,7 +70,7 @@ public class Edges : NetworkBehaviour {
         belongsTo = null;
         owned = false;
         isShip = false;
-        shipRemoved = false;
+        shipRemoved = true;
         color = new Color(255, 255, 255);
     }
 

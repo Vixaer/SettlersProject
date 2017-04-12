@@ -2604,6 +2604,7 @@ public class Game : NetworkBehaviour
                         break;
                     }
                 
+                //done
                 case ProgressCardKind.DiplomatCard:
                     {
                         cardPlayer.cardsInHand.Remove(k);
