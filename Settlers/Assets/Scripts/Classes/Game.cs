@@ -2071,7 +2071,7 @@ public class Game : NetworkBehaviour
         if (checkCorrectPlayer(player))
         {
             TerrainHex hex = tile.GetComponent<TerrainHex>();
-            if (hex.isRobber)
+            if (hex.isRobber || hex.isPirate)
             {
                 bool canScare = false;
                 foreach(Intersection i in hex.corners)
