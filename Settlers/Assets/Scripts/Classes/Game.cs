@@ -2518,7 +2518,9 @@ public class Game : NetworkBehaviour
     }
     public void getCardFromDraw(GameObject player,EventKind k)
     {
-        player.GetComponent<playerControl>().RpcAddProgressCard(gameDices.rollCard(k));
+        ProgressCardKind card = gameDices.rollCard(k);
+        player.GetComponent<playerControl>().RpcAddProgressCard(card);
+        logAPlayer(player, "You got the " + card + " From drawing or winning the the barbarian win.");
     }
 	public void SwapTokens(GameObject player, GameObject[] tiles)
     {
@@ -3094,22 +3096,7 @@ public class Game : NetworkBehaviour
                                         }
                                         gainResources = true;
                                         break;
-                                    }
-                                case TerrainKind.Desert:
-                                    {
-                                        if (tempTile.isLake && (sum == 2 || sum == 3 || sum == 11 || sum == 12))
-                                        {
-                                            if (hisVillage.myKind == VillageKind.Settlement)
-                                            {
-                                                giveFishTokens(1, gainer);
-                                            }
-                                            else
-                                            {
-                                                giveFishTokens(2, gainer);
-                                            }
-                                        }
-                                        break;
-                                    }
+                                    }                             
                                 case TerrainKind.Sea:
                                     {
                                         if (hisVillage.myKind == VillageKind.Settlement)
@@ -3133,7 +3120,7 @@ public class Game : NetworkBehaviour
                     }
 
                 }
-
+                
             }
             // Now, for players who didn't receive anything, we check for aqueducts
             IEnumerator values = (gamePlayers.Values).GetEnumerator();
@@ -3148,6 +3135,23 @@ public class Game : NetworkBehaviour
                     GameObject selector;
                     playerObjects.TryGetValue(cur, out selector);
                     gamePlayers[selector].AddGold(2);
+                }
+            }
+        }
+        if (sum == 2 || sum == 3 || sum == 11 || sum == 12)
+        {
+            foreach (Intersection inter in lakeTile.GetComponent<TerrainHex>().corners)
+            {
+                if (inter.owned && inter.positionedUnit is Village)
+                {
+                    if (((Village)inter.positionedUnit).myKind == VillageKind.Settlement)
+                    {
+                        giveFishTokens(1, inter.positionedUnit.Owner);
+                    }
+                    else
+                    {
+                        giveFishTokens(2, inter.positionedUnit.Owner);
+                    }
                 }
             }
         }
@@ -3438,6 +3442,7 @@ public class Game : NetworkBehaviour
         {
             foreach (Player p in mostContributed)
             {
+                
                 broadcastMessage("Player " + p.name + " is a defender of Catan and received a progress card.");
                 var pGO = playerObjects[p];
                 pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(null, null, null, true);

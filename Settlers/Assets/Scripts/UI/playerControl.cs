@@ -973,6 +973,10 @@ public class playerControl : NetworkBehaviour {
     public void CmdGetCardFromSelectedDeck(GameObject player, EventKind k)
     {
         gameState.GetComponent<Game>().getCardFromDraw(player, k);
+        cardChoicePanel.transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.transform.GetChild(2).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.gameObject.SetActive(false);
         BarbarianDraw = false;
     }
     [Command]
