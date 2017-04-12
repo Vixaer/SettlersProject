@@ -2162,9 +2162,10 @@ public class Game : NetworkBehaviour
             {
 			    player.GetComponent<playerControl> ().RpcCanMoveShipAgain();
                 shipsBuiltThisTurn.Clear();
+                player.GetComponent<playerControl>().RpcEndScare();
 
-				//Reset all knights' firstturn variables that are false since they were activated this turn
-				Player temp = gamePlayers[player];
+                //Reset all knights' firstturn variables that are false since they were activated this turn
+                Player temp = gamePlayers[player];
 				foreach (IntersectionUnit k in temp.ownedUnits.Where(u => u is Knight)) {
 					Knight knight = (Knight) k;
 					knight.setFirstTurn (true);
