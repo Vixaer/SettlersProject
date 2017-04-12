@@ -2518,7 +2518,9 @@ public class Game : NetworkBehaviour
     }
     public void getCardFromDraw(GameObject player,EventKind k)
     {
-        player.GetComponent<playerControl>().RpcAddProgressCard(gameDices.rollCard(k));
+        ProgressCardKind card = gameDices.rollCard(k);
+        player.GetComponent<playerControl>().RpcAddProgressCard(card);
+        logAPlayer(player, "You got the " + card + " From drawing or winning the the barbarian win.");
     }
 	public void SwapTokens(GameObject player, GameObject[] tiles)
     {
@@ -3440,6 +3442,7 @@ public class Game : NetworkBehaviour
         {
             foreach (Player p in mostContributed)
             {
+                
                 broadcastMessage("Player " + p.name + " is a defender of Catan and received a progress card.");
                 var pGO = playerObjects[p];
                 pGO.GetComponent<playerControl>().RpcSetupCardChoiceInterface(null, null, null, true);
