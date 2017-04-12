@@ -2101,30 +2101,42 @@ public class Game : NetworkBehaviour
     public void useKnightScareRobber(GameObject player, GameObject inter)
     {
         Intersection temp = inter.GetComponent<Intersection>();
-        var knight = temp.positionedUnit as Knight;
-        if (knight != null)
-        {
-            if (knight.isKnightActive())
+        Player p = gamePlayers[player];
+        if (temp.owned) { 
+            var knight = temp.positionedUnit as Knight;
+
+            if (knight != null)
             {
-                  
-                if (readyToScare.isRobber)
+                if (knight.Owner.Equals(p))
                 {
-                    knight.deactivateKnight();
-                    temp.knightActive = false;
-                    logAPlayer(player, "Choose place to move robber!");
-                    currentPhase = GamePhase.TurnRobberOnly;
-                }
-                else if (readyToScare.isPirate)
+                    if (knight.isKnightActive())
+                    {
+
+                        if (readyToScare.isRobber)
+                        {
+                            knight.deactivateKnight();
+                            temp.knightActive = false;
+                            logAPlayer(player, "Choose place to move robber!");
+                            currentPhase = GamePhase.TurnRobberOnly;
+                        }
+                        else if (readyToScare.isPirate)
+                        {
+                            knight.deactivateKnight();
+                            temp.knightActive = false;
+                            logAPlayer(player, "Choose place to move pirate!");
+                            currentPhase = GamePhase.TurnPirateOnly;
+                        }
+                    }
+                    else
+                    {
+                        logAPlayer(player, "Not an active knight!");
+                        player.GetComponent<playerControl>().RpcEndScare();
+                    }
+                } else
                 {
-                    knight.deactivateKnight();
-                    temp.knightActive = false;
-                    logAPlayer(player, "Choose place to move pirate!");
-                    currentPhase = GamePhase.TurnPirateOnly;
+                    logAPlayer(player, "Not your knight!");
+                    player.GetComponent<playerControl>().RpcEndScare();
                 }
-            } else
-            {
-                logAPlayer(player, "Not an active knight!");
-                player.GetComponent<playerControl>().RpcEndScare();
             }
         }
 
