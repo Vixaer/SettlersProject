@@ -1864,6 +1864,7 @@ public class Game : NetworkBehaviour
                     {
                         if (temp.knight == KnightLevel.Basic)
                         {
+                            Knight temp4 = (Knight)knightToMove.positionedUnit;
 
                             if (opponentKnightCheck(temp, knightToMove))
                             {
@@ -1871,27 +1872,31 @@ public class Game : NetworkBehaviour
                                 opponent.storedKnight = opKnight;
                                 opponent.storedInter = temp;
                                 opponent.hasToMoveKnight = true;
+
                                 temp.RemoveKnight(opponent, false);
                                 tempPhase = currentPhase;
                                 currentPhase = GamePhase.ForcedKnightMove;
                                 ForcedMovePlayer = opponent;
                                 updateTurn();
+
                                 opponentGameObject.GetComponent<playerControl>().RpcBeginForcedKnightMove();
                             }
                             else
                             {
+       
                                 logAPlayer(opponentGameObject, "Your knight has been removed from the board!");
                                 temp.RemoveKnight(opponent, true);
+
+                                
                             }
 
-
-                            Knight temp4 = (Knight)knightToMove.positionedUnit;
-                            knightToMove.RemoveKnight(temp3, false);
+                                             
                             temp.MoveKnight(temp3, temp4, false);
+                            knightToMove.RemoveKnight(temp3, false);
                             player.GetComponent<playerControl>().RpcEndKnightMove();
                             logAPlayer(player, "Knight moved!");
                             CheckForLongestTradeRoute();
-
+                            
                         }
                         else
                         {
@@ -1911,11 +1916,13 @@ public class Game : NetworkBehaviour
                                 opponent.storedKnight = opKnight;
                                 opponent.storedInter = temp;
                                 opponent.hasToMoveKnight = true;
+
                                 temp.RemoveKnight(opponent, false);
                                 tempPhase = currentPhase;
                                 currentPhase = GamePhase.ForcedKnightMove;
                                 ForcedMovePlayer = opponent;
                                 updateTurn();
+
                                 opponentGameObject.GetComponent<playerControl>().RpcBeginForcedKnightMove();
                             }
                             else
@@ -1925,10 +1932,10 @@ public class Game : NetworkBehaviour
                             }
 
                             Knight temp4 = (Knight)knightToMove.positionedUnit;
-                            knightToMove.RemoveKnight(temp3, false);
                             temp.MoveKnight(temp3, temp4, false);
-                            logAPlayer(player, "Knight moved!");
+                            knightToMove.RemoveKnight(temp3, false);
                             player.GetComponent<playerControl>().RpcEndKnightMove();
+                            logAPlayer(player, "Knight moved!");
                             CheckForLongestTradeRoute();
 
                         }

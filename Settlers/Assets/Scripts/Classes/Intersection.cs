@@ -183,8 +183,9 @@ public class Intersection : NetworkBehaviour {
         owned = false;
         Knight temp = (Knight)positionedUnit;
         // temp.deactivateKnight();
-        knightActive = false;
         knight = KnightLevel.None;
+        knightActive = false;
+
 
         positionedUnit = null;
 
@@ -271,7 +272,13 @@ public class Intersection : NetworkBehaviour {
     public void OnKnight(KnightLevel value)
     {
         knight = value;
-        if (knight == KnightLevel.Basic || movedKnight)
+        if (knight == KnightLevel.None)
+        {
+            transform.GetComponent<SpriteRenderer>().sprite = intersection;
+            transform.GetComponent<SpriteRenderer>().color = Color.white;
+            transform.GetComponent<CircleCollider2D>().radius = 0.2f;
+        }
+        else if (knight == KnightLevel.Basic || movedKnight)
         {
 			movedKnight = false;					
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
@@ -281,12 +288,7 @@ public class Intersection : NetworkBehaviour {
         {
             transform.GetComponent<SpriteRenderer>().sprite = activeKnightSprites[(int)knight];
         }
-        else if (knight == KnightLevel.None)
-        {
-            transform.GetComponent<SpriteRenderer>().sprite = intersection;
-            transform.GetComponent<SpriteRenderer>().color = Color.white;
-            transform.GetComponent<CircleCollider2D>().radius = 0.2f;
-        }							  		 																							   		 
+        						  		 																							   		 
         else if (!knightActive)
         {
             transform.GetComponent<SpriteRenderer>().sprite = knightSprites[(int)knight];
