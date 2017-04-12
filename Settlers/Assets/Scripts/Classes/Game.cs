@@ -54,6 +54,8 @@ public class Game : NetworkBehaviour
     //for checking if ship was built this turn;
     private List<Edges> shipsBuiltThisTurn = new List<Edges>();
 
+    private TerrainHex readyToScare;
+
     #region Initial Setup
     void Start()
     {
@@ -1270,36 +1272,7 @@ public class Game : NetworkBehaviour
                             updatePlayerResourcesUI(player);
                             knight.setFirstTurn(false);
                             logAPlayer(player, "You have activated this knight.");
-                            bool pirate = false;
-                            bool robber = false;
-                            foreach (TerrainHex h in inter.linked)
-                            {
-                                if (h.isPirate) pirate = true;
-                                if (h.isRobber) robber = true;
-                            }
-
-                            if (pirate && robber)
-                            {
-                                knight.deactivateKnight();
-                                inter.knightActive = false;
-                                logAPlayer(player, "Choose place to move pirate or robber!");
-                                currentPhase = GamePhase.TurnRobberPirate;
-
-                            }
-                            else if (!pirate && robber)
-                            {
-                                knight.deactivateKnight();
-                                inter.knightActive = false;
-                                logAPlayer(player, "Choose place to move robber!");
-                                currentPhase = GamePhase.TurnRobberOnly;
-                            }
-                            else if (pirate && !robber)
-                            {
-                                knight.deactivateKnight();
-                                inter.knightActive = false;
-                                logAPlayer(player, "Choose place to move pirate!");
-                                currentPhase = GamePhase.TurnPirateOnly;
-                            }
+                            
                         }
                     }
                     else if (knight != null && knight.isKnightActive())
@@ -2091,6 +2064,72 @@ public class Game : NetworkBehaviour
                 player.GetComponent<playerControl>().RpcEndForcedKnightMove();
             }
         }
+    }
+
+    public void scareRobber(GameObject player, GameObject tile)
+    {
+        if (checkCorrectPlayer(player))
+        {
+            TerrainHex hex = tile.GetComponent<TerrainHex>();
+            if (hex.isRobber)
+            {
+                bool canScare = false;
+                foreach(Intersection i in hex.corners)
+                {
+                    if (i.owned)
+                    {
+                        var knight = i.positionedUnit as Knight;
+                        if (knight != null)
+                        {
+                            if (knight.isKnightActive())
+                            {
+                                canScare = true;
+                            }
+                        }
+                    }
+                }
+                if (canScare)
+                {
+                    readyToScare = hex;
+                    logAPlayer(player, "Select an active knight to scare the robber with!");
+                    player.GetComponent<playerControl>().RpcStartScare();
+                }
+            }
+        }
+    }
+
+    public void useKnightScareRobber(GameObject player, GameObject inter)
+    {
+        Intersection temp = inter.GetComponent<Intersection>();
+        var knight = temp.positionedUnit as Knight;
+        if (knight != null)
+        {
+            if (knight.isKnightActive())
+            {
+                  
+                if (readyToScare.isRobber)
+                {
+                    knight.deactivateKnight();
+                    temp.knightActive = false;
+                    logAPlayer(player, "Choose place to move robber!");
+                    currentPhase = GamePhase.TurnRobberOnly;
+                }
+                else if (readyToScare.isPirate)
+                {
+                    knight.deactivateKnight();
+                    temp.knightActive = false;
+                    logAPlayer(player, "Choose place to move pirate!");
+                    currentPhase = GamePhase.TurnPirateOnly;
+                }
+            } else
+            {
+                logAPlayer(player, "Not an active knight!");
+                player.GetComponent<playerControl>().RpcEndScare();
+            }
+        }
+
+        
+        updateTurn();
     }
 
     //end player turn

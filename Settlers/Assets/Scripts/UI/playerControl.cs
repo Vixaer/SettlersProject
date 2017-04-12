@@ -29,6 +29,7 @@ public class playerControl : NetworkBehaviour {
     public bool upgradeKnight = false;
     public bool moveKnight = false;
     public bool buildKnight = false;
+    private bool selectForScare = false;
 
     private bool forceMoveKnight = false;
     public bool knightSelected = false;
@@ -501,7 +502,13 @@ public class playerControl : NetworkBehaviour {
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.CompareTag("Intersection"))
             {
-                if (desertSelectKnight)
+
+                if (selectForScare)
+                {
+                    CmdSelectKnightForScare(gameObject, hit.collider.gameObject);
+                }
+
+                else if (desertSelectKnight)
                 {
                     CmdDesertKnight(gameObject, hit.collider.gameObject);
                 }
@@ -568,6 +575,8 @@ public class playerControl : NetworkBehaviour {
                     {
                         CmdMoveRobber(gameObject, hit.collider.gameObject);
                     }
+                    if (!selectForScare)
+                        CmdScareRobber(gameObject, hit.collider.gameObject);
                 }
             }
             if (hit.collider.gameObject.CompareTag("Edge") && moveShip == true && movedShipThisTurn == false && !forceMoveKnight)
@@ -954,6 +963,18 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().resetRobber(player);
     }
+
+    [Command]
+    void CmdScareRobber(GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().scareRobber(player, tile);
+    }
+    [Command]
+    void CmdSelectKnightForScare(GameObject player, GameObject inter)
+    {
+        gameState.GetComponent<Game>().useKnightScareRobber(player, inter);
+    }
+
     [Command]
     void CmdResetPirate(GameObject player)
     {
@@ -1181,6 +1202,18 @@ public class playerControl : NetworkBehaviour {
     {
         this.movedShipThisTurn = false;
         this.shipSelected = false;
+    }
+
+    [ClientRpc]
+    public void RpcStartScare()
+    {
+        selectForScare = true;
+    }
+
+    [ClientRpc]
+    public void RpcEndScare()
+    {
+        selectForScare = false;
     }
 
     [ClientRpc]
