@@ -51,6 +51,7 @@ public class playerControl : NetworkBehaviour {
                       victoryPanel, fishPanel, stealPanel, cardChoicePanel;
     public GameObject cardPrefab;
     private List<byte> saveGameData = null;
+    public GameObject alchPanel;
 
     // @author xingwei
     // P2P Trade Resources
@@ -118,6 +119,11 @@ public class playerControl : NetworkBehaviour {
     #endregion
 
     #region Setup
+    void Awake()
+    {
+        alchPanel = Resources.Load<GameObject>("AlchPanel");
+    }
+
     void Start()
     {
         if (SceneManager.GetSceneByName("In-Game") != SceneManager.GetActiveScene()) return;
@@ -691,6 +697,27 @@ public class playerControl : NetworkBehaviour {
 
     }
 
+    public void getAlchValues()
+    {
+        //RedDice
+
+        int redDice = int.Parse(alchPanel.transform.GetChild(0).GetComponent<InputField>().text);
+
+        //YellowDice
+
+        int yellowDice = int.Parse(alchPanel.transform.GetChild(1).GetComponent<InputField>().text);
+
+        if (1 <=redDice && redDice <= 6 && 1 <= yellowDice && yellowDice <= 6)
+        {
+            CmdSendAlch(gameObject, redDice, yellowDice);
+            alchPanel.SetActive(false);
+
+        } else
+        {
+            alchPanel.transform.GetChild(5).GetComponent<Text>().text = "Please input valid dice numbers"; 
+        }
+    }
+
     public void getFishAction()
     {
         int action = fishPanel.transform.GetChild(0).GetComponent<Dropdown>().value;
@@ -853,6 +880,13 @@ public class playerControl : NetworkBehaviour {
     {
         gameState.GetComponent<Game>().buildOnIntersection(gameObject, intersection);
     }
+
+    [Command]
+    public void CmdSendAlch(GameObject player, int red, int yellow)
+    {
+        gameState.GetComponent<Game>().alchDice(player, red, yellow);
+    }
+
     [Command]
     void CmdMoveShip(GameObject player, GameObject edge, bool selected)
     {
@@ -1262,7 +1296,11 @@ public class playerControl : NetworkBehaviour {
         desertMoveKnight = false;
     }
 
-
+    [ClientRpc]
+    public void RpcBeginAlch()
+    {
+        this.alchPanel.SetActive(true);
+    }
     [ClientRpc]
     public void RpcBeginMetropoleChoice()
     {

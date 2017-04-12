@@ -2090,7 +2090,7 @@ public class Game : NetworkBehaviour
                             var knight = i.positionedUnit as Knight;
                             if (knight != null)
                             {
-                                if (knight.isKnightActive())
+                                if (knight.isKnightActive() && knight.isFirstTurn())
                                 {
                                     canScare = true;
                                 }
@@ -2120,7 +2120,7 @@ public class Game : NetworkBehaviour
             {
                 if (knight.Owner.Equals(p))
                 {
-                    if (knight.isKnightActive())
+                    if (knight.isKnightActive() && knight.isFirstTurn())
                     {
 
                         if (readyToScare.isRobber)
@@ -2140,7 +2140,7 @@ public class Game : NetworkBehaviour
                     }
                     else
                     {
-                        logAPlayer(player, "Not an active knight!");
+                        logAPlayer(player, "Not an active knight or has just been activated!");
                         player.GetComponent<playerControl>().RpcEndScare();
                     }
                 } else
@@ -2238,6 +2238,38 @@ public class Game : NetworkBehaviour
             logAPlayer(player, "You've already rolled this turn");
         }
         updateTurn();
+    }
+
+    public void alchDice(GameObject player, int red, int yellow)
+    {
+        gameDices.rollDice();
+        IEnumerator keys = (gamePlayers.Keys).GetEnumerator();
+        bool remaining = true;
+        //set to first player
+        keys.MoveNext();
+        while (remaining)
+        {
+            GameObject p = (GameObject)keys.Current;
+            player.GetComponent<playerControl>().setDiceValues(red, yellow, (int)gameDices.getEventKind());
+            if (!keys.MoveNext())
+            {
+                remaining = false;
+            }
+        }
+        HandleEventDice(); // Handle the outcome of the event dice
+        gamePlayers[player].cardsInHand.Add(ProgressCardKind.DeserterCard);
+        if (red + yellow == 7 && firstBarbAttack)
+        {
+            currentPhase = GamePhase.TurnRobberPirate;
+            //SEND ClientRpc to discard correct amount;
+            robberDiscarding();
+
+        }
+        else
+        {
+            currentPhase = GamePhase.TurnFirstPhase;
+        }
+        DistributeResources();
     }
 
     //allows client to actually move the robber
@@ -2394,9 +2426,12 @@ public class Game : NetworkBehaviour
                     {
                         if (currentPhase == GamePhase.TurnDiceRolled)
                         {
-                            // command to choose dice rolls
+                            currentPhase = GamePhase.Alch;
+                            player.GetComponent<playerControl>().RpcBeginAlch();
                             cardPlayer.cardsInHand.Remove(k);
                             gameDices.returnCard(k);
+                            Debug.Log("alched!");
+                            player.GetComponent<playerControl>().RpcRemoveProgressCard(k);
                         }
                         else
                         {
