@@ -203,12 +203,12 @@ public class playerControl : NetworkBehaviour {
         if (cardsShown)
         {
             cardsAnimation.Play("HideCards");
-            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Maximize";
+            CardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = "Maximize";
         }
         else
         {
             cardsAnimation.Play("ShowCards");
-            CardPanel.transform.GetChild(4).GetChild(0).GetComponent<Text>().text = "Minimize";
+            CardPanel.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = "Minimize";
         }
         cardsShown = !cardsShown;
     }
@@ -304,6 +304,7 @@ public class playerControl : NetworkBehaviour {
             upgradeKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 121, 121);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Building Knight";
 
         }
         else if (!activateKnight && !upgradeKnight & !moveKnight)
@@ -314,6 +315,7 @@ public class playerControl : NetworkBehaviour {
             moveKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 121, 240);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Activating Knight";
         }
         else if (!upgradeKnight && !moveKnight && !buildKnight)
         {
@@ -323,6 +325,7 @@ public class playerControl : NetworkBehaviour {
             moveKnight = false;
 
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 121, 240, 240);
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Upgrading Knight";
         }
         else
         {
@@ -331,6 +334,8 @@ public class playerControl : NetworkBehaviour {
             upgradeKnight = false;
             moveKnight = true;
             MenuWindow.transform.GetChild(8).GetComponent<Image>().color = new Color32(121, 240, 240, 121);
+
+            MenuWindow.transform.GetChild(8).GetChild(0).GetComponent<Text>().text = "Moving Knight";
         }
     }
     public void OnClickAcceptP2PButton()
@@ -1030,6 +1035,10 @@ public class playerControl : NetworkBehaviour {
     public void CmdGetCardFromSelectedDeck(GameObject player, EventKind k)
     {
         gameState.GetComponent<Game>().getCardFromDraw(player, k);
+        cardChoicePanel.transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.transform.GetChild(2).GetChild(1).gameObject.SetActive(true);
+        cardChoicePanel.gameObject.SetActive(false);
         BarbarianDraw = false;
     }
     [Command]
@@ -1447,13 +1456,12 @@ public class playerControl : NetworkBehaviour {
         P2PTrade_DebugText.text = txt;																	 		  
     }
     [ClientRpc]			
-    public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
+	public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold, string tradername)
     {
-        if (requestingPlayer.GetInstanceID() == gameObject.GetInstanceID())
-        {
-            return;
-        }
-        tradingPlayer = requestingPlayer;						   						   
+		
+		tradingPlayer = requestingPlayer;
+
+		this.P2PTradeOfferFromText.text = "Trade Request From " + tradername;
 
         this.giveOre = giveOre;
         this.giveBrick = giveBrick;
@@ -1552,7 +1560,8 @@ public class playerControl : NetworkBehaviour {
             givesTxt = givesTxt + "Gold :" + giveGold.ToString() + "\n";
         }
         this.P2PTradeOfferedDescriptionText.text = givesTxt;
-        this.P2PTradeOfferPanel.SetActive(true);
+
+		this.P2PTradeOfferPanel.SetActive(true);
     }
 
     [ClientRpc]
