@@ -1561,7 +1561,9 @@ public class playerControl : NetworkBehaviour {
         }
         this.P2PTradeOfferedDescriptionText.text = givesTxt;
 
-		this.P2PTradeOfferPanel.SetActive(true);
+		if (isLocalPlayer) {
+			this.P2PTradeOfferPanel.SetActive (true);
+		}
     }
 
     [ClientRpc]
