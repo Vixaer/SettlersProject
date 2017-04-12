@@ -2186,7 +2186,7 @@ public class Game : NetworkBehaviour
                     if (pirateTile.GetComponent<TerrainHex>().isPirate)
                     {
                         Player tempPlay = gamePlayers[player];
-                        robberTile.GetComponent<TerrainHex>().isPirate = false;
+                        pirateTile.GetComponent<TerrainHex>().isPirate = false;
                         tempPlay.PayFishTokens(2);
                         updatePlayerResourcesUI(player);
                     }            
