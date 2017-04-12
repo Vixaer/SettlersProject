@@ -65,6 +65,15 @@ public class Edges : NetworkBehaviour {
 		color = new Color(255, 255, 255);
 	}
 
+    public void RemoveRoad(Player player)
+    {
+        belongsTo = null;
+        owned = false;
+        isShip = false;
+        shipRemoved = false;
+        color = new Color(255, 255, 255);
+    }
+
     public void SelectShipForMoving(Player player)
     {
         color = new Color32(121, 121, 240, 240);
