@@ -2958,7 +2958,7 @@ public class Game : NetworkBehaviour
             foreach (Intersection i in e.endPoints)
             {
 
-                if (i.owned)
+                if (i.owned &&  i.positionedUnit is Village)
                 {
                     checkProximity = false;
                     break;
