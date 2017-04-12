@@ -31,6 +31,7 @@ public class Player {
     public string name;
 
     public bool hasMerchant { get; private set; }
+    public ResourceKind merchantResource { get; set; }
     public bool hasLongestTradeRoute { get; private set; }
 
     public bool hasBoot = false;
@@ -492,6 +493,7 @@ public bool HasWallResources(bool playedEngCard) {
         p.ownedHarbour = data.ownedHarbour;
         p.cardsInHand = data.cardsInHand;
         p.hasMerchant = data.hasMerchant;
+        p.merchantResource = data.merchantResource;
         p.hasLongestTradeRoute = data.hasLongestTradeRoute;
         p.settlementPool = data.settlementPool;
         p.citiesPool = data.citiesPool;
@@ -525,6 +527,7 @@ public class PlayerData
     public List<ProgressCardKind> cardsInHand { get; set; }
     public string name { get; set; }
     public bool hasMerchant { get; set; }
+    public ResourceKind merchantResource { get; set; }
     public bool hasLongestTradeRoute { get; set; }
     public List<VillageKind> settlementPool { get; set; }
     public List<VillageKind> citiesPool { get; set; }
@@ -541,6 +544,7 @@ public class PlayerData
         this.ownedHarbour = source.ownedHarbour;
         this.cardsInHand = source.cardsInHand;
         this.hasMerchant = source.hasMerchant;
+        this.merchantResource = source.merchantResource;
         this.hasLongestTradeRoute = source.hasLongestTradeRoute;
         this.settlementPool = source.settlementPool;
         this.citiesPool = source.citiesPool;

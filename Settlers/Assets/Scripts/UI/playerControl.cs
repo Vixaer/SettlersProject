@@ -114,6 +114,9 @@ public class playerControl : NetworkBehaviour {
     // valid name
     [SyncVar(hook = "OnNameValidated")]
     public bool isValidName;
+
+    [SyncVar(hook = "OnRobberMoveChange")]
+    public bool robberMove;
     #endregion
 
     #region Setup
@@ -578,7 +581,14 @@ public class playerControl : NetworkBehaviour {
                     }
                     else
                     {
-                        CmdMoveRobber(gameObject, hit.collider.gameObject);
+                        if (!robberMove)
+                        {
+                            CmdMoveMerchant(gameObject, hit.collider.gameObject);
+                        }
+                        else
+                        {
+                            CmdMoveRobber(gameObject, hit.collider.gameObject);
+                        }
                     }
                     if (!selectForScare)
                         CmdScareRobber(gameObject, hit.collider.gameObject);
@@ -959,6 +969,11 @@ public class playerControl : NetworkBehaviour {
         gameState.GetComponent<Game>().moveRobber(player, tile);
     }
     [Command]
+    void CmdMoveMerchant(GameObject player, GameObject tile)
+    {
+        gameState.GetComponent<Game>().moveMerchent(player, tile);
+    }
+    [Command]
     void CmdMovePirate(GameObject player, GameObject tile)
     {
         gameState.GetComponent<Game>().movePirate(player, tile);
@@ -1069,6 +1084,10 @@ public class playerControl : NetworkBehaviour {
     #endregion
 
     #region Sync Hooks
+    public void OnRobberMoveChange(bool value)
+    {
+        robberMove = value;
+    }
     void OnChangedBrick(string value)
     {
         transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text = value;
