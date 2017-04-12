@@ -1347,10 +1347,9 @@ public class playerControl : NetworkBehaviour {
     public void RpcReceiveP2PTradeRequestFrom(GameObject requestingPlayer, int giveBrick, int giveOre, int giveWool, int giveCoin, int giveWheat, int giveCloth, int giveLumber, int givePaper, int giveGold, int wantsBrick, int wantsOre, int wantsWool, int wantsCoin, int wantsWheat, int wantsCloth, int wantsLumber, int wantsPaper, int wantsGold)
     {
 		if (!isLocalPlayer)
-        {
-            return;
-        }
-        tradingPlayer = requestingPlayer;						   						   
+			return;
+		
+		tradingPlayer = requestingPlayer;
 
         this.giveOre = giveOre;
         this.giveBrick = giveBrick;
@@ -1449,7 +1448,8 @@ public class playerControl : NetworkBehaviour {
             givesTxt = givesTxt + "Gold :" + giveGold.ToString() + "\n";
         }
         this.P2PTradeOfferedDescriptionText.text = givesTxt;
-        this.P2PTradeOfferPanel.SetActive(true);
+
+		this.P2PTradeOfferPanel.SetActive(true);
     }
 
     [ClientRpc]

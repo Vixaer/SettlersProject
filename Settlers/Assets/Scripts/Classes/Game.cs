@@ -552,8 +552,6 @@ public class Game : NetworkBehaviour
             //TODO: Open trade request panel on other players and log the trading player (Waiting for other players etc)
             foreach (Player p in playerObjects.Keys)
             {
-                print(p.name);
-                print(tradingPlayer.name);
                 //TODO: print these offers and takes to other players' panels
                 playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold);
             }
