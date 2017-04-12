@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
@@ -3419,6 +3419,7 @@ public class Game : NetworkBehaviour
         //on build phase it has to be connected to a city or another boat.
         else if (currentPhase == GamePhase.TurnFirstPhase)
         {
+            /*
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
                 //check owned true or else owned is null pointer
@@ -3440,7 +3441,39 @@ public class Game : NetworkBehaviour
                     }
                 }
             }
-            
+            */
+
+            foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
+            {
+                
+                //if enemy knight on an intersection, ignore edges from it even if they may be owned by you
+                if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
+                {
+                    continue;
+                }
+                //else if settlement/city on intersection, automatically connected
+                else if (i.owned && !(i.positionedUnit is Knight) && i.positionedUnit.Owner.Equals(player))
+                {
+                    check = true;
+                }
+                //Check for other ships owned by you going into intersection;
+                else
+                {
+                    foreach (Edges e in i.paths)
+                    {
+                        //check to see if owned or else belongs to is obviously null and return null pointer
+                        if (e.owned && e.belongsTo.Equals(player) && e.isShip == true)
+                        {
+                            check = true;
+
+                        }
+
+                    }
+                }
+            }
+
+
+
         }
         return check;
     }
