@@ -2831,7 +2831,7 @@ public class Game : NetworkBehaviour
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
                 //check owned true or else owned is null pointer
-                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.City)
+                if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.Settlement)
                 {
                     check = true;
                     break;
