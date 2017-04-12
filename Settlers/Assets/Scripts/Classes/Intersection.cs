@@ -318,6 +318,7 @@ public class Intersection : NetworkBehaviour {
     {
         this.harbor = data.harbourKind;
         this.isFishingInter = data.isFishing;
+        this.owned = data.owned;
         if (u != null)
         {
             if (u is Village)
@@ -380,6 +381,9 @@ public class IntersectionData
     public VillageKind metropolis { get; set; }
     public bool isFishing { get; set; }
 
+    public bool owned { get; set; }
+    public bool movedKnight { get; set; }
+
     public IntersectionData(Intersection source)
     {
         this.name = source.name;
@@ -393,6 +397,7 @@ public class IntersectionData
         this.positionedUnit = source.positionedUnit == null ? 
             Guid.Empty : 
             source.positionedUnit.id;
+        this.owned = source.owned;
         this.harbourKind = source.harbor;
         this.isFishing = source.isFishingInter;
 
