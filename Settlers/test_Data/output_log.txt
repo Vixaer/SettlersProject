@@ -1,142 +1,41 @@
-Initialize engine version: 5.5.1f1 (88d00a7498cd)
+Initialize engine version: 5.5.2f1 (3829d7f588f3)
 GfxDevice: creating device client; threaded=1
 Direct3D:
-    Version:  Direct3D 11.0 [level 11.0]
-    Renderer: NVIDIA GeForce GT 630 (ID=0x1284)
-    Vendor:   NVIDIA
-    VRAM:     1994 MB
-    Driver:   10.18.13.6839
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Radeon R9 200 Series (ID=0x679a)
+    Vendor:   ATI
+    VRAM:     3053 MB
+    Driver:   21.19.137.514
 Begin MonoManager ReloadAssembly
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.dll into Unity Child Domain
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\Assembly-CSharp.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.UI.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
-Loading D:\Unity\demo\Settlers\test_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.042 seconds
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\System.Core.dll (this message is harmless)
-Platform assembly: D:\Unity\demo\Settlers\test_Data\Managed\System.dll (this message is harmless)
-desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
+Loading G:\Git\SettlersProject\Settlers\test_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
+- Completed reload, in  0.028 seconds
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: G:\Git\SettlersProject\Settlers\test_Data\Managed\System.dll (this message is harmless)
+desktop: 1920x1080 60Hz; virtual: 3840x1080 at -1920,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.315202 ms
+UnloadTime: 2.259411 ms
 Pressed left click, casting ray.
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 5.906375 ms
--0.9899998,-0.02000046
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+UnloadTime: 6.009989 ms
 
-0.54,0.8500004
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.5200005,0.8499994
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-0.9899998,-0.02999973
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-0.9899998,0
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
--0.46,-0.8599997
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-
-Unloading 18 unused Assets to reduce memory usage. Loaded Objects now: 6821.
-Total: 16.070019 ms (FindLiveObjects: 0.468668 ms CreateObjectMapping: 0.265605 ms MarkObjects: 15.288643 ms  DeleteObjects: 0.046579 ms)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Log: connection {1} has been disconnected by timeout; address {::ffff:192.168.2.27:65411}
-ServerDisconnected due to error: Timeout
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 28
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 28
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Intersection 58
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException
-  at (wrapper managed-to-native) UnityEngine.GameObject:GetComponentFastPath (System.Type,intptr)
-  at UnityEngine.GameObject.GetComponent[playerControl] () [0x00000] in <filename unknown>:0 
-  at Game.updateTurn () [0x00000] in <filename unknown>:0 
-  at Game.buildOnIntersection (UnityEngine.GameObject player, UnityEngine.GameObject intersection) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnIntersection (UnityEngine.GameObject intersection) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnIntersection (UnityEngine.GameObject intersection) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-HexTile 28
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Pressed left click, casting ray.
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Edge 85
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-NullReferenceException
-  at (wrapper managed-to-native) UnityEngine.GameObject:GetComponentFastPath (System.Type,intptr)
-  at UnityEngine.GameObject.GetComponent[playerControl] () [0x00000] in <filename unknown>:0 
-  at Game.updateTurn () [0x00000] in <filename unknown>:0 
-  at Game.buildRoad (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.CallCmdBuildOnEdge (UnityEngine.GameObject player, UnityEngine.GameObject edge) [0x00000] in <filename unknown>:0 
-  at playerControl.detectClickedObject () [0x00000] in <filename unknown>:0 
-  at playerControl.Update () [0x00000] in <filename unknown>:0 
- 
-(Filename:  Line: -1)
+Unloading 16 unused Assets to reduce memory usage. Loaded Objects now: 7473.
+Total: 6.113043 ms (FindLiveObjects: 0.303882 ms CreateObjectMapping: 0.167306 ms MarkObjects: 5.576048 ms  DeleteObjects: 0.065184 ms)
 
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 213c -> priority: 1 
+  Thread -> id: 2bc0 -> priority: 1 

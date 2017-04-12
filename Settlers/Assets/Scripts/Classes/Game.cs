@@ -550,10 +550,12 @@ public class Game : NetworkBehaviour
             player.GetComponent<playerControl>().RpcLogP2PTradeDebugText("Waiting for other players... ", false);
 
             //TODO: Open trade request panel on other players and log the trading player (Waiting for other players etc)
-            foreach (Player p in playerObjects.Keys)
+			foreach (Player p in gamePlayers.Values)
             {
                 //TODO: print these offers and takes to other players' panels
-				playerObjects[p].GetComponent<playerControl>().RpcReceiveP2PTradeRequestFrom(player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold, tradingPlayer.name);
+				if (p != tradingPlayer) {
+					playerObjects [p].GetComponent<playerControl> ().RpcReceiveP2PTradeRequestFrom (player, giveBrick, giveOre, giveWool, giveCoin, giveWheat, giveCloth, giveLumber, givePaper, giveGold, wantsBrick, wantsOre, wantsWool, wantsCoin, wantsWheat, wantsCloth, wantsLumber, wantsPaper, wantsGold, tradingPlayer.name);
+				}
             }
         }
         else if (checkCorrectPlayer(player))
@@ -2818,6 +2820,11 @@ public class Game : NetworkBehaviour
     private bool canBuildConnectedRoad(Player player, GameObject edge)
     {
         bool check = false;
+        bool topInterKnight = false;
+        bool bottomInterKnight = false;
+        bool topConnected = false;
+        bool bottomConnected = false;
+        int j = 0;
         //on first setup road must be built connected to settlement built
         if (currentPhase == GamePhase.SetupRoundOne)
         {
@@ -2836,7 +2843,6 @@ public class Game : NetworkBehaviour
         {
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
-                //check owned true or else owned is null pointer
                 if (i.owned && i.positionedUnit.Owner.Equals(player) && ((Village)i.positionedUnit).myKind == VillageKind.City)
                 {
                     check = true;
@@ -2847,26 +2853,39 @@ public class Game : NetworkBehaviour
         //on build phase it can be built/connect to any road or city.
         else if (currentPhase == GamePhase.TurnFirstPhase)
         {
+            
             foreach (Intersection i in edge.GetComponent<Edges>().endPoints)
             {
-                //check owned true or else owned is null pointer
-                if (i.owned && i.positionedUnit.Owner.Equals(player))
+                if (j == 0)
                 {
-                    check = true;
-                    break;
+                    if (i.owned && i.positionedUnit is Knight && !i.positionedUnit.Owner.Equals(player))
+                    {
+                        topInterKnight = true;
+                    }
+                    else
+                    {
+                        bottomInterKnight = true;
+                    }               
                 }
                 foreach (Edges e in i.paths)
                 {
                     //check to see if owned or else bleongs to is obviously null and return null pointer
                     if (e.owned && e.belongsTo.Equals(player) && e.isShip == false)
                     {
-                        check = true;
-                        break;
+                        if (j == 0)
+                        {
+                            topConnected = true;
+                        }
+                        else
+                        {
+                            bottomConnected = true;
+                        }
                     }
                 }
+                j++;
             }
         }
-        return check;
+        return (check || (bottomConnected && !bottomInterKnight) || (topConnected && !topInterKnight));
     }
 
     private bool canBuildConnectedShip(Player player, GameObject edge)
@@ -3898,6 +3917,9 @@ public class Game : NetworkBehaviour
         this.currentPhase = data.currentPhase;
         this.CardsInPlay = data.CardsInPlay;
         this.currentPlayerString = data.currentPlayer;
+        this.bootDistributed = data.bootDistributed;
+        this.stealAll = data.stealAll;
+        this.ForcedMovePlayer = data.forcedPlayer;
         this.tempPlayersByName = new Dictionary<string, Player>();
         this.robberTile = string.IsNullOrEmpty(data.robberTile) ? null : GameObject.Find(data.robberTile);
         this.pirateTile = string.IsNullOrEmpty(data.pirateTile) ? null : GameObject.Find(data.pirateTile);
@@ -3953,8 +3975,11 @@ public class Game : NetworkBehaviour
 [Serializable]
 public class GameData
 {
-    public bool waitingForRoad  { get; set; }
+    public bool waitingForRoad { get; set; }
     public bool firstBarbAttack { get; set; }
+
+    public bool bootDistributed { get; set;}
+    public bool stealAll { get; set; }
     public int barbPosition { get; set; }
     public int defenders { get; private set; }
     public GamePhase currentPhase { get; set; }
@@ -3968,6 +3993,8 @@ public class GameData
     public string pirateTile { get; set; }
     public string merchantTile { get; set; }
 
+    public Player forcedPlayer { get; set; }
+
     public GameData(Game source)
     {
         this.waitingForRoad = source.waitingForRoad;
@@ -3979,6 +4006,9 @@ public class GameData
             null : 
             ((Player)source.currentPlayer.Current).name;
         this.CardsInPlay = source.CardsInPlay;
+        this.bootDistributed = source.bootDistributed;
+        this.stealAll = source.stealAll;
+        this.forcedPlayer = this.forcedPlayer;
         this.gamePlayers = source.gamePlayers.Values.Select(p => new PlayerData(p)).ToList();
         this.boardTile = source.boardTile.Select(t => new TerrainHexData(t.GetComponent<TerrainHex>())).ToArray();
         this.edges = source.edges.Select(t => new EdgeData(t.GetComponent<Edges>())).ToArray();
